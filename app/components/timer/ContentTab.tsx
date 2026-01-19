@@ -235,12 +235,12 @@ export default function ContentTab({
           </BlockStack>
         </BlockStack>
       </BlockStack>
-
-      <Box paddingBlockStart="400">
-        <Button fullWidth onClick={onContinue}>
-          Continue to Design
-        </Button>
-      </Box>
+      <Bleed marginInline={"400"}>
+        <Divider />
+      </Bleed>
+      <Button fullWidth onClick={onContinue}>
+        Continue to Design
+      </Button>
     </FormLayout>
   );
 }
