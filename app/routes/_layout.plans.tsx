@@ -2,8 +2,6 @@ import {
   Box,
   Card,
   Layout,
-  Link,
-  List,
   Page,
   Text,
   BlockStack,
@@ -11,10 +9,24 @@ import {
   ProgressBar,
   Button,
   Icon,
+  ButtonGroup,
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
+import PlanCard from "app/components/plans/plan-card";
+import { useCallback, useState } from "react";
+import { plans } from "app/config/plans";
 
 export default function PricingPlans() {
+  const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+
+  const handleButtonClick = useCallback(
+    (index: number) => {
+      if (activeButtonIndex === index) return;
+      setActiveButtonIndex(index);
+    },
+    [activeButtonIndex],
+  );
+
   return (
     <Page
       backAction={{
@@ -64,6 +76,43 @@ export default function PricingPlans() {
           <Button disabled>Your current plan</Button>
         </InlineStack>
       </Card>
+      <Box padding="600">
+        <InlineStack align="center">
+          <ButtonGroup variant="segmented">
+            <Button
+              pressed={activeButtonIndex === 0}
+              onClick={() => handleButtonClick(0)}
+            >
+              Billed Monthly
+            </Button>
+            <Button
+              pressed={activeButtonIndex === 1}
+              onClick={() => handleButtonClick(1)}
+            >
+              Billed Yearly - Save 20%
+            </Button>
+          </ButtonGroup>
+        </InlineStack>
+      </Box>
+      <Box>
+        <Layout>
+          {plans.map((plan) => (
+            <Layout.Section key={plan.id} variant="oneThird">
+              <PlanCard
+                title={plan.title}
+                subtitle={plan.subtitle}
+                badge={plan.badge}
+                price={
+                  activeButtonIndex === 0 ? plan.monthlyPrice : plan.yearlyPrice
+                }
+                items={plan.items}
+                yearly={activeButtonIndex === 1}
+                yearlyPrice={plan.yearlyTotal}
+              />
+            </Layout.Section>
+          ))}
+        </Layout>
+      </Box>
     </Page>
   );
 }
