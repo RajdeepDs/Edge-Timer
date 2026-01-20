@@ -16,7 +16,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function TimerConfigPage() {
   const [searchParams] = useSearchParams();
-  const timerType = searchParams.get("type");
+  const timerTypeParam = searchParams.get("type");
+  const timerType: "product" | "top-bottom-bar" =
+    timerTypeParam === "top-bottom-bar" ? "top-bottom-bar" : "product";
 
   const [selected, setSelected] = useState(0);
   const [timerName, setTimerName] = useState("");
@@ -54,7 +56,7 @@ export default function TimerConfigPage() {
       case 0:
         return (
           <ContentTab
-            timerType={timerType ?? "product"}
+            timerType={timerType}
             timerName={timerName}
             setTimerName={setTimerName}
             title={title}
@@ -67,12 +69,12 @@ export default function TimerConfigPage() {
       case 1:
         return (
           <DesignTab
-            timerType={timerType ?? "product"}
+            timerType={timerType}
             onContinue={() => handleTabChange(2)}
           />
         );
       case 2:
-        return <PlacementTab />;
+        return <PlacementTab timerType={timerType} />;
       default:
         return null;
     }
