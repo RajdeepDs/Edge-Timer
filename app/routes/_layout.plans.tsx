@@ -9,6 +9,7 @@ import {
   ProgressBar,
   Button,
   Icon,
+  Image,
   ButtonGroup,
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
@@ -94,7 +95,7 @@ export default function PricingPlans() {
           </ButtonGroup>
         </InlineStack>
       </Box>
-      <Box>
+      <Box paddingBlockEnd="400">
         <Layout>
           {plans.map((plan) => (
             <Layout.Section key={plan.id} variant="oneThird">
@@ -112,6 +113,24 @@ export default function PricingPlans() {
             </Layout.Section>
           ))}
         </Layout>
+      </Box>
+      <Box paddingBlockEnd="400">
+        <BlockStack>
+          <Card>
+            <InlineStack blockAlign="center" wrap={false} gap="400">
+              <Image source="/money_back.svg" alt="Money Back Guarantee" />
+              <BlockStack gap="200">
+                <Text as="h2" variant="headingMd">
+                  30 Day Money Back Guarantee - No questions asked!
+                </Text>
+                <Text as="p">
+                  Write to us within the first 30 days of your paid subscription
+                  and we will refund you the money via Shopify's billing.
+                </Text>
+              </BlockStack>
+            </InlineStack>
+          </Card>
+        </BlockStack>
       </Box>
     </Page>
   );
