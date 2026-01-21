@@ -26,3 +26,6 @@ pnpm-lock.yaml
 .shopify.lock
 
 process.md
+
+/generated
+/_prisma
