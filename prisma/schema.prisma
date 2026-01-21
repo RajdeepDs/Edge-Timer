@@ -31,3 +31,140 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+model Timer {
+  id   String @id @default(cuid())
+  shop String
+  name String
+  type String // "product-page", "top-bottom-bar", "landing-page", "cart-page"
+
+  // Content
+  title      String
+  subheading String?
+
+  // Timer Settings
+  endDate         DateTime?
+  isRecurring     Boolean   @default(false)
+  recurringConfig Json? // Store recurring timer configuration
+
+  // Timer Labels
+  daysLabel    String @default("Days")
+  hoursLabel   String @default("Hrs")
+  minutesLabel String @default("Mins")
+  secondsLabel String @default("Secs")
+
+  // Timer Type Settings
+  timerType    String @default("countdown") // "countdown" or "fixed"
+  fixedMinutes Int? // For fixed minutes timer
+
+  // Scheduling
+  startsAt DateTime? // When timer should start (null = immediately)
+  onExpiry String    @default("unpublish") // "unpublish", "keep", "hide"
+
+  // Call to Action (for top-bottom-bar)
+  ctaType    String? // "no", "button", "clickable"
+  buttonText String?
+  buttonLink String?
+
+  // Design Settings
+  designConfig Json @default("{}")
+
+  // Placement Settings
+  placementConfig Json @default("{}")
+
+  // Product/Collection Selection
+  productSelection    String @default("all") // "all", "specific", "collections", "tags", "custom"
+  selectedProducts    Json? // Array of product IDs
+  selectedCollections Json? // Array of collection IDs
+  excludedProducts    Json? // Array of excluded product IDs
+  productTags         Json? // Array of product tags
+
+  // Page Selection (for top-bottom-bar)
+  pageSelection String? // "every-page", "home-page", "all-product-pages", etc.
+  excludedPages Json? // Array of excluded page URLs
+
+  // Geolocation
+  geolocation String @default("all-world") // "all-world", "specific-countries"
+  countries   Json? // Array of country codes
+
+  // Status
+  isPublished Boolean @default(false)
+  isActive    Boolean @default(true)
+
+  // Stats
+  viewCount Int @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shop])
+  @@index([shop, isPublished])
+  @@index([shop, isActive])
+  @@index([type])
+}
+
+model Shop {
+  id         String @id @default(cuid())
+  shopDomain String @unique
+
+  // Plan & Billing
+  currentPlan    String   @default("free") // "free", "starter", "essential", "professional"
+  planStartDate  DateTime @default(now())
+  subscriptionId String? // Shopify subscription ID
+
+  // Usage Tracking
+  monthlyViews Int      @default(0)
+  viewsResetAt DateTime @default(now())
+
+  // Billing Status
+  billingStatus String    @default("active") // "active", "cancelled", "paused"
+  trialEndsAt   DateTime?
+
+  // Settings
+  settings Json?
+
+  // Shop Info
+  shopName String?
+  email    String?
+  currency String?
+  timezone String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt DateTime?
+
+  @@index([shopDomain])
+  @@index([currentPlan])
+  @@index([billingStatus])
+}
+
+model TimerView {
+  id      String @id @default(cuid())
+  timerId String
+  shop    String
+
+  // Visitor Info
+  visitorId String? // Session ID or unique visitor identifier
+  ipAddress String?
+  userAgent String?
+
+  // Location
+  country String?
+
+  // Page Info
+  pageUrl   String?
+  pageType  String? // "product", "collection", "home", etc.
+  productId String?
+
+  // Timestamps
+  viewedAt DateTime @default(now())
+
+  @@index([timerId])
+  @@index([shop])
+  @@index([viewedAt])
+  @@index([timerId, viewedAt])
+}
