@@ -112,10 +112,10 @@ export default function Index() {
             </BlockStack>
           </Card>
         ) : (
-          <Card>
+          <Card padding="0">
             <DataTable
-              columnContentTypes={["text", "text", "text", "numeric", "text"]}
-              headings={["Name", "Type", "Status", "Views", "Actions"]}
+              columnContentTypes={["text", "text", "text"]}
+              headings={["Timer name", "Type", "Status"]}
               rows={timers.map((timer) => [
                 timer.name,
                 timer.type,
@@ -124,21 +124,8 @@ export default function Index() {
                 ) : (
                   <Badge>Draft</Badge>
                 ),
-                timer.viewCount,
-                <InlineStack gap="200" key={timer}>
-                  <Button
-                    size="slim"
-                    onClick={() =>
-                      navigate(`/timer?id=${timer.id}&type=${timer.type}`)
-                    }
-                  >
-                    Edit
-                  </Button>
-                  <Button size="slim" tone="critical">
-                    Delete
-                  </Button>
-                </InlineStack>,
               ])}
+              stickyHeader
             />
           </Card>
         )}

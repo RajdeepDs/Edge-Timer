@@ -671,6 +671,8 @@ export default function TimerConfigPage() {
             timerType={
               timerType === "top-bottom-bar" ? "top-bottom-bar" : "product"
             }
+            designConfig={designConfig}
+            setDesignConfig={setDesignConfig}
             onContinue={() => handleTabChange(2)}
           />
         );
@@ -737,7 +739,21 @@ export default function TimerConfigPage() {
                     <Card padding="400">{renderTabContent()}</Card>
                   </Box>
                   <Box>
-                    <TimerPreview title={title} subheading={subheading} />
+                    <TimerPreview
+                      title={title}
+                      subheading={subheading}
+                      daysLabel={daysLabel}
+                      hoursLabel={hoursLabel}
+                      minutesLabel={minutesLabel}
+                      secondsLabel={secondsLabel}
+                      designConfig={designConfig}
+                      timerType={
+                        timerType === "top-bottom-bar"
+                          ? "top-bottom-bar"
+                          : "product"
+                      }
+                      buttonText={buttonText}
+                    />
                   </Box>
                 </InlineGrid>
               </Box>
