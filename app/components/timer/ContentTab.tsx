@@ -128,13 +128,20 @@ export default function ContentTab({
     onDateChange: setEndDate,
   });
 
+  const getValue = (e: any) => {
+    // Support both native inputs and custom elements emitting detail.value
+    return (
+      e?.detail?.value ?? (e?.currentTarget as HTMLInputElement)?.value ?? ""
+    );
+  };
+
   return (
     <FormLayout>
       <s-text-field
         label="Countdown name"
         value={timerName}
         defaultValue={timerName}
-        onChange={() => setTimerName}
+        onInput={(e) => setTimerName(e.currentTarget.value)}
         placeholder="Timer name"
         autocomplete="off"
         details="Only visible to you. For your own internal reference."
@@ -143,7 +150,7 @@ export default function ContentTab({
         label="Title"
         value={title}
         defaultValue={title}
-        onChange={() => setTitle}
+        onInput={(e) => setTitle(getValue(e))}
         placeholder="Hurry up!"
         autocomplete="off"
       />
@@ -151,7 +158,7 @@ export default function ContentTab({
         label="Subheading"
         value={subheading}
         defaultValue={subheading}
-        onChange={() => setSubheading}
+        onInput={(e) => setSubheading(getValue(e))}
         placeholder="Sale ends in:"
         autocomplete="off"
       />
@@ -160,7 +167,7 @@ export default function ContentTab({
           <s-select
             label="Call to action"
             value={callToAction}
-            onChange={(value) =>
+            onInput={(value) =>
               setCallToAction(value as unknown as CallToActionType)
             }
           >
@@ -173,7 +180,7 @@ export default function ContentTab({
               label="Button Text"
               value={buttonText}
               defaultValue={buttonText}
-              onChange={() => setButtonText}
+              onInput={(e) => setButtonText(getValue(e))}
               placeholder="Shop now!"
               autocomplete="off"
             />
@@ -185,7 +192,7 @@ export default function ContentTab({
               autocomplete="off"
               value={buttonLink}
               defaultValue={buttonLink}
-              onChange={() => setButtonLink}
+              onInput={(e) => setButtonLink(getValue(e))}
             />
           )}
         </BlockStack>
@@ -200,7 +207,7 @@ export default function ContentTab({
             labelAccessibilityVisibility="exclusive"
             value={daysLabel}
             defaultValue={daysLabel}
-            onChange={() => setDaysLabel}
+            onInput={(e) => setDaysLabel(getValue(e))}
             autocomplete="off"
           />
           <s-text-field
@@ -208,7 +215,7 @@ export default function ContentTab({
             labelAccessibilityVisibility="exclusive"
             value={hoursLabel}
             defaultValue={hoursLabel}
-            onChange={() => setHoursLabel}
+            onInput={(e) => setHoursLabel(getValue(e))}
             autocomplete="off"
           />
           <s-text-field
@@ -216,7 +223,7 @@ export default function ContentTab({
             labelAccessibilityVisibility="exclusive"
             value={minutesLabel}
             defaultValue={minutesLabel}
-            onChange={() => setMinutesLabel}
+            onInput={(e) => setMinutesLabel(getValue(e))}
             autocomplete="off"
           />
           <s-text-field
@@ -224,7 +231,7 @@ export default function ContentTab({
             labelAccessibilityVisibility="exclusive"
             value={secondsLabel}
             defaultValue={secondsLabel}
-            onChange={() => setSecondsLabel}
+            onInput={(e) => setSecondsLabel(getValue(e))}
             autocomplete="off"
           />
         </InlineGrid>
@@ -262,7 +269,7 @@ export default function ContentTab({
               label="Fixed minutes"
               value={fixedMinutes}
               defaultValue={fixedMinutes}
-              onChange={() => setFixedMinutes}
+              onInput={(e) => setFixedMinutes(getValue(e))}
               autocomplete="off"
               details="Enter the number of minutes for the countdown (1-1440)"
             />
@@ -311,6 +318,7 @@ export default function ContentTab({
                 onClose={togglePopoverActive}
               >
                 <Box padding="400" maxWidth="100%">
+                  {/*TODO: fix the data picker by using web components instead of react */}
                   <div style={{ maxWidth: "276px" }}>
                     <DatePicker
                       month={selectedDate.month}
@@ -328,7 +336,7 @@ export default function ContentTab({
                   labelAccessibilityVisibility="exclusive"
                   value={hour}
                   defaultValue={hour}
-                  onChange={() => setHour}
+                  onInput={(e) => setHour(getValue(e))}
                   min={1}
                   max={12}
                   autocomplete="off"
@@ -339,7 +347,7 @@ export default function ContentTab({
                   labelAccessibilityVisibility="exclusive"
                   value={minute}
                   defaultValue={minute}
-                  onChange={() => setMinute}
+                  onInput={(e) => setMinute(getValue(e))}
                   min={0}
                   max={59}
                   autocomplete="off"
@@ -349,7 +357,7 @@ export default function ContentTab({
                   label="Period"
                   labelAccessibilityVisibility="exclusive"
                   value={period}
-                  onChange={(value) =>
+                  onInput={(value) =>
                     setPeriod(value as unknown as "AM" | "PM")
                   }
                 >
@@ -368,7 +376,7 @@ export default function ContentTab({
               label="Once it ends"
               labelAccessibilityVisibility="exclusive"
               value={onceItEnds}
-              onChange={(value) =>
+              onInput={(value) =>
                 setOnceItEnds(value as unknown as OnExpiryAction)
               }
             >

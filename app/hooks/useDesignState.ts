@@ -5,7 +5,7 @@ import type {
   PositioningType,
   BackgroundType,
 } from "../types/timer";
-import { hexToHsb, hsbToHex } from "../utils/timer/color";
+import { hexToHsb } from "../utils/timer/color";
 
 interface UseDesignStateProps {
   timerType: "product" | "top-bottom-bar";
