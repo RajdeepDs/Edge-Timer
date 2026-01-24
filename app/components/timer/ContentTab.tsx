@@ -316,36 +316,37 @@ export default function ContentTab({
                 </Box>
               </Popover>
               <InlineGrid columns={3} gap="200">
-                <TextField
+                <s-number-field
                   label="Hour"
-                  labelHidden
-                  type="number"
+                  labelAccessibilityVisibility="exclusive"
                   value={hour}
-                  onChange={setHour}
-                  autoComplete="off"
+                  onChange={() => setHour}
                   min={1}
                   max={12}
+                  autocomplete="off"
+                  inputMode="numeric"
                 />
-                <TextField
+                <s-number-field
                   label="Minute"
-                  labelHidden
-                  type="number"
+                  labelAccessibilityVisibility="exclusive"
                   value={minute}
-                  onChange={setMinute}
-                  autoComplete="off"
+                  onChange={() => setMinute}
                   min={0}
                   max={59}
+                  autocomplete="off"
+                  inputMode="numeric"
                 />
-                <Select
+                <s-select
                   label="Period"
-                  labelHidden
-                  options={[
-                    { label: "AM", value: "AM" },
-                    { label: "PM", value: "PM" },
-                  ]}
+                  labelAccessibilityVisibility="exclusive"
                   value={period}
-                  onChange={(value) => setPeriod(value as "AM" | "PM")}
-                />
+                  onChange={(value) =>
+                    setPeriod(value as unknown as "AM" | "PM")
+                  }
+                >
+                  <s-option value="AM">AM</s-option>
+                  <s-option value="PM">PM</s-option>
+                </s-select>
               </InlineGrid>
             </BlockStack>
           )}
@@ -354,17 +355,18 @@ export default function ContentTab({
             <Text as="span" variant="bodyMd">
               Once it ends
             </Text>
-            <Select
+            <s-select
               label="Once it ends"
-              labelHidden
-              options={[
-                { label: "Unpublish timer", value: "unpublish" },
-                { label: "Keep timer visible", value: "keep" },
-                { label: "Hide timer", value: "hide" },
-              ]}
+              labelAccessibilityVisibility="exclusive"
               value={onceItEnds}
-              onChange={(value) => setOnceItEnds(value as OnExpiryAction)}
-            />
+              onChange={(value) =>
+                setOnceItEnds(value as unknown as OnExpiryAction)
+              }
+            >
+              <s-option value="unpublish">Unpublish timer</s-option>
+              <s-option value="keep">Keep timer visible</s-option>
+              <s-option value="hide">Hide timer</s-option>
+            </s-select>
           </BlockStack>
         </BlockStack>
       </BlockStack>
