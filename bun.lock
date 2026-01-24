@@ -28,6 +28,8 @@
         "@remix-run/eslint-config": "^2.16.1",
         "@remix-run/route-config": "^2.16.1",
         "@shopify/api-codegen-preset": "^1.1.1",
+        "@shopify/app-bridge-types": "^0.5.3",
+        "@shopify/polaris-types": "^1.0.1",
         "@types/eslint": "^9.6.1",
         "@types/node": "^22.2.0",
         "@types/react": "^18.2.31",
@@ -501,6 +503,8 @@
     "@shopify/polaris-icons": ["@shopify/polaris-icons@8.11.1", "", { "peerDependencies": { "react": "*" }, "optionalPeers": ["react"] }, "sha512-2HLzvJWMejKIwS5P2bs7k5CAjBKwPnD/iy9ncPzcgqRjmFInBXLtUXFQhPWDw6JwXzb1ZjNQK/ssTctcfz87Sw=="],
 
     "@shopify/polaris-tokens": ["@shopify/polaris-tokens@8.10.0", "", { "dependencies": { "deepmerge": "^4.3.1" } }, "sha512-y4PDtRbFKGHwA6Lu7a3L4N9SDP6gZv4tw6u0viumtcXcbF0T2j1xPmyuJZNc9c7vmhNSARCg27NGQFpPgxuaEg=="],
+
+    "@shopify/polaris-types": ["@shopify/polaris-types@1.0.1", "", {}, "sha512-BZs47atXnaOVqFrCfTeXc6Vz8Vk8Vpj9o3nx/lYTvy9i4pPvd4K4mRKIhjrer2NWITCMvY6+nZ6GE1I9Qfq4rQ=="],
 
     "@shopify/shopify-api": ["@shopify/shopify-api@12.2.0", "", { "dependencies": { "@shopify/admin-api-client": "^1.1.1", "@shopify/graphql-client": "^1.4.1", "@shopify/storefront-api-client": "^1.0.9", "compare-versions": "^6.1.1", "isbot": "^5.1.26", "jose": "^5.9.6", "lossless-json": "^4.3.0", "tslib": "^2.8.1" } }, "sha512-SlSGlVcGPjIrdv8FwRYhZeZ6Zj7Itff/AQiJyL0zrORFBDuBdezGw+grqJYL7qvoc7sRBmjaavrEfcEOqKtJng=="],
 

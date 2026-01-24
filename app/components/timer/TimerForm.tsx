@@ -40,6 +40,8 @@ export function TimerForm({
   const formState = useTimerForm({ existingTimer, timerType });
   const { selectedTab, handleTabChange, goToNextTab } = useTimerTabs();
 
+  console.log(formState.designConfig);
+
   const handleSubmit = useCallback(
     async (publish: boolean = false) => {
       const finalEndDate =

@@ -14,9 +14,10 @@ import {
   Bleed,
   Select,
 } from "@shopify/polaris";
-import { useState, useCallback, useEffect } from "react";
-import type { DesignConfig, ColorHSBA } from "../../types/timer";
-import { hexToHsb, hsbToHex } from "../../utils/timer/color";
+import { useRef, useEffect } from "react";
+import type { DesignConfig } from "../../types/timer";
+import { useDesignState } from "../../hooks/useDesignState";
+import { hsbToHex } from "../../utils/timer/color";
 
 interface DesignTabProps {
   timerType: "product" | "top-bottom-bar";
@@ -31,301 +32,153 @@ export default function DesignTab({
   setDesignConfig,
   onContinue,
 }: DesignTabProps) {
-  // Helper to handle hex input from text fields
-  const handleHexChange = (
-    value: string,
-    setter: (color: ColorHSBA) => void,
-  ) => {
-    // Allow typing but only convert when it's a valid 6-character hex
-    // This allows users to type intermediate values
-    if (!value.startsWith("#") && value.length > 0) {
-      value = "#" + value;
-    }
-
-    // Only process if it's a complete valid hex color
-    const hexPattern = /^#([A-Fa-f0-9]{6})$/;
-    const match = value.match(hexPattern);
-
-    if (match) {
-      const hsb = hexToHsb(value);
-      setter(hsb);
-    }
-    // If not valid yet, we don't update (allows partial typing)
-  };
-
-  // Local state for UI controls
-  const [positioning, setPositioning] = useState(
-    designConfig.positioning || "top",
-  );
-  const [backgroundType, setBackgroundType] = useState(
-    designConfig.backgroundType || "single",
-  );
-  const [backgroundColor, setBackgroundColor] = useState<ColorHSBA>(
-    designConfig.backgroundColor
-      ? hexToHsb(designConfig.backgroundColor)
-      : { hue: 0, saturation: 0, brightness: 1, alpha: 1 },
-  );
-  const [bgColorPopover, setBgColorPopover] = useState(false);
-  const [bgColorText, setBgColorText] = useState(
-    designConfig.backgroundColor || "#ffffff",
-  );
-
-  const [borderRadius, setBorderRadius] = useState(
-    designConfig.borderRadius?.toString() || "8",
-  );
-  const [borderSize, setBorderSize] = useState(
-    designConfig.borderSize?.toString() || "0",
-  );
-  const [borderColor, setBorderColor] = useState<ColorHSBA>(
-    designConfig.borderColor
-      ? hexToHsb(designConfig.borderColor)
-      : { hue: 220, saturation: 0.16, brightness: 0.82, alpha: 1 },
-  );
-  const [borderColorPopover, setBorderColorPopover] = useState(false);
-  const [borderColorText, setBorderColorText] = useState(
-    designConfig.borderColor || "#d1d5db",
-  );
-
-  const [insideTop, setInsideTop] = useState(
-    designConfig.paddingTop?.toString() || "30",
-  );
-  const [insideBottom, setInsideBottom] = useState(
-    designConfig.paddingBottom?.toString() || "30",
-  );
-  const [outsideTop, setOutsideTop] = useState(
-    designConfig.marginTop?.toString() || "20",
-  );
-  const [outsideBottom, setOutsideBottom] = useState(
-    designConfig.marginBottom?.toString() || "20",
-  );
-
-  // Typography states
-  const [titleSize, setTitleSize] = useState(
-    designConfig.titleSize?.toString() || "28",
-  );
-  const [titleColor, setTitleColor] = useState<ColorHSBA>(
-    designConfig.titleColor
-      ? hexToHsb(designConfig.titleColor)
-      : { hue: 0, saturation: 0, brightness: 0.13, alpha: 1 },
-  );
-  const [titleColorPopover, setTitleColorPopover] = useState(false);
-  const [titleColorText, setTitleColorText] = useState(
-    designConfig.titleColor || "#212121",
-  );
-
-  const [subheadingSize, setSubheadingSize] = useState(
-    designConfig.subheadingSize?.toString() || "16",
-  );
-  const [subheadingColor, setSubheadingColor] = useState<ColorHSBA>(
-    designConfig.subheadingColor
-      ? hexToHsb(designConfig.subheadingColor)
-      : { hue: 0, saturation: 0, brightness: 0.13, alpha: 1 },
-  );
-  const [subheadingColorPopover, setSubheadingColorPopover] = useState(false);
-  const [subheadingColorText, setSubheadingColorText] = useState(
-    designConfig.subheadingColor || "#212121",
-  );
-
-  const [timerSize, setTimerSize] = useState(
-    designConfig.timerSize?.toString() || "40",
-  );
-  const [timerColor, setTimerColor] = useState<ColorHSBA>(
-    designConfig.timerColor
-      ? hexToHsb(designConfig.timerColor)
-      : { hue: 0, saturation: 0, brightness: 0.13, alpha: 1 },
-  );
-  const [timerColorPopover, setTimerColorPopover] = useState(false);
-  const [timerColorText, setTimerColorText] = useState(
-    designConfig.timerColor || "#212121",
-  );
-
-  const [legendSize, setLegendSize] = useState(
-    designConfig.legendSize?.toString() || "14",
-  );
-  const [legendColor, setLegendColor] = useState<ColorHSBA>(
-    designConfig.legendColor
-      ? hexToHsb(designConfig.legendColor)
-      : { hue: 0, saturation: 0, brightness: 0.44, alpha: 1 },
-  );
-  const [legendColorPopover, setLegendColorPopover] = useState(false);
-  const [legendColorText, setLegendColorText] = useState(
-    designConfig.legendColor || "#707070",
-  );
-
-  const [buttonFontSize, setButtonFontSize] = useState(
-    designConfig.buttonFontSize?.toString() || "16",
-  );
-  const [cornerRadius, setCornerRadius] = useState(
-    designConfig.buttonCornerRadius?.toString() || "4",
-  );
-  const [buttonColor, setButtonColor] = useState<ColorHSBA>(
-    designConfig.buttonColor
-      ? hexToHsb(designConfig.buttonColor)
-      : { hue: 0, saturation: 0, brightness: 1, alpha: 1 },
-  );
-  const [buttonBackgroundColor, setButtonBackgroundColor] = useState<ColorHSBA>(
-    designConfig.buttonBackgroundColor
-      ? hexToHsb(designConfig.buttonBackgroundColor)
-      : { hue: 220, saturation: 0.7, brightness: 0.95, alpha: 1 },
-  );
-  const [buttonColorPopover, setButtonColorPopover] = useState(false);
-  const [buttonBgColorPopover, setButtonBgColorPopover] = useState(false);
-  const [buttonColorText, setButtonColorText] = useState(
-    designConfig.buttonColor || "#ffffff",
-  );
-  const [buttonBgColorText, setButtonBgColorText] = useState(
-    designConfig.buttonBackgroundColor || "#5c6ac4",
-  );
-
-  // Update parent designConfig whenever local state changes
-  useEffect(() => {
-    const newConfig: DesignConfig = {
-      positioning,
-      backgroundType,
-      backgroundColor: hsbToHex(backgroundColor),
-      borderRadius: parseInt(borderRadius) || 0,
-      borderSize: parseInt(borderSize) || 0,
-      borderColor: hsbToHex(borderColor),
-      paddingTop: parseInt(insideTop) || 0,
-      paddingBottom: parseInt(insideBottom) || 0,
-      marginTop: parseInt(outsideTop) || 0,
-      marginBottom: parseInt(outsideBottom) || 0,
-      titleSize: parseInt(titleSize) || 28,
-      titleColor: hsbToHex(titleColor),
-      subheadingSize: parseInt(subheadingSize) || 16,
-      subheadingColor: hsbToHex(subheadingColor),
-      timerSize: parseInt(timerSize) || 40,
-      timerColor: hsbToHex(timerColor),
-      legendSize: parseInt(legendSize) || 14,
-      legendColor: hsbToHex(legendColor),
-      buttonFontSize: parseInt(buttonFontSize) || 16,
-      buttonCornerRadius: parseInt(cornerRadius) || 4,
-      buttonColor: hsbToHex(buttonColor),
-      buttonBackgroundColor: hsbToHex(buttonBackgroundColor),
-    };
-    setDesignConfig(newConfig);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
+  const {
     positioning,
+    setPositioning,
     backgroundType,
-    backgroundColor,
+    setBackgroundType,
+    bgColorText,
+    setBgColorText,
     borderRadius,
+    setBorderRadius,
     borderSize,
+    setBorderSize,
     borderColor,
+    toggleBorderColorPopover,
+    borderColorText,
+    setBorderColorText,
     insideTop,
+    setInsideTop,
     insideBottom,
+    setInsideBottom,
     outsideTop,
+    setOutsideTop,
     outsideBottom,
+    setOutsideBottom,
     titleSize,
-    titleColor,
+    setTitleSize,
+    titleColorText,
+    setTitleColorText,
     subheadingSize,
-    subheadingColor,
+    setSubheadingSize,
+    subheadingColorText,
+    setSubheadingColorText,
     timerSize,
-    timerColor,
+    setTimerSize,
+    timerColorText,
+    setTimerColorText,
     legendSize,
-    legendColor,
+    setLegendSize,
+    legendColorText,
+    setLegendColorText,
     buttonFontSize,
+    setButtonFontSize,
     cornerRadius,
+    setCornerRadius,
     buttonColor,
+    setButtonColor,
     buttonBackgroundColor,
-  ]);
+    setButtonBackgroundColor,
+    buttonColorPopover,
+    toggleButtonColorPopover,
+    buttonBgColorPopover,
+    toggleButtonBgColorPopover,
+    buttonColorText,
+    setButtonColorText,
+    buttonBgColorText,
+    setButtonBgColorText,
+    handleHexChange,
+  } = useDesignState({
+    timerType,
+    initialConfig: designConfig,
+    onConfigChange: setDesignConfig,
+  });
 
-  const toggleBgColorPopover = useCallback(
-    () => setBgColorPopover((active) => !active),
-    [],
-  );
+  // Create refs for hidden inputs to trigger data-save-bar
+  const bgColorInputRef = useRef<HTMLInputElement>(null);
+  const borderColorInputRef = useRef<HTMLInputElement>(null);
+  const titleColorInputRef = useRef<HTMLInputElement>(null);
+  const subheadingColorInputRef = useRef<HTMLInputElement>(null);
+  const timerColorInputRef = useRef<HTMLInputElement>(null);
+  const legendColorInputRef = useRef<HTMLInputElement>(null);
+  const buttonColorInputRef = useRef<HTMLInputElement>(null);
+  const buttonBgColorInputRef = useRef<HTMLInputElement>(null);
 
-  const toggleBorderColorPopover = useCallback(
-    () => setBorderColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleTitleColorPopover = useCallback(
-    () => setTitleColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleSubheadingColorPopover = useCallback(
-    () => setSubheadingColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleTimerColorPopover = useCallback(
-    () => setTimerColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleLegendColorPopover = useCallback(
-    () => setLegendColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleButtonColorPopover = useCallback(
-    () => setButtonColorPopover((active) => !active),
-    [],
-  );
-
-  const toggleButtonBgColorPopover = useCallback(
-    () => setButtonBgColorPopover((active) => !active),
-    [],
-  );
-
-  // Sync text fields with color picker changes
+  // Trigger change events on hidden inputs when colors change
   useEffect(() => {
-    setBgColorText(hsbToHex(backgroundColor));
-  }, [backgroundColor]);
+    if (bgColorInputRef.current) {
+      bgColorInputRef.current.value = bgColorText;
+      bgColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [bgColorText]);
 
   useEffect(() => {
-    setBorderColorText(hsbToHex(borderColor));
-  }, [borderColor]);
+    if (borderColorInputRef.current) {
+      borderColorInputRef.current.value = borderColorText;
+      borderColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [borderColorText]);
 
   useEffect(() => {
-    setTitleColorText(hsbToHex(titleColor));
-  }, [titleColor]);
+    if (titleColorInputRef.current) {
+      titleColorInputRef.current.value = titleColorText;
+      titleColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [titleColorText]);
 
   useEffect(() => {
-    setSubheadingColorText(hsbToHex(subheadingColor));
-  }, [subheadingColor]);
+    if (subheadingColorInputRef.current) {
+      subheadingColorInputRef.current.value = subheadingColorText;
+      subheadingColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [subheadingColorText]);
 
   useEffect(() => {
-    setTimerColorText(hsbToHex(timerColor));
-  }, [timerColor]);
+    if (timerColorInputRef.current) {
+      timerColorInputRef.current.value = timerColorText;
+      timerColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [timerColorText]);
 
   useEffect(() => {
-    setLegendColorText(hsbToHex(legendColor));
-  }, [legendColor]);
+    if (legendColorInputRef.current) {
+      legendColorInputRef.current.value = legendColorText;
+      legendColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [legendColorText]);
 
   useEffect(() => {
-    setButtonColorText(hsbToHex(buttonColor));
-  }, [buttonColor]);
+    if (buttonColorInputRef.current) {
+      buttonColorInputRef.current.value = buttonColorText;
+      buttonColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [buttonColorText]);
 
   useEffect(() => {
-    setButtonBgColorText(hsbToHex(buttonBackgroundColor));
-  }, [buttonBackgroundColor]);
+    if (buttonBgColorInputRef.current) {
+      buttonBgColorInputRef.current.value = buttonBgColorText;
+      buttonBgColorInputRef.current.dispatchEvent(
+        new Event("input", { bubbles: true }),
+      );
+    }
+  }, [buttonBgColorText]);
 
   return (
     <FormLayout>
-      {/* Hidden inputs for color values to track changes for save bar */}
-      <input
-        type="hidden"
-        name="backgroundColor"
-        value={hsbToHex(backgroundColor)}
-      />
-      <input type="hidden" name="borderColor" value={hsbToHex(borderColor)} />
-      <input type="hidden" name="titleColor" value={hsbToHex(titleColor)} />
-      <input
-        type="hidden"
-        name="subheadingColor"
-        value={hsbToHex(subheadingColor)}
-      />
-      <input type="hidden" name="timerColor" value={hsbToHex(timerColor)} />
-      <input type="hidden" name="legendColor" value={hsbToHex(legendColor)} />
-      <input type="hidden" name="buttonColor" value={hsbToHex(buttonColor)} />
-      <input
-        type="hidden"
-        name="buttonBackgroundColor"
-        value={hsbToHex(buttonBackgroundColor)}
-      />
       {timerType === "top-bottom-bar" && (
         <BlockStack gap="400">
           <Select
@@ -355,39 +208,13 @@ export default function DesignTab({
             onChange={() => setBackgroundType("single")}
           />
           {backgroundType === "single" && (
-            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-              <Popover
-                active={bgColorPopover}
-                activator={
-                  <button
-                    type="button"
-                    onClick={toggleBgColorPopover}
-                    style={{ backgroundColor: hsbToHex(backgroundColor) }}
-                    className="min-w-11 min-h-8 border border-[#e1e3e5] cursor-pointer rounded-md shrink-0"
-                  />
-                }
-                onClose={toggleBgColorPopover}
-              >
-                <Box padding="400">
-                  <ColorPicker
-                    color={backgroundColor}
-                    onChange={setBackgroundColor}
-                  />
-                </Box>
-              </Popover>
-              <div className="flex-1">
-                <TextField
-                  label="Color"
-                  labelHidden
-                  value={bgColorText}
-                  onChange={setBgColorText}
-                  onBlur={() =>
-                    handleHexChange(bgColorText, setBackgroundColor)
-                  }
-                  autoComplete="off"
-                />
-              </div>
-            </InlineStack>
+            <s-color-field
+              name="bgColor"
+              value={bgColorText}
+              defaultValue={bgColorText}
+              onChange={() => setBgColorText}
+              autocomplete="off"
+            />
           )}
         </BlockStack>
         <InlineGrid columns={2} gap="200">
@@ -413,36 +240,13 @@ export default function DesignTab({
             <Text as="p" variant="bodyMd">
               Border color
             </Text>
-            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-              <Popover
-                active={borderColorPopover}
-                activator={
-                  <button
-                    type="button"
-                    onClick={toggleBorderColorPopover}
-                    style={{ backgroundColor: hsbToHex(borderColor) }}
-                    className="min-h-8 min-w-11 border border-[#e1e3e5] cursor-pointer rounded-md"
-                  />
-                }
-                onClose={toggleBorderColorPopover}
-              >
-                <Box padding="400">
-                  <ColorPicker color={borderColor} onChange={setBorderColor} />
-                </Box>
-              </Popover>
-              <Box width="100%">
-                <TextField
-                  label="Border color"
-                  labelHidden
-                  value={borderColorText}
-                  onChange={setBorderColorText}
-                  onBlur={() =>
-                    handleHexChange(borderColorText, setBorderColor)
-                  }
-                  autoComplete="off"
-                />
-              </Box>
-            </InlineStack>
+            <s-color-field
+              name="borderColor"
+              value={borderColorText}
+              defaultValue={borderColorText}
+              onChange={() => setBorderColorText}
+              autocomplete="off"
+            />
           </BlockStack>
         </Box>
         {timerType !== "top-bottom-bar" && (
@@ -505,43 +309,22 @@ export default function DesignTab({
             Title size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <div style={{ width: "110px" }}>
-              <TextField
-                label="Title size"
-                labelHidden
-                value={titleSize}
-                onChange={setTitleSize}
-                autoComplete="off"
-                suffix="px"
-                type="number"
-              />
-            </div>
-            <Popover
-              active={titleColorPopover}
-              activator={
-                <button
-                  type="button"
-                  onClick={toggleTitleColorPopover}
-                  style={{ backgroundColor: hsbToHex(titleColor) }}
-                  className="min-h-8 min-w-11 border border-[#e1e3e5] cursor-pointer rounded-md shrink-0"
-                />
-              }
-              onClose={toggleTitleColorPopover}
-            >
-              <Box padding="400">
-                <ColorPicker color={titleColor} onChange={setTitleColor} />
-              </Box>
-            </Popover>
-            <div className="flex-1">
-              <TextField
-                label="Title color"
-                labelHidden
-                value={titleColorText}
-                onChange={setTitleColorText}
-                onBlur={() => handleHexChange(titleColorText, setTitleColor)}
-                autoComplete="off"
-              />
-            </div>
+            <TextField
+              label="Title size"
+              labelHidden
+              value={titleSize}
+              onChange={setTitleSize}
+              autoComplete="off"
+              suffix="px"
+              type="number"
+            />
+            <s-color-field
+              name="titleColor"
+              value={titleColorText}
+              defaultValue={titleColorText}
+              onChange={() => setTitleColorText}
+              autocomplete="off"
+            />
           </InlineStack>
         </BlockStack>
 
@@ -550,48 +333,22 @@ export default function DesignTab({
             Subheading size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <div style={{ width: "110px" }}>
-              <TextField
-                label="Subheading size"
-                labelHidden
-                value={subheadingSize}
-                onChange={setSubheadingSize}
-                autoComplete="off"
-                suffix="px"
-                type="number"
-              />
-            </div>
-            <Popover
-              active={subheadingColorPopover}
-              activator={
-                <button
-                  type="button"
-                  onClick={toggleSubheadingColorPopover}
-                  style={{ backgroundColor: hsbToHex(subheadingColor) }}
-                  className="min-h-8 min-w-11 border border-[#e1e3e5] cursor-pointer rounded-md shrink-0"
-                />
-              }
-              onClose={toggleSubheadingColorPopover}
-            >
-              <Box padding="400">
-                <ColorPicker
-                  color={subheadingColor}
-                  onChange={setSubheadingColor}
-                />
-              </Box>
-            </Popover>
-            <div className="flex-1">
-              <TextField
-                label="Subheading color"
-                labelHidden
-                value={subheadingColorText}
-                onChange={setSubheadingColorText}
-                onBlur={() =>
-                  handleHexChange(subheadingColorText, setSubheadingColor)
-                }
-                autoComplete="off"
-              />
-            </div>
+            <TextField
+              label="Subheading size"
+              labelHidden
+              value={subheadingSize}
+              onChange={setSubheadingSize}
+              autoComplete="off"
+              suffix="px"
+              type="number"
+            />
+            <s-color-field
+              name="subHeadingColor"
+              value={subheadingColorText}
+              defaultValue={subheadingColorText}
+              onChange={() => setSubheadingColorText}
+              autocomplete="off"
+            />
           </InlineStack>
         </BlockStack>
 
@@ -600,43 +357,22 @@ export default function DesignTab({
             Timer size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <div style={{ width: "110px" }}>
-              <TextField
-                label="Timer size"
-                labelHidden
-                value={timerSize}
-                onChange={setTimerSize}
-                autoComplete="off"
-                suffix="px"
-                type="number"
-              />
-            </div>
-            <Popover
-              active={timerColorPopover}
-              activator={
-                <button
-                  type="button"
-                  onClick={toggleTimerColorPopover}
-                  style={{ backgroundColor: hsbToHex(timerColor) }}
-                  className="min-h-8 min-w-11 border border-[#e1e3e5] cursor-pointer rounded-md shrink-0"
-                />
-              }
-              onClose={toggleTimerColorPopover}
-            >
-              <Box padding="400">
-                <ColorPicker color={timerColor} onChange={setTimerColor} />
-              </Box>
-            </Popover>
-            <div className="flex-1">
-              <TextField
-                label="Timer color"
-                labelHidden
-                value={timerColorText}
-                onChange={setTimerColorText}
-                onBlur={() => handleHexChange(timerColorText, setTimerColor)}
-                autoComplete="off"
-              />
-            </div>
+            <TextField
+              label="Timer size"
+              labelHidden
+              value={timerSize}
+              onChange={setTimerSize}
+              autoComplete="off"
+              suffix="px"
+              type="number"
+            />
+            <s-color-field
+              name="timerColor"
+              value={timerColorText}
+              defaultValue={timerColorText}
+              onChange={() => setTimerColorText}
+              autocomplete="off"
+            />
           </InlineStack>
         </BlockStack>
 
@@ -645,43 +381,22 @@ export default function DesignTab({
             Legend size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <div style={{ width: "110px" }}>
-              <TextField
-                label="Legend size"
-                labelHidden
-                value={legendSize}
-                onChange={setLegendSize}
-                autoComplete="off"
-                suffix="px"
-                type="number"
-              />
-            </div>
-            <Popover
-              active={legendColorPopover}
-              activator={
-                <button
-                  type="button"
-                  onClick={toggleLegendColorPopover}
-                  style={{ backgroundColor: hsbToHex(legendColor) }}
-                  className="min-h-8 min-w-11 border border-[#e1e3e5] cursor-pointer rounded-md shrink-0"
-                />
-              }
-              onClose={toggleLegendColorPopover}
-            >
-              <Box padding="400">
-                <ColorPicker color={legendColor} onChange={setLegendColor} />
-              </Box>
-            </Popover>
-            <div className="flex-1">
-              <TextField
-                label="Legend color"
-                labelHidden
-                value={legendColorText}
-                onChange={setLegendColorText}
-                onBlur={() => handleHexChange(legendColorText, setLegendColor)}
-                autoComplete="off"
-              />
-            </div>
+            <TextField
+              label="Legend size"
+              labelHidden
+              value={legendSize}
+              onChange={setLegendSize}
+              autoComplete="off"
+              suffix="px"
+              type="number"
+            />
+            <s-color-field
+              name="legendColor"
+              value={legendColorText}
+              defaultValue={legendColorText}
+              onChange={() => setLegendColorText}
+              autocomplete="off"
+            />
           </InlineStack>
         </BlockStack>
       </BlockStack>
@@ -710,7 +425,7 @@ export default function DesignTab({
                 }
                 onClose={toggleButtonBgColorPopover}
               >
-                <Box padding="400">
+                <Box padding="200">
                   <ColorPicker
                     color={buttonBackgroundColor}
                     onChange={setButtonBackgroundColor}
@@ -724,7 +439,11 @@ export default function DesignTab({
                   value={buttonBgColorText}
                   onChange={setButtonBgColorText}
                   onBlur={() =>
-                    handleHexChange(buttonBgColorText, setButtonBackgroundColor)
+                    handleHexChange(
+                      buttonBgColorText,
+                      setButtonBackgroundColor,
+                      setButtonBgColorText,
+                    )
                   }
                   autoComplete="off"
                 />
@@ -759,7 +478,7 @@ export default function DesignTab({
                 }
                 onClose={toggleButtonColorPopover}
               >
-                <Box padding="400">
+                <Box padding="200">
                   <ColorPicker color={buttonColor} onChange={setButtonColor} />
                 </Box>
               </Popover>
@@ -770,7 +489,11 @@ export default function DesignTab({
                   value={buttonColorText}
                   onChange={setButtonColorText}
                   onBlur={() =>
-                    handleHexChange(buttonColorText, setButtonColor)
+                    handleHexChange(
+                      buttonColorText,
+                      setButtonColor,
+                      setButtonColorText,
+                    )
                   }
                   autoComplete="off"
                 />
