@@ -218,21 +218,27 @@ export default function DesignTab({
           )}
         </BlockStack>
         <InlineGrid columns={2} gap="200">
-          <TextField
+          <s-number-field
             label="Border radius"
             value={borderRadius}
-            onChange={setBorderRadius}
-            autoComplete="off"
+            defaultValue={borderRadius}
+            onChange={() => setBorderRadius}
+            autocomplete="off"
             suffix="px"
-            type="number"
+            inputMode="numeric"
+            min={0}
+            max={100}
           />
-          <TextField
+          <s-number-field
             label="Border size"
             value={borderSize}
-            onChange={setBorderSize}
-            autoComplete="off"
+            defaultValue={borderSize}
+            onChange={() => setBorderSize}
+            autocomplete="off"
             suffix="px"
-            type="number"
+            inputMode="numeric"
+            min={0}
+            max={100}
           />
         </InlineGrid>
         <Box>
@@ -258,40 +264,52 @@ export default function DesignTab({
               Spacing
             </Text>
             <InlineGrid columns={2} gap="200">
-              <TextField
+              <s-number-field
                 label="Inside top"
                 value={insideTop}
-                onChange={setInsideTop}
-                autoComplete="off"
+                defaultValue={insideTop}
+                onChange={() => setInsideTop}
+                autocomplete="off"
                 suffix="px"
-                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
               />
-              <TextField
+              <s-number-field
                 label="Inside bottom"
                 value={insideBottom}
-                onChange={setInsideBottom}
-                autoComplete="off"
+                defaultValue={insideBottom}
+                onChange={() => setInsideBottom}
+                autocomplete="off"
                 suffix="px"
-                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
               />
             </InlineGrid>
 
             <InlineGrid columns={2} gap="200">
-              <TextField
+              <s-number-field
                 label="Outside top"
                 value={outsideTop}
-                onChange={setOutsideTop}
-                autoComplete="off"
+                defaultValue={outsideTop}
+                onChange={() => setOutsideTop}
+                autocomplete="off"
                 suffix="px"
-                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
               />
-              <TextField
+              <s-number-field
                 label="Outside bottom"
                 value={outsideBottom}
-                onChange={setOutsideBottom}
-                autoComplete="off"
+                defaultValue={outsideBottom}
+                onChange={() => setOutsideBottom}
+                autocomplete="off"
                 suffix="px"
-                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
               />
             </InlineGrid>
           </BlockStack>
@@ -309,14 +327,17 @@ export default function DesignTab({
             Title size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <TextField
+            <s-number-field
               label="Title size"
-              labelHidden
+              labelAccessibilityVisibility="exclusive"
               value={titleSize}
-              onChange={setTitleSize}
-              autoComplete="off"
+              defaultValue={titleSize}
+              onChange={() => setTitleSize}
+              autocomplete="off"
               suffix="px"
-              type="number"
+              inputMode="numeric"
+              min={0}
+              max={100}
             />
             <s-color-field
               name="titleColor"
@@ -333,14 +354,17 @@ export default function DesignTab({
             Subheading size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <TextField
+            <s-number-field
               label="Subheading size"
-              labelHidden
+              labelAccessibilityVisibility="exclusive"
               value={subheadingSize}
-              onChange={setSubheadingSize}
-              autoComplete="off"
+              defaultValue={subheadingSize}
+              onChange={() => setSubheadingSize}
+              autocomplete="off"
               suffix="px"
-              type="number"
+              inputMode="numeric"
+              min={0}
+              max={100}
             />
             <s-color-field
               name="subHeadingColor"
@@ -357,14 +381,17 @@ export default function DesignTab({
             Timer size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <TextField
+            <s-number-field
               label="Timer size"
-              labelHidden
+              labelAccessibilityVisibility="exclusive"
               value={timerSize}
-              onChange={setTimerSize}
-              autoComplete="off"
+              defaultValue={timerSize}
+              onChange={() => setTimerSize}
+              autocomplete="off"
               suffix="px"
-              type="number"
+              inputMode="numeric"
+              min={0}
+              max={100}
             />
             <s-color-field
               name="timerColor"
@@ -381,14 +408,17 @@ export default function DesignTab({
             Legend size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <TextField
+            <s-number-field
               label="Legend size"
-              labelHidden
+              labelAccessibilityVisibility="exclusive"
               value={legendSize}
-              onChange={setLegendSize}
-              autoComplete="off"
+              defaultValue={legendSize}
+              onChange={() => setLegendSize}
+              autocomplete="off"
               suffix="px"
-              type="number"
+              inputMode="numeric"
+              min={0}
+              max={100}
             />
             <s-color-field
               name="legendColor"
