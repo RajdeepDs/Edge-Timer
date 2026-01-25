@@ -2,7 +2,7 @@
 
 client_id = "3e121cdbd42c341879c18784b948d955"
 name = "urgency-timer"
-application_url = "https://example.com"
+application_url = "https://balanced-three-shoe-tiny.trycloudflare.com"
 embedded = true
 
 [build]
@@ -25,4 +25,4 @@ api_version = "2026-04"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://balanced-three-shoe-tiny.trycloudflare.com/api/auth" ]

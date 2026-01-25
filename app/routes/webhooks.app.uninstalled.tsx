@@ -7,10 +7,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   console.log(`Received ${topic} webhook for ${shop}`);
 
-  // Webhook requests can trigger multiple times and after an app has already been uninstalled.
-  // If this webhook already ran, the session may have been deleted previously.
-  if (session) {
-    await db.session.deleteMany({ where: { shop } });
+  try {
+    // Cleanup sessions for this shop (idempotent)
+    if (session) {
+      await db.session.deleteMany({ where: { shop } });
+    }
+
+    // Update Shop billing status and mark soft delete timestamp
+    try {
+      await db.shop.update({
+        where: { shopDomain: shop },
+        data: {
+          billingStatus: "cancelled",
+          deletedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      // Shop record might not exist yet; log and continue
+      console.warn(`Shop record not found or update failed for ${shop}:`, err);
+    }
+
+    // Soft cleanup timers: unpublish and deactivate all timers for this shop
+    await db.timer.updateMany({
+      where: { shop },
+      data: {
+        isPublished: false,
+        isActive: false,
+      },
+    });
+  } catch (error) {
+    console.error(`Error handling APP_UNINSTALLED for ${shop}:`, error);
+    // Return 200 to avoid repeated retries; logging captures the failure
   }
 
   return new Response();

@@ -4,6 +4,7 @@ import prisma from "../db.server";
  * Ensures a Shop record exists for the given shop domain
  * Creates one if it doesn't exist
  */
+
 export async function ensureShopExists(shopDomain: string) {
   let shop = await prisma.shop.findUnique({
     where: { shopDomain },
@@ -20,6 +21,20 @@ export async function ensureShopExists(shopDomain: string) {
       },
     });
     console.log(`Created new Shop record for ${shopDomain}`);
+  } else {
+    // If the shop previously uninstalled and reinstalled the app,
+    // reactivate billing status and clear soft-delete flag.
+    if (shop.billingStatus === "cancelled" || shop.deletedAt) {
+      shop = await prisma.shop.update({
+        where: { shopDomain },
+        data: {
+          billingStatus: "active",
+          deletedAt: null,
+        },
+      });
+
+      console.log(`Reactivated Shop record for ${shopDomain}`);
+    }
   }
 
   return shop;

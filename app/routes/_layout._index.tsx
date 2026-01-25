@@ -12,13 +12,17 @@ import {
   InlineGrid,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
-import { authenticate } from "../shopify.server";
+import { authenticate, registerWebhooks } from "../shopify.server";
 import prisma from "app/db.server";
 import { EmptyState } from "../components/ui/EmptyState";
 import { TimerDataTable } from "../components/timer/TimerDataTable";
+import { ensureShopExists } from "app/utils/shop.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
+
+  await ensureShopExists(session.shop);
+  await registerWebhooks({ session });
 
   // Fetch shop info
   const shop = await prisma.shop.findUnique({
