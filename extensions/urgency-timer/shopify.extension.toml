@@ -1,3 +1,28 @@
 name = "urgency-timer"
-type = "theme"
 uid = "effa0aea-076c-bcca-6788-56b401626ce3b10e0c9b"
+type = "theme"
+
+# Register where this extension renders in Online Store
+[[extension_points]]
+target = "online_store.product"
+module = "blocks/product-timer.liquid"
+
+# Bundle client assets used by blocks/snippets
+[assets]
+files = [
+  "assets/urgency-timer.js",
+  "assets/urgency-timer.css",
+]
+
+# Optional localization config (CLI expects a locales directory)
+[localization]
+default_locale = "en"
+
+# Metadata (optional)
+[metadata]
+category = "Store design"
+tags = ["timer", "countdown", "product", "promotion"]
+
+# Capabilities (optional)
+[capabilities]
+network_access = true

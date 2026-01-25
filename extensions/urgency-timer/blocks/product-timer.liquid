@@ -1,0 +1,44 @@
+{% comment %}
+Urgency Timer - Product Page Block (New Extension)
+Renders a countdown/fixed timer for the current product by mounting a client script
+and fetching published timers from the app proxy or public endpoint.
+
+Notes:
+- Include assets/urgency-timer.js and assets/urgency-timer.css in your extension assets.
+- Configure the endpoint to point to your app proxy, e.g., /apps/urgency-timer/timers.
+- This block exposes data attributes used by the client script for context.
+{% endcomment %}
+
+<link rel="stylesheet" href="{{ 'urgency-timer.css' | asset_url }}" media="all">
+
+<div
+  id="urgency-timer-product-root"
+  class="urgency-timer-root urgency-timer-product"
+  data-shop-domain="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle }}"
+  data-timer-id="{{ section.settings.timerId }}"
+>
+  <!-- Client script mounts the timer UI here -->
+  <noscript>
+    <style>
+      .urgency-timer-root { display: none; }
+    </style>
+  </noscript>
+</div>
+
+<script src="{{ 'urgency-timer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Urgency Timer",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "timerId",
+      "label": "Timer ID",
+    },
+  ]
+}
+{% endschema %}
