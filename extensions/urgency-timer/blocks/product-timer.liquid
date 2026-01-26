@@ -1,20 +1,16 @@
-
 {% comment %}
-
-Urgency Timer - Product Page Block (New Extension)
+Urgency Timer - Product Page Block
 
 Renders a countdown/fixed timer for the current product by mounting a client script
-
-and fetching published timers from the app's public endpoint (/public/timers by default), or your App Proxy endpoint.
+and fetching published timers from the app proxy endpoint (secured with HMAC).
 
 Notes:
 - Include assets/urgency-timer.js and assets/urgency-timer.css in your extension assets.
-
-- Default fetch endpoint: /public/timers. If you prefer an App Proxy, point it to something like /apps/urgency-timer/timers.
-
-- You can override the endpoint from your theme by defining window.URGENCY_TIMER_ENDPOINT before the script loads.
-- This block exposes data attributes used by the client script for context.
-
+- Default endpoint: /apps/urgency-timer/timers (Shopify App Proxy - automatically signed)
+- View tracking endpoint: /public/views (public endpoint for analytics)
+- You can override endpoints by defining window.URGENCY_TIMER_ENDPOINT and
+  window.URGENCY_TIMER_VIEW_ENDPOINT before the script loads.
+- This block exposes data attributes (shop domain, product ID, timer ID) used by the client script.
 {% endcomment %}
 
 

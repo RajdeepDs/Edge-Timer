@@ -26,3 +26,8 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [ "https://balanced-three-shoe-tiny.trycloudflare.com/api/auth" ]
+
+[app_proxy]
+url = "https://balanced-three-shoe-tiny.trycloudflare.com/proxy"
+subpath = "urgency-timer"
+prefix = "apps"

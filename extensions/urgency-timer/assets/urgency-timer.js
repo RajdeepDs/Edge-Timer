@@ -1,12 +1,15 @@
 /*!
  * Urgency Timer Storefront Script
- * - Fetches published timers from the app's public endpoint
+ * - Fetches published timers from the app proxy endpoint (secured with HMAC)
  * - Respects scheduling (startsAt, onExpiry) and placement (product/page selection)
  * - Renders product-page timers inside extension root
  * - Renders top/bottom bar timers globally
  *
- * You can override the endpoint with:
- *   window.URGENCY_TIMER_ENDPOINT = 'https://yourapp.com/public/timers';
+ * Default endpoint: /apps/urgency-timer/timers (Shopify App Proxy)
+ *
+ * You can override the endpoints with:
+ *   window.URGENCY_TIMER_ENDPOINT = '/custom/timers/endpoint';
+ *   window.URGENCY_TIMER_VIEW_ENDPOINT = '/custom/views/endpoint';
  *
  * The product block provides:
  *   <div class="urgency-timer-root" data-shop-domain data-product-id data-timer-id />
@@ -21,7 +24,7 @@
     fetchPromise: null,
   };
 
-  const DEFAULT_ENDPOINT = "/public/timers";
+  const DEFAULT_ENDPOINT = "/apps/urgency-timer/timers";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);
@@ -318,6 +321,34 @@
     return null;
   }
 
+  function trackView(ctx, timer) {
+    try {
+      const viewEndpoint = window.URGENCY_TIMER_VIEW_ENDPOINT || "/public/views";
+      const payload = JSON.stringify({
+        shop: ctx.shop,
+        timerId: timer.id,
+        pageUrl: ctx.pageUrl,
+        pageType: ctx.pageType,
+        productId: ctx.productId || undefined,
+        country: ctx.country || undefined,
+      });
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon(viewEndpoint, blob);
+      } else {
+        fetch(viewEndpoint, {
+          method: "POST",
+          mode: "cors",
+          credentials: "omit",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        }).catch(() => {});
+      }
+    } catch (_e) {
+      log("Track view error:", _e);
+    }
+  }
+
   function mountProductTimers(ctx, timers) {
     const roots = document.querySelectorAll(".urgency-timer-root");
     if (!roots || roots.length === 0) return;
@@ -353,28 +384,7 @@
           root.innerHTML = "";
           root.appendChild(mount);
         }
-        try {
-          const payload = JSON.stringify({
-            shop: ctx.shop,
-            timerId: t.id,
-            pageUrl: ctx.pageUrl,
-            pageType: ctx.pageType,
-            productId: ctx.productId || undefined,
-            country: ctx.country || undefined,
-          });
-          if (navigator.sendBeacon) {
-            const blob = new Blob([payload], { type: "application/json" });
-            navigator.sendBeacon("/public/views", blob);
-          } else {
-            fetch("/public/views", {
-              method: "POST",
-              mode: "cors",
-              credentials: "omit",
-              headers: { "Content-Type": "application/json" },
-              body: payload,
-            }).catch(() => {});
-          }
-        } catch (_e) {}
+        trackView(ctx, t);
       } catch (err) {
         log("Mount product timer error:", err);
       }
@@ -437,28 +447,7 @@
         }
 
         document.body.appendChild(bar);
-        try {
-          const payload = JSON.stringify({
-            shop: ctx.shop,
-            timerId: t.id,
-            pageUrl: ctx.pageUrl,
-            pageType: ctx.pageType,
-            productId: ctx.productId || undefined,
-            country: ctx.country || undefined,
-          });
-          if (navigator.sendBeacon) {
-            const blob = new Blob([payload], { type: "application/json" });
-            navigator.sendBeacon("/public/views", blob);
-          } else {
-            fetch("/public/views", {
-              method: "POST",
-              mode: "cors",
-              credentials: "omit",
-              headers: { "Content-Type": "application/json" },
-              body: payload,
-            }).catch(() => {});
-          }
-        } catch (_e) {}
+        trackView(ctx, t);
       } catch (err) {
         log("Mount bar error:", err);
       }
