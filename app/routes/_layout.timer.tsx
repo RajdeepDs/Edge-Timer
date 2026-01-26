@@ -8,6 +8,7 @@ import type { Timer, TimerFormData } from "../types/timer";
 
 type LoaderData = {
   timer: Timer | null;
+  shop: string;
   error?: string;
 };
 
@@ -28,15 +29,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!timer) {
       return json<LoaderData>(
-        { timer: null, error: "Timer not found" },
+        { timer: null, shop: session.shop, error: "Timer not found" },
         { status: 404 },
       );
     }
 
-    return json<LoaderData>({ timer: timer as any });
+    return json<LoaderData>({ timer: timer as any, shop: session.shop });
   }
 
-  return json<LoaderData>({ timer: null });
+  return json<LoaderData>({ timer: null, shop: session.shop });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -191,6 +192,7 @@ export default function TimerConfigPage() {
   const timerTypeParam = searchParams.get("type");
   const timerId = searchParams.get("id");
   const existingTimer = loaderData.timer as Timer | null;
+  const shop = loaderData.shop;
 
   const timerType =
     (timerTypeParam as "product-page" | "top-bottom-bar") ||
@@ -202,6 +204,7 @@ export default function TimerConfigPage() {
       existingTimer={existingTimer}
       timerType={timerType}
       timerId={timerId || undefined}
+      shop={shop}
     />
   );
 }

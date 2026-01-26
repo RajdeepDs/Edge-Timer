@@ -33,7 +33,8 @@
     fetchPromise: null,
   };
 
-  const DEFAULT_ENDPOINT = "/apps/urgency-timer/timers";
+ // change to "/apps/urgency-timer/timers" when deployed to production
+  const DEFAULT_ENDPOINT = "https://organizational-next-usa-convenient.trycloudflare.com/public/timers";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);

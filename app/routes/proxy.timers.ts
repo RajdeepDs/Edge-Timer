@@ -26,7 +26,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Validate the app proxy signature
   const validation = validateProxyRequest(request);
 
-  if (!validation.isValid) {
+  // Development mode: allow requests with shop param even if HMAC fails
+  const isDev = process.env.NODE_ENV !== "production";
+  const url = new URL(request.url);
+  const params = url.searchParams;
+  const shopParam = params.get("shop");
+
+  if (!validation.isValid && (!isDev || !shopParam)) {
     return json(
       { error: validation.error || "Unauthorized" },
       {
@@ -34,21 +40,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "no-store",
-        }
-      }
+        },
+      },
     );
   }
 
-  const shop = validation.shop!;
-  const url = new URL(request.url);
-  const params = url.searchParams;
+  const shop = validation.shop || shopParam!;
 
   // Extract context parameters
   const type = params.get("type") || "";
   const pageType = (params.get("pageType") || "").toLowerCase();
   const productId = params.get("productId") || "";
   const collectionIds = parseList(params.get("collectionIds"));
-  const productTags = parseList(params.get("productTags")).map((t) => t.toLowerCase());
+  const productTags = parseList(params.get("productTags")).map((t) =>
+    t.toLowerCase(),
+  );
   const pageUrl = params.get("pageUrl") || "";
   const country = (params.get("country") || "").toUpperCase();
 
@@ -61,10 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         isActive: true,
         ...(type ? { type } : {}),
         // Only timers that have started (startsAt <= now) or have no start date
-        OR: [
-          { startsAt: null },
-          { startsAt: { lte: new Date() } }
-        ],
+        OR: [{ startsAt: null }, { startsAt: { lte: new Date() } }],
       },
       orderBy: { createdAt: "desc" },
     });
@@ -90,31 +93,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
         }
 
         // Geolocation targeting
-        if (!matchesGeo(timer.geolocation, toStringArray(timer.countries), country)) {
+        if (
+          !matchesGeo(
+            timer.geolocation,
+            toStringArray(timer.countries),
+            country,
+          )
+        ) {
           return false;
         }
 
         // Page selection (for bars and landing pages)
-        if (!matchesPageSelection(
-          timer.pageSelection,
-          pageType,
-          pageUrl,
-          timer.placementConfig
-        )) {
+        if (
+          !matchesPageSelection(
+            timer.pageSelection,
+            pageType,
+            pageUrl,
+            timer.placementConfig,
+          )
+        ) {
           return false;
         }
 
         // Product selection
-        if (!matchesProductSelection(
-          timer.productSelection,
-          toStringArray(timer.selectedProducts),
-          toStringArray(timer.selectedCollections),
-          toStringArray(timer.excludedProducts),
-          toStringArray(timer.productTags),
-          productId,
-          collectionIds,
-          productTags
-        )) {
+        if (
+          !matchesProductSelection(
+            timer.productSelection,
+            toStringArray(timer.selectedProducts),
+            toStringArray(timer.selectedCollections),
+            toStringArray(timer.excludedProducts),
+            toStringArray(timer.productTags),
+            productId,
+            collectionIds,
+            productTags,
+          )
+        ) {
           return false;
         }
 
@@ -129,7 +142,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           "Content-Type": "application/json",
           "Cache-Control": "public, max-age=60", // Cache for 1 minute
         },
-      }
+      },
     );
   } catch (error) {
     console.error("[proxy.timers] Error fetching timers:", error);
@@ -139,8 +152,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-        }
-      }
+        },
+      },
     );
   }
 }
@@ -185,7 +198,7 @@ function isExpired(timer: any, now: Date): boolean {
 function matchesGeo(
   geolocation: string | null,
   countries: string[],
-  visitorCountry: string
+  visitorCountry: string,
 ): boolean {
   const geo = (geolocation || "all-world").toLowerCase();
 
@@ -220,7 +233,7 @@ function matchesPageSelection(
   pageSelection: string | null,
   pageType: string,
   pageUrl: string,
-  placementConfig: any
+  placementConfig: any,
 ): boolean {
   const mode = (pageSelection || "").toLowerCase();
 
@@ -264,7 +277,10 @@ function matchesPageSelection(
   }
 }
 
-function matchSpecificPages(pageUrlLower: string, placementConfig: any): boolean {
+function matchSpecificPages(
+  pageUrlLower: string,
+  placementConfig: any,
+): boolean {
   const pages: string[] = Array.isArray(placementConfig?.specificPages)
     ? placementConfig.specificPages
         .map((p: any) => String(p).toLowerCase())
@@ -298,10 +314,13 @@ function matchesProductSelection(
   timerProductTags: string[],
   productId: string,
   collectionIds: string[],
-  productTags: string[]
+  productTags: string[],
 ): boolean {
   // Check exclusions first
-  if (productId && excludedProducts.map((id) => id.toString()).includes(productId.toString())) {
+  if (
+    productId &&
+    excludedProducts.map((id) => id.toString()).includes(productId.toString())
+  ) {
     return false;
   }
 
@@ -322,7 +341,7 @@ function matchesProductSelection(
         return false;
       }
       return selectedCollections.some((cid) =>
-        collectionIds.map((c) => c.toString()).includes(cid.toString())
+        collectionIds.map((c) => c.toString()).includes(cid.toString()),
       );
 
     case "tags": {

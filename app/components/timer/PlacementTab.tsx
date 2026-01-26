@@ -11,9 +11,15 @@ import { usePlacementState } from "../../hooks/usePlacementState";
 
 interface PlacementTabProps {
   timerType: "product" | "top-bottom-bar";
+  timerId?: string;
+  shop?: string;
 }
 
-export default function PlacementTab({ timerType }: PlacementTabProps) {
+export default function PlacementTab({
+  timerType,
+  timerId,
+  shop,
+}: PlacementTabProps) {
   // Use custom hook for placement state management
   const {
     productSelection,
@@ -125,9 +131,24 @@ export default function PlacementTab({ timerType }: PlacementTabProps) {
                 Timer ID
               </Text>
               <Box paddingBlockStart="200">
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Save or Publish to show timer ID
-                </Text>
+                {timerId ? (
+                  <>
+                    <Text as="p" variant="bodyMd" fontWeight="semibold">
+                      {timerId}
+                    </Text>
+                    {shop && (
+                      <Box paddingBlockStart="100">
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          Store: {shop}
+                        </Text>
+                      </Box>
+                    )}
+                  </>
+                ) : (
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Save or Publish to show timer ID
+                  </Text>
+                )}
                 <Box paddingBlockStart="100">
                   <Text as="p" variant="bodySm" tone="subdued">
                     Countdown timer app block can be added, removed,
@@ -267,9 +288,24 @@ export default function PlacementTab({ timerType }: PlacementTabProps) {
               Timer ID
             </Text>
             <Box paddingBlockStart="200">
-              <Text as="p" variant="bodySm" tone="subdued">
-                Save or Publish to show timer ID
-              </Text>
+              {timerId ? (
+                <>
+                  <Text as="p" variant="bodyMd" fontWeight="semibold">
+                    {timerId}
+                  </Text>
+                  {shop && (
+                    <Box paddingBlockStart="100">
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Store: {shop}
+                      </Text>
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Save or Publish to show timer ID
+                </Text>
+              )}
               <Box paddingBlockStart="100">
                 <Text as="p" variant="bodySm" tone="subdued">
                   Countdown timer app block can be added, removed, repositioned,

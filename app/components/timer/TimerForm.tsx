@@ -24,6 +24,7 @@ interface TimerFormProps {
   existingTimer?: Timer | null;
   timerType: "product-page" | "top-bottom-bar";
   timerId?: string;
+  shop: string;
   onCancel?: () => void;
 }
 
@@ -31,6 +32,7 @@ export function TimerForm({
   existingTimer,
   timerType,
   timerId,
+  shop,
   onCancel,
 }: TimerFormProps) {
   const submit = useSubmit();
@@ -224,6 +226,8 @@ export function TimerForm({
             timerType={
               timerType === "product-page" ? "product" : "top-bottom-bar"
             }
+            timerId={timerId}
+            shop={shop}
           />
         );
       default:
@@ -253,7 +257,11 @@ export function TimerForm({
         titleMetadata={
           timerId ? <Badge>Published</Badge> : <Badge>Draft</Badge>
         }
-        subtitle={timerId ? `Timer ID: ${timerId}` : "Save to show Timer ID"}
+        subtitle={
+          timerId
+            ? `Timer ID: ${timerId} | Store: ${shop}`
+            : `Save to show Timer ID | Store: ${shop}`
+        }
         secondaryActions={secondaryActions}
         primaryAction={{
           content: timerId ? "Update" : "Publish",
