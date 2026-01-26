@@ -2,14 +2,23 @@
  * Urgency Timer Storefront Script
  * - Fetches published timers from the app proxy endpoint (secured with HMAC)
  * - Respects scheduling (startsAt, onExpiry) and placement (product/page selection)
+ * - Applies client-side filtering for product context and page selection
  * - Renders product-page timers inside extension root
  * - Renders top/bottom bar timers globally
+ *
+ * Client-Side Filtering:
+ * - Product selection: filters by product ID, collections, tags, and exclusions
+ * - Page selection: filters bars by page type (home, product, cart, specific pages)
+ * - Extracts context from Shopify globals and meta tags
  *
  * Default endpoint: /apps/urgency-timer/timers (Shopify App Proxy)
  *
  * You can override the endpoints with:
  *   window.URGENCY_TIMER_ENDPOINT = '/custom/timers/endpoint';
  *   window.URGENCY_TIMER_VIEW_ENDPOINT = '/custom/views/endpoint';
+ *
+ * Enable debug logging:
+ *   Set DEBUG = true to see filtering details in console
  *
  * The product block provides:
  *   <div class="urgency-timer-root" data-shop-domain data-product-id data-timer-id />
@@ -79,6 +88,10 @@
       (window.Shopify && window.Shopify.shop && String(window.Shopify.shop)) ||
       "";
 
+    // Extract collection IDs and product tags from Shopify meta
+    const collectionIds = extractCollectionIds();
+    const productTags = extractProductTags();
+
     return {
       shop: shop || shopFallback,
       productId,
@@ -86,9 +99,50 @@
       pageType,
       pageUrl: location.href,
       country: getCountry(),
-      collectionIds: [], // Optional (not provided by default)
-      productTags: [], // Optional (not provided by default)
+      collectionIds,
+      productTags,
     };
+  }
+
+  function extractCollectionIds() {
+    try {
+      // Try to get from Shopify global object
+      if (window.ShopifyAnalytics?.meta?.page?.resourceType === "collection") {
+        const resourceId = window.ShopifyAnalytics?.meta?.page?.resourceId;
+        if (resourceId) return [String(resourceId)];
+      }
+
+      // Try to get from product object (collections the product belongs to)
+      if (window.ShopifyAnalytics?.meta?.product?.variants) {
+        // This is a product page - collections not typically available
+        // Could be enhanced with theme customization
+      }
+
+      // Try meta tags
+      const metaCollection = document.querySelector('meta[property="og:url"]');
+      if (metaCollection && metaCollection.content) {
+        const match = metaCollection.content.match(/\/collections\/([^\/\?]+)/);
+        if (match) return [match[1]];
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  function extractProductTags() {
+    try {
+      // Try to get from Shopify global object
+      if (window.ShopifyAnalytics?.meta?.product?.tags) {
+        const tags = window.ShopifyAnalytics.meta.product.tags;
+        return Array.isArray(tags) ? tags.map(t => String(t).toLowerCase()) : [];
+      }
+
+      // Try from meta tags
+      const metaTags = document.querySelector('meta[name="keywords"]');
+      if (metaTags && metaTags.content) {
+        return metaTags.content.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      }
+    } catch (_) {}
+    return [];
   }
 
   function buildQuery(ctx) {
@@ -140,6 +194,191 @@
       });
 
     return STATE.fetchPromise;
+  }
+
+  /* ---------------------- Client-Side Filtering ---------------------- */
+
+  /**
+   * Client-side product selection filter
+   * Matches timer's productSelection config against current product context
+   */
+  function matchesProductSelection(timer, ctx) {
+    const mode = (timer.productSelection || "all").toLowerCase();
+    const productId = ctx.productId || "";
+    const collectionIds = ctx.collectionIds || [];
+    const productTags = ctx.productTags || [];
+
+    // Get timer's selection configuration from designConfig or root level
+    const selectedProducts = getArrayFromConfig(timer, "selectedProducts");
+    const selectedCollections = getArrayFromConfig(timer, "selectedCollections");
+    const excludedProducts = getArrayFromConfig(timer, "excludedProducts");
+    const timerProductTags = getArrayFromConfig(timer, "productTags");
+
+    // Check exclusions first
+    if (productId && excludedProducts.map(id => String(id)).includes(String(productId))) {
+      log(`Timer ${timer.id} excluded: product ${productId} is in exclusion list`);
+      return false;
+    }
+
+    switch (mode) {
+      case "all":
+        return true;
+
+      case "specific":
+        if (!productId) {
+          log(`Timer ${timer.id} filtered: no product ID for 'specific' mode`);
+          return false;
+        }
+        const matches = selectedProducts.map(id => String(id)).includes(String(productId));
+        if (!matches) {
+          log(`Timer ${timer.id} filtered: product ${productId} not in selected products`);
+        }
+        return matches;
+
+      case "collections":
+        if (collectionIds.length === 0 || selectedCollections.length === 0) {
+          log(`Timer ${timer.id} filtered: no collections match`);
+          return false;
+        }
+        const collectionMatch = selectedCollections.some(cid =>
+          collectionIds.map(c => String(c)).includes(String(cid))
+        );
+        if (!collectionMatch) {
+          log(`Timer ${timer.id} filtered: collections don't match`);
+        }
+        return collectionMatch;
+
+      case "tags":
+        if (timerProductTags.length === 0 || productTags.length === 0) {
+          log(`Timer ${timer.id} filtered: no tags match`);
+          return false;
+        }
+        const timerTagsLower = timerProductTags.map(t => String(t).toLowerCase());
+        const tagMatch = productTags.some(t => timerTagsLower.includes(String(t).toLowerCase()));
+        if (!tagMatch) {
+          log(`Timer ${timer.id} filtered: tags don't match`);
+        }
+        return tagMatch;
+
+      case "custom":
+        // Custom logic - allow by default
+        return true;
+
+      default:
+        // Unknown mode - allow by default
+        return true;
+    }
+  }
+
+  /**
+   * Client-side page selection filter
+   * Matches timer's pageSelection config against current page context
+   */
+  function matchesPageSelection(timer, ctx) {
+    const mode = (timer.pageSelection || "").toLowerCase();
+    const pageType = ctx.pageType || "";
+    const pageUrl = (ctx.pageUrl || "").toLowerCase();
+
+    // No page selection set = allow by default
+    if (!mode || mode === "every-page") {
+      return true;
+    }
+
+    switch (mode) {
+      case "home-page":
+        return pageType === "home";
+
+      case "all-product-pages":
+        return pageType === "product";
+
+      case "specific-product-pages":
+        return matchSpecificPages(pageUrl, timer);
+
+      case "all-collection-pages":
+        return pageType === "collection";
+
+      case "specific-collection-pages":
+        return matchSpecificPages(pageUrl, timer);
+
+      case "specific-pages":
+        return matchSpecificPages(pageUrl, timer);
+
+      case "cart-page":
+        return pageType === "cart";
+
+      case "custom":
+        // Custom logic - allow by default
+        return true;
+
+      default:
+        // Unknown mode - allow by default
+        return true;
+    }
+  }
+
+  /**
+   * Check if current page URL matches specific pages configuration
+   */
+  function matchSpecificPages(pageUrlLower, timer) {
+    const placementConfig = timer.designConfig?.placementConfig || timer.placementConfig || {};
+    const specificPages = Array.isArray(placementConfig.specificPages)
+      ? placementConfig.specificPages.map(p => String(p).toLowerCase()).filter(Boolean)
+      : [];
+
+    if (specificPages.length === 0) {
+      // No specific pages configured - deny by default for "specific" modes
+      return false;
+    }
+
+    // Match exact URL or URL prefix
+    return specificPages.some(p => pageUrlLower === p || pageUrlLower.includes(p));
+  }
+
+  /**
+   * Helper to extract array configuration from timer object
+   */
+  function getArrayFromConfig(timer, fieldName) {
+    // Check root level first
+    if (Array.isArray(timer[fieldName])) {
+      return timer[fieldName].map(v => String(v));
+    }
+
+    // Check in designConfig
+    if (timer.designConfig && Array.isArray(timer.designConfig[fieldName])) {
+      return timer.designConfig[fieldName].map(v => String(v));
+    }
+
+    return [];
+  }
+
+  /**
+   * Apply all client-side filters to timers
+   */
+  function filterTimers(timers, ctx) {
+    return timers.filter(timer => {
+      // For product-page timers, apply product selection filter
+      if (timer.type === "product-page") {
+        if (!matchesProductSelection(timer, ctx)) {
+          return false;
+        }
+      }
+
+      // For top-bottom-bar timers, apply page selection filter
+      if (timer.type === "top-bottom-bar") {
+        if (!matchesPageSelection(timer, ctx)) {
+          return false;
+        }
+
+        // Also apply product selection if on a product page
+        if (ctx.pageType === "product" && ctx.productId) {
+          if (!matchesProductSelection(timer, ctx)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    });
   }
 
   function msUntil(date) {
@@ -362,8 +601,11 @@
           list = list.filter((t) => String(t.id) === String(timerId));
         }
 
+        // Apply client-side product selection filtering
+        list = list.filter(t => matchesProductSelection(t, ctx));
+
         if (list.length === 0) {
-          log("No product-page timers for this root");
+          log("No product-page timers for this root after filtering");
           return;
         }
 
@@ -393,7 +635,16 @@
 
   function mountBars(ctx, timers) {
     // Top/bottom bars rendered globally
-    const bars = timers.filter((t) => t.type === "top-bottom-bar");
+    let bars = timers.filter((t) => t.type === "top-bottom-bar");
+
+    // Apply client-side page selection filtering
+    bars = bars.filter(t => matchesPageSelection(t, ctx));
+
+    // If on product page, also apply product selection filtering
+    if (ctx.pageType === "product" && ctx.productId) {
+      bars = bars.filter(t => matchesProductSelection(t, ctx));
+    }
+
     bars.forEach((t) => {
       try {
         const bar = document.createElement("div");
@@ -461,15 +712,24 @@
       return;
     }
 
+    log("Context detected:", ctx);
+
     fetchTimersOnce(ctx).then((timers) => {
       if (!Array.isArray(timers) || timers.length === 0) {
         log("No timers available for this context.");
         return;
       }
+
+      log(`Fetched ${timers.length} timers before client-side filtering`);
+
+      // Apply client-side filtering
+      const filtered = filterTimers(timers, ctx);
+      log(`${filtered.length} timers after client-side filtering`);
+
       // Mount product timers into provided roots
-      mountProductTimers(ctx, timers);
+      mountProductTimers(ctx, filtered);
       // Mount top/bottom bars across the page
-      mountBars(ctx, timers);
+      mountBars(ctx, filtered);
     });
   }
 
