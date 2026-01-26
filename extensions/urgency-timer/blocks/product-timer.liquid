@@ -1,13 +1,22 @@
+
 {% comment %}
+
 Urgency Timer - Product Page Block (New Extension)
+
 Renders a countdown/fixed timer for the current product by mounting a client script
-and fetching published timers from the app proxy or public endpoint.
+
+and fetching published timers from the app's public endpoint (/public/timers by default), or your App Proxy endpoint.
 
 Notes:
 - Include assets/urgency-timer.js and assets/urgency-timer.css in your extension assets.
-- Configure the endpoint to point to your app proxy, e.g., /apps/urgency-timer/timers.
+
+- Default fetch endpoint: /public/timers. If you prefer an App Proxy, point it to something like /apps/urgency-timer/timers.
+
+- You can override the endpoint from your theme by defining window.URGENCY_TIMER_ENDPOINT before the script loads.
 - This block exposes data attributes used by the client script for context.
+
 {% endcomment %}
+
 
 <link rel="stylesheet" href="{{ 'urgency-timer.css' | asset_url }}" media="all">
 

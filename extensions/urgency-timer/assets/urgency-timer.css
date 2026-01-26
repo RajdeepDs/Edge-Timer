@@ -1,0 +1,213 @@
+/*!
+ * Urgency Timer - Minimal Storefront Styles
+ * These styles provide a clean default appearance for timers rendered by assets/urgency-timer.js.
+ * Merchants can override these styles via theme CSS if they wish.
+ */
+
+/* Base variables (can be overridden by themes) */
+:root {
+  --utimer-bg: #ffffff;
+  --utimer-fg: #1f2937; /* gray-800 */
+  --utimer-sub-fg: #4b5563; /* gray-600 */
+  --utimer-muted: #6b7280; /* gray-500 */
+  --utimer-border: #e5e7eb; /* gray-200 */
+  --utimer-accent: #111827; /* gray-900 */
+
+  --utimer-radius: 6px;
+  --utimer-gap: 12px;
+
+  --utimer-title-size: 18px;
+  --utimer-sub-size: 14px;
+  --utimer-number-size: 22px;
+  --utimer-label-size: 12px;
+
+  --utimer-button-bg: var(--utimer-accent);
+  --utimer-button-fg: #ffffff;
+  --utimer-button-radius: 4px;
+  --utimer-button-padding-y: 8px;
+  --utimer-button-padding-x: 12px;
+}
+
+/* Container for product-page timers */
+.utimer-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  padding: 12px;
+  border: 1px solid var(--utimer-border);
+  border-radius: var(--utimer-radius);
+  background: var(--utimer-bg);
+  color: var(--utimer-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+/* Typography */
+.utimer-title {
+  font-size: var(--utimer-title-size);
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--utimer-title-color, var(--utimer-fg));
+}
+
+.utimer-sub {
+  font-size: var(--utimer-sub-size);
+  color: var(--utimer-sub-fg);
+  margin: 0 0 8px 0;
+}
+
+/* Countdown layout */
+.utimer-countdown {
+  display: flex;
+  gap: var(--utimer-gap);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.utimer-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+}
+
+.utimer-number {
+  font-size: var(--utimer-number-size);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--utimer-number-color, var(--utimer-fg));
+}
+
+.utimer-label {
+  font-size: var(--utimer-label-size);
+  color: var(--utimer-muted);
+}
+
+/* CTA */
+.utimer-cta {
+  margin-top: 10px;
+}
+
+.utimer-button {
+  display: inline-block;
+  padding: var(--utimer-button-padding-y) var(--utimer-button-padding-x);
+  background: var(--utimer-button-bg);
+  color: var(--utimer-button-fg);
+  border-radius: var(--utimer-button-radius);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: filter 0.15s ease, transform 0.02s ease;
+}
+
+.utimer-button:hover {
+  filter: brightness(0.95);
+}
+
+.utimer-button:active {
+  transform: translateY(1px);
+}
+
+/* Top/Bottom Bar Timers */
+.utimer-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  padding: max(10px, env(safe-area-inset-top)) 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  z-index: 2147483000; /* higher than most sticky headers and apps */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #f9fafb; /* fallback; JS may override */
+  color: var(--utimer-fg);
+}
+
+.utimer-bar.top {
+  top: 0;
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+
+.utimer-bar.bottom {
+  bottom: 0;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+/* Close button for bars */
+.utimer-bar .utimer-close {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  user-select: none;
+  color: var(--utimer-muted);
+}
+
+.utimer-bar .utimer-close:hover {
+  color: var(--utimer-fg);
+}
+
+/* Neutralize container visuals when mounted inside a bar */
+.utimer-bar .utimer-container {
+  box-shadow: none;
+  border: none;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+/* Responsiveness */
+@media (max-width: 480px) {
+  :root {
+    --utimer-title-size: 16px;
+    --utimer-sub-size: 13px;
+    --utimer-number-size: 20px;
+    --utimer-label-size: 11px;
+    --utimer-gap: 10px;
+  }
+
+  .utimer-unit {
+    min-width: 50px;
+  }
+
+  .utimer-bar {
+    gap: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Basic dark mode consideration (inherits theme background) */
+@media (prefers-color-scheme: dark) {
+  .utimer-container {
+    background: #0b0b0c;
+    border-color: #1f2937;
+    color: #e5e7eb;
+  }
+
+  .utimer-title {
+    color: var(--utimer-title-color, #f3f4f6);
+  }
+
+  .utimer-number {
+    color: var(--utimer-number-color, #f9fafb);
+  }
+
+  .utimer-sub,
+  .utimer-label,
+  .utimer-bar .utimer-close {
+    color: #9ca3af;
+  }
+
+  .utimer-bar {
+    background: #0f1113;
+    color: #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  .utimer-button {
+    background: #2563eb;
+  }
+}
