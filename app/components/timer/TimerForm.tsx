@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import {
   Page,
   Box,
@@ -38,6 +38,20 @@ export function TimerForm({
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSaving = navigation.state === "submitting";
+  const isDirty =
+    JSON.stringify(existingTimer) !==
+    JSON.stringify(useTimerForm({ existingTimer, timerType }));
+
+  useEffect(() => {
+    if (isDirty) {
+      window.shopify.saveBar.show("timer-form");
+    } else {
+      window.shopify.saveBar.hide("timer-form");
+    }
+    return () => {
+      window.shopify.saveBar.hide("timer-form");
+    };
+  }, [isDirty]);
 
   const formState = useTimerForm({ existingTimer, timerType });
   const { selectedTab, handleTabChange, goToNextTab } = useTimerTabs();
@@ -126,6 +140,7 @@ export function TimerForm({
 
   const handlePublish = useCallback(() => {
     handleSubmit(true);
+    shopify.saveBar.hide("timer-form");
   }, [handleSubmit]);
 
   const handleSave = useCallback(() => {
@@ -269,7 +284,7 @@ export function TimerForm({
           onAction: handlePublish,
         }}
       >
-        <form method="post" onSubmit={handleSave}>
+        <form method="post" data-save-bar onSubmit={handleSave}>
           {" "}
           <Box paddingBlockEnd="800">
             <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
