@@ -40,10 +40,15 @@ export default function PlacementTab({
   // Modal states
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [showExcludeProductPicker, setShowExcludeProductPicker] =
+    useState(false);
+  const [showExcludePagePicker, setShowExcludePagePicker] = useState(false);
 
   // Store product/collection data with full objects
   const [productData, setProductData] = useState<any[]>([]);
   const [collectionData, setCollectionData] = useState<any[]>([]);
+  const [excludedProductData, setExcludedProductData] = useState<any[]>([]);
+  const [excludedPageData, setExcludedPageData] = useState<any[]>([]);
 
   // Handle product selection
   const handleProductSelect = (products: any[]) => {
@@ -71,6 +76,26 @@ export default function PlacementTab({
     setSelectedCollections(filtered.map((c) => c.id));
   };
 
+  // Handle excluded products
+  const handleExcludedProductSelect = (products: any[]) => {
+    setExcludedProductData(products);
+  };
+
+  const removeExcludedProduct = (id: string) => {
+    const filtered = excludedProductData.filter((p) => p.id !== id);
+    setExcludedProductData(filtered);
+  };
+
+  // Handle excluded pages
+  const handleExcludedPageSelect = (pages: any[]) => {
+    setExcludedPageData(pages);
+  };
+
+  const removeExcludedPage = (id: string) => {
+    const filtered = excludedPageData.filter((p) => p.id !== id);
+    setExcludedPageData(filtered);
+  };
+
   if (timerType === "top-bottom-bar") {
     return (
       <>
@@ -82,18 +107,42 @@ export default function PlacementTab({
               </Text>
 
               <BlockStack gap="200">
-                <RadioButton
-                  label="Show on every page"
-                  checked={pageSelection === "every-page"}
-                  id="every-page"
-                  name="pageSelection"
-                  onChange={() => handlePageSelectionChange("every-page")}
-                  helpText={
-                    <Link url="#" removeUnderline>
-                      Exclude specific pages
-                    </Link>
-                  }
-                />
+                <Box>
+                  <RadioButton
+                    label="Show on every page"
+                    checked={pageSelection === "every-page"}
+                    id="every-page"
+                    name="pageSelection"
+                    onChange={() => handlePageSelectionChange("every-page")}
+                    helpText={
+                      <Button
+                        variant="plain"
+                        onClick={() => setShowExcludePagePicker(true)}
+                      >
+                        Exclude specific pages
+                      </Button>
+                    }
+                  />
+                  {excludedPageData.length > 0 && (
+                    <Box paddingBlockStart="200" paddingInlineStart="600">
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Excluded pages ({excludedPageData.length}):
+                      </Text>
+                      <Box paddingBlockStart="100">
+                        <InlineStack gap="200" wrap>
+                          {excludedPageData.map((page) => (
+                            <Tag
+                              key={page.id}
+                              onRemove={() => removeExcludedPage(page.id)}
+                            >
+                              {page.title}
+                            </Tag>
+                          ))}
+                        </InlineStack>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
 
                 <RadioButton
                   label="Show on home page only"
@@ -336,6 +385,16 @@ export default function PlacementTab({
           selectedCollections={collectionData}
           allowMultiple={true}
         />
+
+        {/* Exclude Product Picker for pages */}
+        <ProductPicker
+          open={showExcludePagePicker}
+          onClose={() => setShowExcludePagePicker(false)}
+          onSelect={handleExcludedPageSelect}
+          selectedProducts={excludedPageData}
+          allowMultiple={true}
+          title="Exclude specific pages"
+        />
       </>
     );
   }
@@ -351,18 +410,42 @@ export default function PlacementTab({
             </Text>
 
             <BlockStack gap="200">
-              <RadioButton
-                label="All products"
-                checked={productSelection === "all"}
-                id="all"
-                name="productSelection"
-                onChange={() => handleProductSelectionChange("all")}
-                helpText={
-                  <Link url="#" removeUnderline>
-                    Exclude specific products
-                  </Link>
-                }
-              />
+              <Box>
+                <RadioButton
+                  label="All products"
+                  checked={productSelection === "all"}
+                  id="all"
+                  name="productSelection"
+                  onChange={() => handleProductSelectionChange("all")}
+                  helpText={
+                    <Button
+                      variant="plain"
+                      onClick={() => setShowExcludeProductPicker(true)}
+                    >
+                      Exclude specific products
+                    </Button>
+                  }
+                />
+                {excludedProductData.length > 0 && (
+                  <Box paddingBlockStart="200" paddingInlineStart="600">
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      Excluded products ({excludedProductData.length}):
+                    </Text>
+                    <Box paddingBlockStart="100">
+                      <InlineStack gap="200" wrap>
+                        {excludedProductData.map((product) => (
+                          <Tag
+                            key={product.id}
+                            onRemove={() => removeExcludedProduct(product.id)}
+                          >
+                            {product.title}
+                          </Tag>
+                        ))}
+                      </InlineStack>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
 
               <Box>
                 <RadioButton
@@ -551,6 +634,16 @@ export default function PlacementTab({
         onSelect={handleCollectionSelect}
         selectedCollections={collectionData}
         allowMultiple={true}
+      />
+
+      {/* Exclude Product Picker */}
+      <ProductPicker
+        open={showExcludeProductPicker}
+        onClose={() => setShowExcludeProductPicker(false)}
+        onSelect={handleExcludedProductSelect}
+        selectedProducts={excludedProductData}
+        allowMultiple={true}
+        title="Exclude specific products"
       />
     </>
   );
