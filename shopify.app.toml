@@ -2,7 +2,7 @@
 
 client_id = "3e121cdbd42c341879c18784b948d955"
 name = "urgency-timer"
-application_url = "https://corrected-reflected-intervals-rachel.trycloudflare.com"
+application_url = "https://adams-stakeholders-thesis-adjacent.trycloudflare.com"
 embedded = true
 
 [build]
@@ -19,14 +19,18 @@ api_version = "2026-04"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  topics = [ "app_subscriptions/update" ]
+  uri = "/webhooks/app_subscriptions/update"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://corrected-reflected-intervals-rachel.trycloudflare.com/api/auth" ]
+redirect_urls = [ "https://adams-stakeholders-thesis-adjacent.trycloudflare.com/api/auth" ]
 
 [app_proxy]
-url = "https://corrected-reflected-intervals-rachel.trycloudflare.com/proxy"
+url = "https://adams-stakeholders-thesis-adjacent.trycloudflare.com/proxy"
 subpath = "urgency-timer"
 prefix = "apps"

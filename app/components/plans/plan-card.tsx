@@ -18,10 +18,32 @@ interface PlanCardProps {
   price: string;
   yearly?: boolean;
   yearlyPrice?: string;
+  planId: string;
+  currentPlan: string;
+  onSubscribe: (planId: string) => void;
+  isSubscribing: boolean;
 }
 
 export default function PlanCard(props: PlanCardProps) {
-  const { title, subtitle, badge, items, price, yearly, yearlyPrice } = props;
+  const {
+    title,
+    subtitle,
+    badge,
+    items,
+    price,
+    yearly,
+    yearlyPrice,
+    planId,
+    currentPlan,
+    onSubscribe,
+    isSubscribing,
+  } = props;
+
+  const isCurrentPlan = currentPlan === planId;
+  const planOrder = ["free", "starter", "essential", "professional"];
+  const currentPlanIndex = planOrder.indexOf(currentPlan);
+  const thisPlanIndex = planOrder.indexOf(planId);
+  const isDowngrade = thisPlanIndex < currentPlanIndex;
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Card>
@@ -72,9 +94,24 @@ export default function PlanCard(props: PlanCardProps) {
               )}
             </BlockStack>
 
-            <Button size="large" variant="primary">
-              Start FREE 7-days trial
-            </Button>
+            {isCurrentPlan ? (
+              <Button size="large" disabled>
+                Your current plan
+              </Button>
+            ) : isDowngrade ? (
+              <Button size="large" disabled>
+                Downgrade not available
+              </Button>
+            ) : (
+              <Button
+                size="large"
+                variant="primary"
+                onClick={() => onSubscribe(planId)}
+                loading={isSubscribing}
+              >
+                Start FREE 7-day trial
+              </Button>
+            )}
           </BlockStack>
         </div>
       </Card>

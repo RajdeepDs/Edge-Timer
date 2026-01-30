@@ -11,14 +11,75 @@ import {
   Icon,
   Image,
   ButtonGroup,
+  Banner,
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
 import PlanCard from "app/components/plans/plan-card";
 import { useCallback, useState } from "react";
 import { plans } from "app/config/plans";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
+import { authenticate } from "../shopify.server";
+import { getShop } from "../utils/shop.server";
+import { getPlanViewLimit } from "../utils/plan-check.server";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+
+  if (!session?.shop) {
+    throw new Response("Unauthorized", { status: 401 });
+  }
+
+  try {
+    const shop = await getShop(session.shop);
+    const currentPlan = shop.currentPlan || "free";
+    const viewLimit = getPlanViewLimit(currentPlan as any);
+    const usagePercent =
+      viewLimit === -1 ? 0 : (shop.monthlyViews / viewLimit) * 100;
+
+    // Check if coming back from successful subscription
+    const url = new URL(request.url);
+    const successParam = url.searchParams.get("success");
+    const planParam = url.searchParams.get("plan");
+
+    return json({
+      shop: {
+        currentPlan,
+        monthlyViews: shop.monthlyViews,
+        viewLimit,
+        usagePercent,
+        billingStatus: shop.billingStatus,
+        trialEndsAt: shop.trialEndsAt?.toISOString(),
+      },
+      subscriptionSuccess: successParam === "true",
+      subscribedPlan: planParam,
+    });
+  } catch (error) {
+    console.error("Error loading shop data:", error);
+    // Return default values
+    return json({
+      shop: {
+        currentPlan: "free",
+        monthlyViews: 0,
+        viewLimit: 1000,
+        usagePercent: 0,
+        billingStatus: "active",
+        trialEndsAt: null,
+      },
+      subscriptionSuccess: false,
+      subscribedPlan: null,
+    });
+  }
+};
 
 export default function PricingPlans() {
+  const { shop, subscriptionSuccess, subscribedPlan } =
+    useLoaderData<typeof loader>();
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubscribing = navigation.state === "submitting";
 
   const handleButtonClick = useCallback(
     (index: number) => {
@@ -28,6 +89,25 @@ export default function PricingPlans() {
     [activeButtonIndex],
   );
 
+  const handleSubscribe = useCallback(
+    (planId: string) => {
+      const billingCycle = activeButtonIndex === 0 ? "MONTHLY" : "ANNUAL";
+      const formData = new FormData();
+      formData.append("planId", planId);
+      formData.append("billingCycle", billingCycle);
+
+      submit(formData, {
+        method: "POST",
+        action: "/api/billing/subscribe",
+      });
+    },
+    [activeButtonIndex, submit],
+  );
+
+  const currentPlanName =
+    shop.currentPlan.charAt(0).toUpperCase() + shop.currentPlan.slice(1);
+  const progressValue = shop.viewLimit === -1 ? 0 : shop.usagePercent;
+
   return (
     <Page
       backAction={{
@@ -36,47 +116,78 @@ export default function PricingPlans() {
       }}
       title="Pricing Plans"
     >
+      {subscriptionSuccess && subscribedPlan && (
+        <Box paddingBlockEnd={{ xs: "400" }}>
+          <Banner
+            title="Subscription activated!"
+            tone="success"
+            onDismiss={() => {
+              window.history.replaceState({}, "", "/plans");
+            }}
+          >
+            <p>
+              Your {subscribedPlan} plan has been activated successfully. Thank
+              you for upgrading!
+            </p>
+          </Banner>
+        </Box>
+      )}
+
       <Box paddingBlockEnd={{ xs: "400" }}>
         <Card>
-          <Box>
-            <InlineStack gap="200">
-              <Text as="p">
-                You're currently on <Text as="strong">Free plan.</Text> (0 /
-                1000 monthly views). One visitor can have multiple views per
-                session.
+          <BlockStack gap="200">
+            <Text as="p">
+              You're currently on{" "}
+              <Text as="strong">{currentPlanName} plan.</Text> (
+              {shop.monthlyViews} /{" "}
+              {shop.viewLimit === -1 ? "∞" : shop.viewLimit} monthly views). One
+              visitor can have multiple views per session.
+            </Text>
+            {shop.viewLimit !== -1 && (
+              <ProgressBar progress={progressValue} size="small" />
+            )}
+            {shop.trialEndsAt && (
+              <Text as="p" tone="success">
+                Trial active until{" "}
+                {new Date(shop.trialEndsAt).toLocaleDateString()}
               </Text>
-              <ProgressBar size="small" />
-            </InlineStack>
-          </Box>
+            )}
+          </BlockStack>
         </Card>
       </Box>
-      <Card>
-        <InlineStack
-          align="space-between"
-          blockAlign="center"
-          gap={{ xs: "400" }}
-        >
-          <BlockStack>
-            <Text as="h2" variant="headingMd">
-              Free Plan
-            </Text>
-            <InlineStack gap={{ xs: "400" }}>
-              <Text as="span">
-                Up to <Text as="strong">1000</Text> monthly views
-              </Text>
-              <InlineStack>
-                <Icon source={CheckIcon} tone="base" />
-                <Text as="span">Unlimited product timers</Text>
-              </InlineStack>
-              <InlineStack>
-                <Icon source={CheckIcon} tone="base" />
-                <Text as="span">Unlimited top bar timers</Text>
-              </InlineStack>
+
+      {shop.currentPlan === "free" && (
+        <Box paddingBlockEnd={{ xs: "400" }}>
+          <Card>
+            <InlineStack
+              align="space-between"
+              blockAlign="center"
+              gap={{ xs: "400" }}
+            >
+              <BlockStack>
+                <Text as="h2" variant="headingMd">
+                  Free Plan
+                </Text>
+                <InlineStack gap={{ xs: "400" }}>
+                  <Text as="span">
+                    Up to <Text as="strong">1000</Text> monthly views
+                  </Text>
+                  <InlineStack>
+                    <Icon source={CheckIcon} tone="base" />
+                    <Text as="span">Unlimited product timers</Text>
+                  </InlineStack>
+                  <InlineStack>
+                    <Icon source={CheckIcon} tone="base" />
+                    <Text as="span">Unlimited top bar timers</Text>
+                  </InlineStack>
+                </InlineStack>
+              </BlockStack>
+              <Button disabled>Your current plan</Button>
             </InlineStack>
-          </BlockStack>
-          <Button disabled>Your current plan</Button>
-        </InlineStack>
-      </Card>
+          </Card>
+        </Box>
+      )}
+
       <Box padding="600">
         <InlineStack align="center">
           <ButtonGroup variant="segmented">
@@ -109,6 +220,10 @@ export default function PricingPlans() {
                 items={plan.items}
                 yearly={activeButtonIndex === 1}
                 yearlyPrice={plan.yearlyTotal}
+                planId={plan.id}
+                currentPlan={shop.currentPlan}
+                onSubscribe={handleSubscribe}
+                isSubscribing={isSubscribing}
               />
             </Layout.Section>
           ))}

@@ -34,7 +34,7 @@
   };
 
  // change to "/apps/urgency-timer/timers" when deployed to production
-  const DEFAULT_ENDPOINT = "https://corrected-reflected-intervals-rachel.trycloudflare.com/public/timers";
+  const DEFAULT_ENDPOINT = "https://adams-stakeholders-thesis-adjacent.trycloudflare.com/public/timers";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);
