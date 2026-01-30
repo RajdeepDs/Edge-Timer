@@ -1,5 +1,10 @@
-import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
 import prisma from "../db.server";
+import { hasExceededViewLimit } from "../utils/shop.server";
 
 /**
  * Public endpoint to serve timers for storefront rendering.
@@ -23,7 +28,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const shop = (sp.get("shop") || "").trim();
   if (!shop) {
-    return json({ error: "Missing required query parameter: shop" }, { status: 400, headers: corsHeaders });
+    return json(
+      { error: "Missing required query parameter: shop" },
+      { status: 400, headers: corsHeaders },
+    );
+  }
+
+  // Check if shop has exceeded view limit
+  try {
+    const limitExceeded = await hasExceededViewLimit(shop);
+    if (limitExceeded) {
+      return json(
+        {
+          error: "View limit exceeded",
+          message:
+            "Your monthly timer view limit has been reached. Please upgrade your plan to continue.",
+          timers: [],
+        },
+        { status: 429, headers: corsHeaders },
+      );
+    }
+  } catch (error) {
+    console.error("Error checking view limit:", error);
+    // Continue on error to avoid blocking legitimate requests
   }
 
   const type = (sp.get("type") || "").trim(); // optional
@@ -31,7 +58,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const pageUrl = (sp.get("url") || sp.get("pageUrl") || "").trim();
   const productId = (sp.get("productId") || "").trim();
   const collectionIds = parseList(sp.get("collectionIds"));
-  const productTags = parseList(sp.get("productTags")).map((t) => t.toLowerCase());
+  const productTags = parseList(sp.get("productTags")).map((t) =>
+    t.toLowerCase(),
+  );
   const country = (sp.get("country") || "").trim().toUpperCase();
 
   // Fetch published, active timers for this shop.
@@ -72,12 +101,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
 
       // Respect page selection (for bars and landing placements)
-      if (!matchesPageSelection(t.pageSelection, pageType, pageUrl, t.placementConfig)) {
+      if (
+        !matchesPageSelection(
+          t.pageSelection,
+          pageType,
+          pageUrl,
+          t.placementConfig,
+        )
+      ) {
         return false;
       }
 
       // Respect product/collection targeting (for product-page and also optional for bars)
-      if (!matchesProductSelection(t.productSelection, toStringArray(t.selectedProducts), toStringArray(t.selectedCollections), toStringArray(t.excludedProducts), toStringArray(t.productTags), productId, collectionIds, productTags)) {
+      if (
+        !matchesProductSelection(
+          t.productSelection,
+          toStringArray(t.selectedProducts),
+          toStringArray(t.selectedCollections),
+          toStringArray(t.excludedProducts),
+          toStringArray(t.productTags),
+          productId,
+          collectionIds,
+          productTags,
+        )
+      ) {
         return false;
       }
 
@@ -96,7 +143,10 @@ export async function action({ request }: ActionFunctionArgs) {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  return json({ error: "Method Not Allowed" }, { status: 405, headers: corsHeaders });
+  return json(
+    { error: "Method Not Allowed" },
+    { status: 405, headers: corsHeaders },
+  );
 }
 
 /* ---------------------- Helpers ---------------------- */
@@ -145,13 +195,19 @@ function isExpired(timer: any, now: Date): boolean {
  * geolocation: "all-world" | "specific-countries"
  * countries: array of ISO country codes
  */
-function matchesGeo(geolocation: string | null, countries: string[], visitorCountry: string): boolean {
+function matchesGeo(
+  geolocation: string | null,
+  countries: string[],
+  visitorCountry: string,
+): boolean {
   const geo = (geolocation || "all-world").toLowerCase();
 
   if (geo === "all-world") return true;
   if (geo === "specific-countries") {
     if (!visitorCountry) return false;
-    return countries.map((c) => c.toUpperCase()).includes(visitorCountry.toUpperCase());
+    return countries
+      .map((c) => c.toUpperCase())
+      .includes(visitorCountry.toUpperCase());
   }
 
   // If unknown mode, allow by default
@@ -163,7 +219,12 @@ function matchesGeo(geolocation: string | null, countries: string[], visitorCoun
  * pageSelection: "every-page" | "home-page" | "all-product-pages" | "specific-product-pages" | "all-collection-pages" | "specific-collection-pages" | "specific-pages" | "cart-page" | "custom"
  * placementConfig may contain specificPages: string[]
  */
-function matchesPageSelection(pageSelection: string | null, pageType: string, pageUrl: string, placementConfig: any): boolean {
+function matchesPageSelection(
+  pageSelection: string | null,
+  pageType: string,
+  pageUrl: string,
+  placementConfig: any,
+): boolean {
   const mode = (pageSelection || "").toLowerCase();
 
   // If no page selection set, allow by default (other placement filters apply)
@@ -199,9 +260,14 @@ function matchesPageSelection(pageSelection: string | null, pageType: string, pa
   }
 }
 
-function matchSpecificPages(pageUrlLower: string, placementConfig: any): boolean {
+function matchSpecificPages(
+  pageUrlLower: string,
+  placementConfig: any,
+): boolean {
   const pages: string[] = Array.isArray(placementConfig?.specificPages)
-    ? placementConfig.specificPages.map((p: any) => String(p).toLowerCase()).filter(Boolean)
+    ? placementConfig.specificPages
+        .map((p: any) => String(p).toLowerCase())
+        .filter(Boolean)
     : [];
 
   if (pages.length === 0) {
@@ -229,7 +295,10 @@ function matchesProductSelection(
   productTags: string[],
 ): boolean {
   // Exclusions first: if current product is excluded, deny
-  if (productId && excludedProducts.map((id) => id.toString()).includes(productId.toString())) {
+  if (
+    productId &&
+    excludedProducts.map((id) => id.toString()).includes(productId.toString())
+  ) {
     return false;
   }
 
@@ -240,12 +309,18 @@ function matchesProductSelection(
       return true;
     case "specific":
       if (!productId) return false;
-      return selectedProducts.map((id) => id.toString()).includes(productId.toString());
+      return selectedProducts
+        .map((id) => id.toString())
+        .includes(productId.toString());
     case "collections":
-      if (collectionIds.length === 0 || selectedCollections.length === 0) return false;
-      return selectedCollections.some((cid) => collectionIds.map((c) => c.toString()).includes(cid.toString()));
+      if (collectionIds.length === 0 || selectedCollections.length === 0)
+        return false;
+      return selectedCollections.some((cid) =>
+        collectionIds.map((c) => c.toString()).includes(cid.toString()),
+      );
     case "tags": {
-      if (timerProductTags.length === 0 || productTags.length === 0) return false;
+      if (timerProductTags.length === 0 || productTags.length === 0)
+        return false;
       const timerTagsLower = timerProductTags.map((t) => t.toLowerCase());
       return productTags.some((t) => timerTagsLower.includes(t.toLowerCase()));
     }

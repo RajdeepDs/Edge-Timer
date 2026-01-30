@@ -1,6 +1,30 @@
 import prisma from "../db.server";
 
 /**
+ * Plan limits configuration
+ */
+export const PLAN_LIMITS = {
+  free: {
+    monthlyViews: 1000,
+    timers: 2,
+  },
+  starter: {
+    monthlyViews: 10000,
+    timers: -1, // unlimited
+  },
+  essential: {
+    monthlyViews: 50000,
+    timers: -1, // unlimited
+  },
+  professional: {
+    monthlyViews: -1, // unlimited
+    timers: -1, // unlimited
+  },
+} as const;
+
+export type PlanType = keyof typeof PLAN_LIMITS;
+
+/**
  * Ensures a Shop record exists for the given shop domain
  * Creates one if it doesn't exist
  */
@@ -93,18 +117,119 @@ export async function hasExceededViewLimit(
 ): Promise<boolean> {
   const shop = await getShop(shopDomain);
 
-  const limits = {
-    free: 1000,
-    starter: 10000,
-    essential: 50000,
-    professional: -1, // unlimited
-  };
-
-  const limit = limits[shop.currentPlan?.toLowerCase() as keyof typeof limits];
+  const plan = (shop.currentPlan?.toLowerCase() || "free") as PlanType;
+  const limit =
+    PLAN_LIMITS[plan]?.monthlyViews ?? PLAN_LIMITS.free.monthlyViews;
 
   if (limit === -1) return false; // unlimited
 
   return shop.monthlyViews >= limit;
+}
+
+/**
+ * Check if shop has exceeded timer limit for current plan
+ */
+export async function hasExceededTimerLimit(
+  shopDomain: string,
+): Promise<boolean> {
+  const shop = await getShop(shopDomain);
+
+  const plan = (shop.currentPlan?.toLowerCase() || "free") as PlanType;
+  const limit = PLAN_LIMITS[plan]?.timers ?? PLAN_LIMITS.free.timers;
+
+  if (limit === -1) return false; // unlimited
+
+  const timerCount = await prisma.timer.count({
+    where: {
+      shop: shopDomain,
+      isActive: true,
+    },
+  });
+
+  return timerCount >= limit;
+}
+
+/**
+ * Get remaining views for current billing period
+ */
+export async function getRemainingViews(shopDomain: string): Promise<number> {
+  const shop = await getShop(shopDomain);
+
+  const plan = (shop.currentPlan?.toLowerCase() || "free") as PlanType;
+  const limit =
+    PLAN_LIMITS[plan]?.monthlyViews ?? PLAN_LIMITS.free.monthlyViews;
+
+  if (limit === -1) return -1; // unlimited
+
+  return Math.max(0, limit - shop.monthlyViews);
+}
+
+/**
+ * Get shop usage stats
+ */
+export async function getShopUsageStats(shopDomain: string) {
+  const shop = await getShop(shopDomain);
+
+  const plan = (shop.currentPlan?.toLowerCase() || "free") as PlanType;
+  const planLimits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+
+  const timerCount = await prisma.timer.count({
+    where: {
+      shop: shopDomain,
+      isActive: true,
+    },
+  });
+
+  const publishedTimerCount = await prisma.timer.count({
+    where: {
+      shop: shopDomain,
+      isActive: true,
+      isPublished: true,
+    },
+  });
+
+  return {
+    currentPlan: shop.currentPlan,
+    monthlyViews: shop.monthlyViews,
+    viewLimit: planLimits.monthlyViews,
+    viewsRemaining:
+      planLimits.monthlyViews === -1
+        ? -1
+        : Math.max(0, planLimits.monthlyViews - shop.monthlyViews),
+    viewLimitExceeded:
+      planLimits.monthlyViews === -1
+        ? false
+        : shop.monthlyViews >= planLimits.monthlyViews,
+    timerCount,
+    publishedTimerCount,
+    timerLimit: planLimits.timers,
+    timerLimitExceeded:
+      planLimits.timers === -1 ? false : timerCount >= planLimits.timers,
+    viewsResetAt: shop.viewsResetAt,
+    planStartDate: shop.planStartDate,
+  };
+}
+
+/**
+ * Check if shop can create a new timer
+ */
+export async function canCreateTimer(
+  shopDomain: string,
+): Promise<{ allowed: boolean; reason?: string }> {
+  const limitExceeded = await hasExceededTimerLimit(shopDomain);
+
+  if (limitExceeded) {
+    const shop = await getShop(shopDomain);
+    const plan = (shop.currentPlan?.toLowerCase() || "free") as PlanType;
+    const limit = PLAN_LIMITS[plan]?.timers ?? PLAN_LIMITS.free.timers;
+
+    return {
+      allowed: false,
+      reason: `You have reached the maximum number of timers (${limit}) for your current plan. Please upgrade to create more timers.`,
+    };
+  }
+
+  return { allowed: true };
 }
 
 /**

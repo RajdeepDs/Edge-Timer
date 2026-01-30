@@ -6,6 +6,7 @@ import {
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import type { TimerFormData, TimerErrorResponse } from "../types/timer";
+import { canCreateTimer } from "../utils/shop.server";
 
 // GET /api/timers - List all timers for the shop
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -40,6 +41,15 @@ export async function action({ request }: ActionFunctionArgs) {
       return json<TimerErrorResponse>(
         { error: "Method not allowed" },
         { status: 405 },
+      );
+    }
+
+    // Check if shop can create a new timer
+    const canCreate = await canCreateTimer(session.shop);
+    if (!canCreate.allowed) {
+      return json<TimerErrorResponse>(
+        { error: canCreate.reason || "Cannot create timer" },
+        { status: 403 },
       );
     }
 

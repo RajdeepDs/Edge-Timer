@@ -5,6 +5,7 @@ import { authenticate } from "../shopify.server";
 import { TimerForm } from "../components/timer/TimerForm";
 import db from "../db.server";
 import type { Timer, TimerFormData } from "../types/timer";
+import { canCreateTimer } from "../utils/shop.server";
 
 type LoaderData = {
   timer: Timer | null;
@@ -68,6 +69,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         { error: "Missing required fields: name, title, and type" },
         { status: 400 },
       );
+    }
+
+    // Check timer limit when creating a new timer
+    if (!timerId) {
+      const canCreate = await canCreateTimer(session.shop);
+      if (!canCreate.allowed) {
+        return json(
+          { error: canCreate.reason || "Cannot create timer" },
+          { status: 403 },
+        );
+      }
     }
 
     if (timerId) {
