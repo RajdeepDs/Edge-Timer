@@ -35,22 +35,22 @@ const timerTypes: TimerType[] = [
     description: "Fixed or sticky bar on the top or the bottom of any page.",
     image: "/timer-types/bar.svg",
   },
-  {
-    id: "landing-page",
-    title: "Landing page",
-    description: "Block in home, collection, password, or any other page.",
-    image: "/timer-types/landing_page.svg",
-    badge: "Starter plan",
-    requiresUpgrade: true,
-  },
-  {
-    id: "cart-page",
-    title: "Cart page",
-    description: "Block in cart page below checkout button.",
-    image: "/timer-types/cart_page.svg",
-    badge: "Essential plan",
-    requiresUpgrade: true,
-  },
+  // {
+  //   id: "landing-page",
+  //   title: "Landing page",
+  //   description: "Block in home, collection, password, or any other page.",
+  //   image: "/timer-types/landing_page.svg",
+  //   badge: "Starter plan",
+  //   requiresUpgrade: true,
+  // },
+  // {
+  //   id: "cart-page",
+  //   title: "Cart page",
+  //   description: "Block in cart page below checkout button.",
+  //   image: "/timer-types/cart_page.svg",
+  //   badge: "Essential plan",
+  //   requiresUpgrade: true,
+  // },
 ];
 
 export default function ChooseTimerPage() {
