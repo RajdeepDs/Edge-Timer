@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Page,
   Box,
@@ -43,27 +43,36 @@ export function TimerForm({
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSaving = navigation.state === "submitting";
-  const isDirty =
-    JSON.stringify(existingTimer) !==
-    JSON.stringify(useTimerForm({ existingTimer, timerType }));
 
-  useEffect(() => {
-    if (isDirty) {
-      window.shopify.saveBar.show("timer-form");
-    } else {
-      window.shopify.saveBar.hide("timer-form");
-    }
-    return () => {
-      window.shopify.saveBar.hide("timer-form");
-    };
-  }, [isDirty]);
-
+  // Single, top-level call to your form state hook
   const formState = useTimerForm({ existingTimer, timerType });
+
   const { selectedTab, handleTabChange, goToNextTab } = useTimerTabs();
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     [],
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  /**
+   * Trigger a native "submit" event on the <form data-save-bar> element.
+   * This is what the App Bridge Save Bar listens to in order to auto-hide.
+   *
+   * NOTE: This does NOT actually send the form to the server (we're not
+   * calling form.submit()), it only fires the event so App Bridge can react.
+   */
+  const triggerSaveBarSubmitEvent = useCallback(() => {
+    const form = document.getElementById(
+      "timer-form",
+    ) as HTMLFormElement | null;
+    if (!form) return;
+
+    const event = new Event("submit", {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    form.dispatchEvent(event);
+  }, []);
 
   const handleSubmit = useCallback(
     async (publish: boolean = false) => {
@@ -136,6 +145,10 @@ export function TimerForm({
       // Clear validation errors if form is valid
       setValidationErrors([]);
 
+      // Tell App Bridge's save bar that the form has been "submitted"
+      // so that it auto-hides.
+      triggerSaveBarSubmitEvent();
+
       const formData = new FormData();
       formData.append("timerData", JSON.stringify(timerData));
       if (timerId) {
@@ -148,16 +161,18 @@ export function TimerForm({
         action: timerId ? `/timer?id=${timerId}` : "/timer",
       });
     },
-    [formState, timerType, timerId, submit, handleTabChange],
+    [
+      formState,
+      timerType,
+      timerId,
+      submit,
+      handleTabChange,
+      triggerSaveBarSubmitEvent,
+    ],
   );
 
   const handlePublish = useCallback(() => {
-    handleSubmit(true);
-    shopify.saveBar.hide("timer-form");
-  }, [handleSubmit]);
-
-  const handleSave = useCallback(() => {
-    handleSubmit(false);
+    void handleSubmit(true);
   }, [handleSubmit]);
 
   const handleDeleteClick = useCallback(() => {
@@ -167,19 +182,15 @@ export function TimerForm({
   const handleDeleteConfirm = useCallback(() => {
     if (!timerId) return;
 
-    const formData = new FormData();
-    formData.append("intent", "delete");
-    formData.append("timerId", timerId);
-
     const form = document.createElement("form");
     form.method = "POST";
     form.action = `/timer?id=${timerId}`;
 
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "intent";
-    input.value = "delete";
-    form.appendChild(input);
+    const intentInput = document.createElement("input");
+    intentInput.type = "hidden";
+    intentInput.name = "intent";
+    intentInput.value = "delete";
+    form.appendChild(intentInput);
 
     const timerIdInput = document.createElement("input");
     timerIdInput.type = "hidden";
@@ -267,21 +278,24 @@ export function TimerForm({
     }
   };
 
-  const secondaryActions = timerId
-    ? [
-        {
-          content: "Delete timer",
-          loading: isSaving,
-          destructive: true,
-          onAction: handleDeleteClick,
-        },
-      ]
-    : undefined;
+  const secondaryActions = (() => {
+    const actions: any[] = [];
+    if (timerId) {
+      actions.push({
+        content: "Delete timer",
+        loading: isSaving,
+        destructive: true,
+        onAction: handleDeleteClick,
+      });
+    }
+
+    return actions.length ? actions : undefined;
+  })();
 
   return (
     <Frame>
       <Page
-        title={`${formState.timerName}`}
+        title={formState.timerName}
         backAction={{
           content: "Timers",
           url: "/",
@@ -301,8 +315,12 @@ export function TimerForm({
           onAction: handlePublish,
         }}
       >
-        <form method="post" data-save-bar onSubmit={handleSave}>
-          {" "}
+        {/*
+          IMPORTANT:
+          - data-save-bar enables automatic Save Bar behavior
+          - We give it an id="timer-form" so we can trigger a synthetic submit
+        */}
+        <form id="timer-form" method="post" data-save-bar>
           <Box paddingBlockEnd="800">
             <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
               <Box paddingBlockStart="400">
@@ -342,6 +360,7 @@ export function TimerForm({
             </Tabs>
           </Box>
         </form>
+
         <Modal
           open={showDeleteModal}
           onClose={handleDeleteCancel}
