@@ -75,13 +75,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
 
-  await ensureShopExists(session.shop);
+  // Ensure shop exists and get the shop data
+  const shop = await ensureShopExists(session.shop);
   await registerWebhooks({ session });
-
-  // Fetch shop info
-  const shop = await prisma.shop.findUnique({
-    where: { shopDomain: session.shop },
-  });
 
   // Fetch all timers
   const timers = await prisma.timer.findMany({
@@ -104,11 +100,13 @@ export default function Index() {
     professional: -1,
   };
 
-  const limit = planLimits[(shop?.currentPlan || "free").toLowerCase()];
+  const currentPlan = shop?.currentPlan?.toLowerCase() || "free";
+  const monthlyViews = shop?.monthlyViews || 0;
+  const limit = planLimits[currentPlan];
   const usageText =
     limit === -1
-      ? `${shop?.monthlyViews || 0} views this month`
-      : `${shop?.monthlyViews || 0}/${limit} monthly views`;
+      ? `${monthlyViews} views this month`
+      : `${monthlyViews}/${limit} monthly views`;
 
   const handleCreateTimer = () => navigate("/new");
   const handleTimerClick = (timerId: string) =>
@@ -131,9 +129,8 @@ export default function Index() {
   };
 
   const currentPlanName =
-    shop.currentPlan.charAt(0).toUpperCase() + shop.currentPlan.slice(1);
-  const progressValue =
-    limit === -1 ? 0 : Math.min((shop?.monthlyViews || 0) / limit, 1);
+    currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
+  const progressValue = limit === -1 ? 0 : (monthlyViews / limit) * 100;
 
   return (
     <Page>
@@ -172,13 +169,17 @@ export default function Index() {
                   </Text>{" "}
                   One visitor can have multiple views per session.
                 </Text>
-                {shop.viewLimit !== -1 && (
-                  <ProgressBar progress={progressValue} size="small" />
+                {limit !== -1 && (
+                  <ProgressBar
+                    progress={progressValue}
+                    size="small"
+                    tone="primary"
+                  />
                 )}
-                {shop.trialEndsAt && (
+                {shop?.trialEndsAt && (
                   <Text as="p" tone="success">
                     Trial active until{" "}
-                    {new Date(shop.trialEndsAt).toLocaleDateString()}
+                    {new Date(shop?.trialEndsAt).toLocaleDateString()}
                   </Text>
                 )}
               </BlockStack>

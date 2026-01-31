@@ -144,7 +144,11 @@ export default function PricingPlans() {
               visitor can have multiple views per session.
             </Text>
             {shop.viewLimit !== -1 && (
-              <ProgressBar progress={progressValue} size="small" />
+              <ProgressBar
+                progress={progressValue}
+                size="small"
+                tone="primary"
+              />
             )}
             {shop.trialEndsAt && (
               <Text as="p" tone="success">
