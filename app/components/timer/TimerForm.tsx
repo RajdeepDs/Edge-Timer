@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Page,
   Box,
@@ -10,7 +10,7 @@ import {
   Text,
   BlockStack,
 } from "@shopify/polaris";
-import { useSubmit, useNavigation } from "@remix-run/react";
+import { useSubmit, useNavigation, useActionData } from "@remix-run/react";
 import { useTimerForm } from "../../hooks/useTimerForm";
 import { useTimerTabs } from "../../hooks/useTimerTabs";
 import ContentTab from "./ContentTab";
@@ -42,6 +42,7 @@ export function TimerForm({
 }: TimerFormProps) {
   const submit = useSubmit();
   const navigation = useNavigation();
+  const actionData = useActionData<{ error?: string }>();
   const isSaving = navigation.state === "submitting";
 
   // Single, top-level call to your form state hook
@@ -52,6 +53,36 @@ export function TimerForm({
     [],
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [previousNavigationState, setPreviousNavigationState] = useState(
+    navigation.state,
+  );
+
+  // Show toast notification for errors from action
+  useEffect(() => {
+    if (actionData?.error) {
+      shopify.toast.show(actionData.error, {
+        duration: 5000,
+        isError: true,
+      });
+    }
+  }, [actionData]);
+
+  // Show success toast when form is successfully submitted
+  useEffect(() => {
+    if (
+      previousNavigationState === "submitting" &&
+      navigation.state === "idle" &&
+      !actionData?.error
+    ) {
+      const message = timerId
+        ? "Timer updated successfully"
+        : "Timer created successfully";
+      shopify.toast.show(message, {
+        duration: 3000,
+      });
+    }
+    setPreviousNavigationState(navigation.state);
+  }, [navigation.state, actionData, timerId, previousNavigationState]);
 
   /**
    * Trigger a native "submit" event on the <form data-save-bar> element.

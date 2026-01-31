@@ -58,7 +58,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // Parse timer data from form
     const timerDataString = formData.get("timerData")?.toString();
     if (!timerDataString) {
-      return json({ error: "No timer data provided" }, { status: 400 });
+      return json(
+        { error: "Timer data is missing. Please try again." },
+        { status: 400 },
+      );
     }
 
     const timerData = JSON.parse(timerDataString) as TimerFormData;
@@ -66,7 +69,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // Validate required fields
     if (!timerData.name || !timerData.title || !timerData.type) {
       return json(
-        { error: "Missing required fields: name, title, and type" },
+        {
+          error:
+            "Please fill in all required fields: Timer Name, Title, and Type",
+        },
         { status: 400 },
       );
     }
@@ -76,7 +82,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const canCreate = await canCreateTimer(session.shop);
       if (!canCreate.allowed) {
         return json(
-          { error: canCreate.reason || "Cannot create timer" },
+          {
+            error:
+              canCreate.reason ||
+              "You've reached the maximum number of timers for your plan. Please upgrade or delete an existing timer.",
+          },
           { status: 403 },
         );
       }
@@ -195,7 +205,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   } catch (error) {
     console.error("Error saving timer:", error);
-    return json({ error: "Failed to save timer" }, { status: 500 });
+    return json(
+      {
+        error:
+          "Failed to save timer. Please try again or contact support if the problem persists.",
+      },
+      { status: 500 },
+    );
   }
 };
 
