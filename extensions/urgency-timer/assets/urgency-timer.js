@@ -437,24 +437,48 @@
       timer.secondsLabel || "Secs",
     ];
 
+    // Numbers row
+    const numbersRow = document.createElement("div");
+    numbersRow.className = "utimer-numbers-row";
+
     const valueEls = {};
     units.forEach((unit, idx) => {
-      const unitEl = document.createElement("div");
-      unitEl.className = "utimer-unit";
-
       const numEl = document.createElement("span");
       numEl.className = "utimer-number";
       numEl.textContent = "00";
+      numbersRow.appendChild(numEl);
+      valueEls[unit] = numEl;
 
+      // Add separator (colon) except after the last unit
+      if (idx < units.length - 1) {
+        const separator = document.createElement("span");
+        separator.className = "utimer-separator";
+        separator.textContent = ":";
+        numbersRow.appendChild(separator);
+      }
+    });
+
+    // Labels row
+    const labelsRow = document.createElement("div");
+    labelsRow.className = "utimer-labels-row";
+
+    units.forEach((unit, idx) => {
       const labelEl = document.createElement("span");
       labelEl.className = "utimer-label";
       labelEl.textContent = labels[idx];
+      labelsRow.appendChild(labelEl);
 
-      unitEl.appendChild(numEl);
-      unitEl.appendChild(labelEl);
-      countdown.appendChild(unitEl);
-      valueEls[unit] = numEl;
+      // Add invisible separator for spacing
+      if (idx < units.length - 1) {
+        const labelSeparator = document.createElement("span");
+        labelSeparator.className = "utimer-label-separator";
+        labelSeparator.textContent = ":";
+        labelsRow.appendChild(labelSeparator);
+      }
     });
+
+    countdown.appendChild(numbersRow);
+    countdown.appendChild(labelsRow);
 
     const ctaWrapper = document.createElement("div");
     ctaWrapper.className = "utimer-cta";
@@ -469,6 +493,68 @@
 
     // Minimal inline styles to ensure visibility without CSS
     applyMinimalStyles(container);
+
+    // Apply design config if present
+    const dc = timer.designConfig || {};
+    if (dc.backgroundColor) {
+      container.style.backgroundColor = dc.backgroundColor;
+    }
+    if (dc.borderRadius !== undefined) {
+      container.style.borderRadius = dc.borderRadius + "px";
+    }
+    if (dc.borderSize !== undefined) {
+      container.style.borderWidth = dc.borderSize + "px";
+    }
+    if (dc.borderColor) {
+      container.style.borderColor = dc.borderColor;
+    }
+    if (dc.paddingTop !== undefined && dc.paddingBottom !== undefined) {
+      container.style.padding = `${dc.paddingTop}px 24px ${dc.paddingBottom}px 24px`;
+    }
+    if (dc.marginTop !== undefined) {
+      container.style.marginTop = dc.marginTop + "px";
+    }
+    if (dc.marginBottom !== undefined) {
+      container.style.marginBottom = dc.marginBottom + "px";
+    }
+
+    // Apply typography styles
+    if (dc.titleSize) {
+      title.style.fontSize = dc.titleSize + "px";
+    }
+    if (dc.titleColor) {
+      title.style.color = dc.titleColor;
+    }
+    if (dc.subheadingSize) {
+      sub.style.fontSize = dc.subheadingSize + "px";
+    }
+    if (dc.subheadingColor) {
+      sub.style.color = dc.subheadingColor;
+    }
+    if (dc.timerSize) {
+      const numbers = numbersRow.querySelectorAll(".utimer-number, .utimer-separator");
+      numbers.forEach(num => {
+        num.style.fontSize = dc.timerSize + "px";
+      });
+    }
+    if (dc.timerColor) {
+      const numbers = numbersRow.querySelectorAll(".utimer-number, .utimer-separator");
+      numbers.forEach(num => {
+        num.style.color = dc.timerColor;
+      });
+    }
+    if (dc.legendSize) {
+      const legends = labelsRow.querySelectorAll(".utimer-label");
+      legends.forEach(legend => {
+        legend.style.fontSize = dc.legendSize + "px";
+      });
+    }
+    if (dc.legendColor) {
+      const legends = labelsRow.querySelectorAll(".utimer-label");
+      legends.forEach(legend => {
+        legend.style.color = dc.legendColor;
+      });
+    }
 
     container.appendChild(title);
     if (timer.subheading) container.appendChild(sub);
@@ -527,20 +613,38 @@
       const style = document.createElement("style");
       style.id = id;
       style.textContent = `
-        .utimer-container { padding: 12px; border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; color: #1f2937; max-width: 720px; }
-        .utimer-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-        .utimer-sub { font-size: 14px; color: #4b5563; margin-bottom: 8px; }
-        .utimer-countdown { display: flex; gap: 12px; align-items: center; }
-        .utimer-unit { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
-        .utimer-number { font-size: 22px; font-weight: 700; }
-        .utimer-label { font-size: 12px; color: #6b7280; }
-        .utimer-cta { margin-top: 10px; }
-        .utimer-button { display: inline-block; padding: 8px 12px; background: #111827; color: #fff; border-radius: 4px; text-decoration: none; }
-        .utimer-bar { position: fixed; left: 0; right: 0; padding: 10px 16px; display: flex; justify-content: center; align-items: center; gap: 16px; z-index: 2147483000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .utimer-container { padding: 32px 24px; border: 0px solid #e5e7eb; border-radius: 8px; background: #fff; color: #1f2937; max-width: 720px; text-align: center; }
+        .utimer-title { font-size: 28px; font-weight: 700; line-height: 1.2; margin: 0; }
+        .utimer-sub { font-size: 16px; color: #4b5563; margin: 0 0 4px 0; }
+        .utimer-countdown { display: grid; grid-template-rows: auto auto; gap: 4px; justify-content: center; margin-bottom: 4px; }
+        .utimer-numbers-row { display: flex; align-items: baseline; justify-content: center; gap: 0; }
+        .utimer-number { font-size: 40px; font-weight: 700; line-height: 1; font-feature-settings: "tnum" 1, "lnum" 1; font-variant-numeric: tabular-nums lining-nums; display: inline-block; width: 2ch; text-align: center; }
+        .utimer-separator { font-size: 40px; font-weight: 700; line-height: 1; margin: 0 4px; letter-spacing: -0.02em; transform: translateY(-10%); }
+        .utimer-labels-row { display: flex; justify-content: center; gap: 0; }
+        .utimer-label { flex: 0 0 auto; min-width: 32px; text-align: center; font-size: 14px; color: #6b7280; }
+        .utimer-label-separator { flex: 0 0 auto; width: calc(4px + 0.4em); visibility: hidden; }
+        .utimer-cta { margin-top: 14px; }
+        .utimer-button { display: inline-block; padding: 8px 16px; font-size: 14px; font-weight: 600; background: #111827; color: #fff; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; }
+        .utimer-bar { position: fixed; left: 0; right: 0; padding: 12px 20px; display: flex; align-items: center; justify-content: center; gap: 16px; z-index: 2147483000; background: #f9fafb; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .utimer-bar.top { top: 0; }
         .utimer-bar.bottom { bottom: 0; }
-        .utimer-bar .utimer-close { position: absolute; right: 12px; top: 8px; cursor: pointer; font-size: 18px; line-height: 1; }
-        .utimer-bar .utimer-button { background: #111827; color: #fff; }
+        .utimer-bar .utimer-container { background: transparent; border: none; padding: 0; margin: 0; box-shadow: none; display: flex; align-items: center; gap: 16px; }
+        .utimer-close { position: absolute; right: 12px; font-size: 22px; cursor: pointer; color: #6b7280; }
+        @media (max-width: 480px) {
+          .utimer-number { font-size: 32px; width: 2ch; }
+          .utimer-separator { font-size: 32px; transform: translateY(-8px); }
+          .utimer-label { width: 2ch; font-size: 10px; }
+          .utimer-label-separator { width: calc(2px + 0.4em); }
+          .utimer-sub { margin-bottom: 12px; }
+        }
+        @media (prefers-color-scheme: dark) {
+          .utimer-container { background: #0b0b0c; border-color: #1f2937; color: #e5e7eb; }
+          .utimer-title { color: #f3f4f6; }
+          .utimer-number { color: #f9fafb; }
+          .utimer-sub, .utimer-label, .utimer-close { color: #9ca3af; }
+          .utimer-bar { background: #0f1113; color: #e5e7eb; }
+          .utimer-button { background: #2563eb; }
+        }
       `;
       document.head.appendChild(style);
     }

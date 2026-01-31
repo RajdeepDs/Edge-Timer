@@ -1,103 +1,155 @@
 /*!
- * Urgency Timer - Minimal Storefront Styles
- * These styles provide a clean default appearance for timers rendered by assets/urgency-timer.js.
- * Merchants can override these styles via theme CSS if they wish.
+ * Urgency Timer – Storefront Styles
+ * Matches Admin Preview UI exactly
+ * Safe to override via theme CSS
  */
 
-/* Base variables (can be overridden by themes) */
 :root {
   --utimer-bg: #ffffff;
-  --utimer-fg: #1f2937; /* gray-800 */
-  --utimer-sub-fg: #4b5563; /* gray-600 */
-  --utimer-muted: #6b7280; /* gray-500 */
-  --utimer-border: #e5e7eb; /* gray-200 */
-  --utimer-accent: #111827; /* gray-900 */
+  --utimer-fg: #1f2937;
+  --utimer-sub-fg: #4b5563;
+  --utimer-muted: #6b7280;
+  --utimer-border: #e5e7eb;
+  --utimer-accent: #111827;
 
-  --utimer-radius: 6px;
-  --utimer-gap: 12px;
+  --utimer-radius: 8px;
 
-  --utimer-title-size: 18px;
-  --utimer-sub-size: 14px;
-  --utimer-number-size: 22px;
-  --utimer-label-size: 12px;
+  --utimer-title-size: 28px;
+  --utimer-sub-size: 16px;
+  --utimer-number-size: 40px;
+  --utimer-label-size: 14px;
 
   --utimer-button-bg: var(--utimer-accent);
   --utimer-button-fg: #ffffff;
   --utimer-button-radius: 4px;
-  --utimer-button-padding-y: 8px;
-  --utimer-button-padding-x: 12px;
 }
 
-/* Container for product-page timers */
+/* =============================
+   Product Timer Container
+============================= */
+
 .utimer-container {
   box-sizing: border-box;
   width: 100%;
   max-width: 720px;
-  padding: 12px;
-  border: 1px solid var(--utimer-border);
+  padding: 32px 24px;
+  border: 0px solid var(--utimer-border);
   border-radius: var(--utimer-radius);
   background: var(--utimer-bg);
   color: var(--utimer-fg);
   font-family:
     -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica,
-    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    Arial, sans-serif;
+  text-align: center;
 }
 
-/* Typography */
+/* =============================
+   Typography
+============================= */
+
 .utimer-title {
   font-size: var(--utimer-title-size);
-  font-weight: 600;
-  margin: 0 0 4px 0;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0 0;
   color: var(--utimer-title-color, var(--utimer-fg));
 }
 
 .utimer-sub {
   font-size: var(--utimer-sub-size);
+  margin: 0 0 4px 0;
   color: var(--utimer-sub-fg);
-  margin: 0 0 8px 0;
 }
 
-/* Countdown layout */
+/* =============================
+   Countdown - CSS Grid Layout
+============================= */
+
 .utimer-countdown {
-  display: flex;
-  gap: var(--utimer-gap);
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
-.utimer-unit {
+/* Numbers Row */
+
+.utimer-numbers-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 56px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0;
 }
 
 .utimer-number {
   font-size: var(--utimer-number-size);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1;
+  font-feature-settings:
+    "tnum" 1,
+    "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  -webkit-font-smoothing: antialiased;
+  color: var(--utimer-number-color, var(--utimer-fg));
+  display: inline-block;
+  width: 2ch;
+  text-align: center;
+}
+
+/* Colons – optical alignment */
+
+.utimer-separator {
+  font-size: var(--utimer-number-size);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 4px;
+  letter-spacing: -0.02em;
+  transform: translateY(-10%);
   color: var(--utimer-number-color, var(--utimer-fg));
 }
 
-.utimer-label {
-  font-size: var(--utimer-label-size);
-  color: var(--utimer-muted);
+/* Labels Row */
+
+.utimer-labels-row {
+  display: flex;
+  justify-content: center;
+  gap: 0;
 }
 
-/* CTA */
+.utimer-label {
+  flex: 0 0 auto;
+  min-width: 32px;
+  font-size: var(--utimer-label-size);
+  color: var(--utimer-muted);
+  text-align: center;
+}
+
+.utimer-label-separator {
+  flex: 0 0 auto;
+  width: calc(4px + 2.3em);
+  visibility: hidden;
+}
+
+/* =============================
+   CTA
+============================= */
+
 .utimer-cta {
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .utimer-button {
   display: inline-block;
-  padding: var(--utimer-button-padding-y) var(--utimer-button-padding-x);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
   background: var(--utimer-button-bg);
   color: var(--utimer-button-fg);
   border-radius: var(--utimer-button-radius);
   text-decoration: none;
-  font-weight: 600;
-  border: 1px solid transparent;
+  border: none;
+  cursor: pointer;
   transition:
     filter 0.15s ease,
     transform 0.02s ease;
@@ -111,133 +163,96 @@
   transform: translateY(1px);
 }
 
-/* Top/Bottom Bar Timers */
+/* =============================
+   Top / Bottom Bar
+============================= */
+
 .utimer-bar {
   position: fixed;
   left: 0;
   right: 0;
-  padding: max(12px, env(safe-area-inset-top)) 20px;
+  padding: 12px 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 16px;
-  z-index: 2147483000; /* higher than most sticky headers and apps */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background: #f9fafb; /* fallback; JS may override */
+  z-index: 2147483000;
+  background: #f9fafb;
   color: var(--utimer-fg);
-  transition: transform 0.3s ease-in-out;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .utimer-bar.top {
   top: 0;
-  padding-top: max(10px, env(safe-area-inset-top));
 }
 
 .utimer-bar.bottom {
   bottom: 0;
-  padding-bottom: max(10px, env(safe-area-inset-bottom));
 }
 
-/* Close button for bars */
-.utimer-bar .utimer-close {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 1;
-  user-select: none;
-  color: var(--utimer-muted);
-  padding: 4px;
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-}
+/* Remove card visuals inside bar */
 
-.utimer-bar .utimer-close:hover {
-  color: var(--utimer-fg);
-  transform: translateY(-50%) scale(1.1);
-}
-
-/* Neutralize container visuals when mounted inside a bar */
 .utimer-bar .utimer-container {
-  box-shadow: none;
-  border: none;
   background: transparent;
-  margin: 0;
+  border: none;
   padding: 0;
-}
-
-/* Bar specific styling */
-.utimer-bar .utimer-container {
+  margin: 0;
+  box-shadow: none;
   display: flex;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
-.utimer-bar .utimer-countdown {
-  margin: 0;
+/* Close button */
+
+.utimer-close {
+  position: absolute;
+  right: 12px;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--utimer-muted);
 }
 
-.utimer-bar .utimer-cta {
-  margin: 0;
+.utimer-close:hover {
+  color: var(--utimer-fg);
 }
 
-/* Responsiveness */
-@media (max-width: 768px) {
-  .utimer-bar {
-    padding-right: 44px; /* Make room for close button */
-  }
-
-  .utimer-bar .utimer-container {
-    gap: 12px;
-  }
-}
+/* =============================
+   Responsive
+============================= */
 
 @media (max-width: 480px) {
-  :root {
-    --utimer-title-size: 15px;
-    --utimer-sub-size: 12px;
-    --utimer-number-size: 18px;
-    --utimer-label-size: 10px;
-    --utimer-gap: 8px;
+  .utimer-number {
+    font-size: 32px;
   }
 
-  .utimer-unit {
-    min-width: 46px;
+  .utimer-separator {
+    font-size: 32px;
+    transform: translateY(-8px);
   }
 
-  .utimer-bar {
-    gap: 10px;
-    padding: 10px 40px 10px 12px;
-    flex-wrap: wrap;
+  .utimer-label {
+    width: 2ch;
+    font-size: 10px;
   }
 
-  .utimer-bar .utimer-title {
-    font-size: 14px;
+  .utimer-label-separator {
+    width: calc(2px + 0.4em);
   }
 
-  .utimer-bar .utimer-sub {
-    display: none; /* Hide subheading on mobile bars to save space */
+  .utimer-number {
+    width: 2ch;
   }
 
-  .utimer-bar .utimer-close {
-    font-size: 20px;
-    right: 8px;
-  }
-
-  .utimer-bar .utimer-button {
-    padding: 6px 10px;
-    font-size: 13px;
+  .utimer-sub {
+    margin-bottom: 12px;
   }
 }
 
-/* Basic dark mode consideration (inherits theme background) */
+/* =============================
+   Dark Mode
+============================= */
+
 @media (prefers-color-scheme: dark) {
   .utimer-container {
     background: #0b0b0c;
@@ -246,23 +261,22 @@
   }
 
   .utimer-title {
-    color: var(--utimer-title-color, #f3f4f6);
+    color: #f3f4f6;
   }
 
   .utimer-number {
-    color: var(--utimer-number-color, #f9fafb);
+    color: #f9fafb;
   }
 
   .utimer-sub,
   .utimer-label,
-  .utimer-bar .utimer-close {
+  .utimer-close {
     color: #9ca3af;
   }
 
   .utimer-bar {
     background: #0f1113;
     color: #e5e7eb;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   }
 
   .utimer-button {

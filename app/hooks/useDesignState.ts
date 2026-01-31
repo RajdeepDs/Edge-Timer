@@ -59,7 +59,7 @@ export function useDesignState({
   // Typography - Title
   const [titleSize, setTitleSize] = useState(
     String(
-      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28),
+      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32),
     ),
   );
   const [titleColor, setTitleColor] = useState(
@@ -80,7 +80,7 @@ export function useDesignState({
   // Typography - Timer
   const [timerSize, setTimerSize] = useState(
     String(
-      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40),
+      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48),
     ),
   );
   const [timerColor, setTimerColor] = useState(
@@ -129,12 +129,12 @@ export function useDesignState({
       marginTop: parseInt(outsideTop) || 0,
       marginBottom: parseInt(outsideBottom) || 0,
       // Typography
-      titleSize: parseInt(titleSize) || 28,
+      titleSize: parseInt(titleSize) || 33,
       titleColor,
       subheadingSize: parseInt(subheadingSize) || 16,
       subheadingColor,
       timerSize:
-        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 20 : 40),
+        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 22 : 48),
       timerColor,
       legendSize: parseInt(legendSize) || 14,
       legendColor,

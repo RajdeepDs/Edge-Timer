@@ -295,7 +295,7 @@ export default function DesignTab({
               suffix="px"
               inputMode="numeric"
               min={0}
-              max={100}
+              max={120}
             />
             <s-color-field
               name="timerColor"
