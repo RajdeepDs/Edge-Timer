@@ -33,6 +33,7 @@
     "@prisma/client": "^7.2.0",
     "@remix-run/dev": "^2.16.1",
     "@remix-run/fs-routes": "^2.16.1",
+    "@remix-run/route-config": "^2.16.1",
     "@remix-run/node": "^2.16.1",
     "@remix-run/react": "^2.16.1",
     "@remix-run/serve": "^2.16.1",
@@ -52,7 +53,6 @@
   },
   "devDependencies": {
     "@remix-run/eslint-config": "^2.16.1",
-    "@remix-run/route-config": "^2.16.1",
     "@shopify/api-codegen-preset": "^1.1.1",
     "@shopify/app-bridge-types": "^0.5.3",
     "@shopify/polaris-types": "^1.0.1",

@@ -1,4 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+#
+# Production: Before deploying to Render (or any host), update application_url,
+# auth.redirect_urls, and app_proxy.url to your production URL (e.g. https://your-app.onrender.com).
+# See DEPLOYMENT.md for details.
 
 client_id = "3e121cdbd42c341879c18784b948d955"
 name = "Urgency Timer"
