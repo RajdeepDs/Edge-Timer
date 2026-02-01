@@ -295,7 +295,7 @@
         display: grid;
         grid-template-columns: repeat(4, auto) repeat(3, auto);
         grid-template-rows: auto auto;
-        column-gap: 8px;
+        column-gap: 4px;
         row-gap: 6px;
         justify-items: center;
         align-items: start;
@@ -325,7 +325,7 @@
         font-weight: 700;
         line-height: 1;
         text-align: center;
-        padding: 0 2px;
+        padding: 0;
       }
 
       .utimer-labels-row {
@@ -400,9 +400,9 @@
       }
 
       @media (max-width: 480px) {
-        .utimer-countdown { column-gap: 6px; }
+        .utimer-countdown { column-gap: 3px; }
         .utimer-number { font-size: 32px; min-width: 2.5ch; }
-        .utimer-separator { font-size: 32px; padding: 0 1px; }
+        .utimer-separator { font-size: 32px; padding: 0; }
         .utimer-label { font-size: 11px; }
       }
 
