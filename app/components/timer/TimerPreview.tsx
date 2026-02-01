@@ -201,14 +201,14 @@ export default function TimerPreview({
           paddingBottom: `${Math.min(paddingBottom, 16)}px`,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "center",
           gap: "16px",
         }}
         className="select-none"
       >
         {/* Left side: Title and subheading in one line */}
         <div style={{ ...barTitleStyle, whiteSpace: "nowrap" }}>
-          {title || "Hurry up!"} {subheading || "Sale ends in:"}
+          {title || "Hurry up! Sale ends in:"}{" "}
         </div>
 
         {/* Right side: Timer and button */}
