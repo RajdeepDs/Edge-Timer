@@ -7,10 +7,6 @@ type = "theme"
 target = "online_store.product"
 module = "blocks/product-timer.liquid"
 
-[[extension_points]]
-target = "online_store.any"
-module = "blocks/bar-timer.liquid"
-
 # Bundle client assets used by blocks/snippets
 [assets]
 files = [

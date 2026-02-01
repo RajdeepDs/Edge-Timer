@@ -9,22 +9,6 @@
         }
       }
     },
-    "bar_timer": {
-      "name": "Urgency Timer Bar",
-      "settings": {
-        "positioning": {
-          "label": "Bar Position",
-          "options": {
-            "top": "Top of page",
-            "bottom": "Bottom of page"
-          }
-        },
-        "timer_id": {
-          "label": "Timer ID (Optional)",
-          "info": "Leave empty to auto-select the first matching bar timer. Enter a specific timer ID to display that timer only."
-        }
-      }
-    },
     "common": {
       "close": "Close",
       "days": "Days",
