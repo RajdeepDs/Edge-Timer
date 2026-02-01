@@ -2,7 +2,7 @@
 
 client_id = "5ed2d50b3a29697af7360b72762d758b"
 name = "Urgency Timer"
-application_url = "https://example.com"
+application_url = "https://urgency-timer.onrender.com"
 embedded = true
 
 [build]
@@ -12,9 +12,26 @@ include_config_on_deploy = true
 [webhooks]
 api_version = "2026-04"
 
+[[webhooks.subscriptions]]
+topics = [ "app/uninstalled" ]
+uri = "/webhooks/app/uninstalled"
+
+[[webhooks.subscriptions]]
+topics = [ "app/scopes_update" ]
+uri = "/webhooks/app/scopes_update"
+
+[[webhooks.subscriptions]]
+topics = [ "app_subscriptions/update" ]
+uri = "/webhooks/app_subscriptions/update"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://urgency-timer.onrender.com/auth" ]
+
+[app_proxy]
+url = "https://urgency-timer.onrender.com/proxy"
+subpath = "urgency-timer"
+prefix = "apps"
