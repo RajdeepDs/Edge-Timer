@@ -39,29 +39,12 @@ Notes:
 
 {% schema %}
 {
-  "name": "Urgency Timer Bar",
+  "name": "Urgency Timer",
   "target": "section",
-  "settings": [
-    {
-      "type": "select",
-      "id": "positioning",
-      "label": "Bar Position",
-      "options": [
-        {
-          "value": "top",
-          "label": "Top of page"
-        },
-        {
-          "value": "bottom",
-          "label": "Bottom of page"
-        }
-      ],
-      "default": "top"
-    },
     {
       "type": "text",
       "id": "timerId",
-      "label": "Timer ID (Optional)",
+      "label": "Timer ID",
       "info": "Leave empty to auto-select the first matching bar timer. Enter a specific timer ID to display that timer only."
     }
   ]

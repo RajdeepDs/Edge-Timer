@@ -198,9 +198,11 @@
     c.append(countdown);
 
     if (timer.ctaType === "button" && timer.buttonLink) {
-      const a = el("a", "utimer-button", timer.buttonText);
+      const cta = el("div", "utimer-cta");
+      const a = el("a", "utimer-button", timer.buttonText || "Shop now!");
       a.href = timer.buttonLink;
-      c.append(el("div", "utimer-cta")).append(a);
+      cta.appendChild(a);
+      c.append(cta);
     }
 
     let id = setInterval(update, 1000);
@@ -248,13 +250,32 @@
       .filter(t => t.type === "top-bottom-bar")
       .forEach(t => {
         const bar = document.createElement("div");
-        bar.className = "utimer-bar " + (t.designConfig?.positioning === "bottom" ? "bottom" : "top");
+        const position = t.designConfig?.positioning === "bottom" ? "bottom" : "top";
+        bar.className = "utimer-bar " + position;
 
-        const close = el("span", "utimer-close", "×");
-        close.onclick = () => bar.remove();
+        // Force button to show in bar
+        const originalCtaType = t.ctaType;
+        const originalButtonLink = t.buttonLink;
+        if (!t.buttonLink) t.buttonLink = "#";
+        t.ctaType = "button";
 
-        bar.append(close, createCountdownDOM(t));
+        bar.appendChild(createCountdownDOM(t));
+
+        // Restore original values
+        t.ctaType = originalCtaType;
+        t.buttonLink = originalButtonLink;
+
         document.body.appendChild(bar);
+
+        // Add body padding to prevent overlap
+        requestAnimationFrame(() => {
+          const barHeight = bar.offsetHeight;
+          if (position === "top") {
+            document.body.style.paddingTop = barHeight + "px";
+          } else {
+            document.body.style.paddingBottom = barHeight + "px";
+          }
+        });
       });
   }
 
@@ -367,14 +388,13 @@
         position: fixed;
         left: 0;
         right: 0;
-        padding: 12px 20px;
+        padding: 12px 24px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 16px;
+        gap: 20px;
         z-index: 2147483000;
-        background: #f9fafb;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        background: #ffffff;
       }
 
       .utimer-bar.top { top: 0; }
@@ -387,16 +407,63 @@
         border: none;
         box-shadow: none;
         display: flex;
+        flex-direction: row;
         align-items: center;
-        gap: 16px;
+        justify-content: center;
+        flex-wrap: nowrap;
+        gap: 12px;
+        max-width: none;
+        width: auto;
       }
 
-      .utimer-close {
-        position: absolute;
-        right: 12px;
-        font-size: 22px;
-        cursor: pointer;
-        color: #6b7280;
+      .utimer-bar .utimer-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      .utimer-bar .utimer-sub {
+        display: none;
+      }
+
+      .utimer-bar .utimer-countdown {
+        margin: 0;
+        row-gap: 0px;
+        column-gap: 2px;
+        align-items: end;
+      }
+
+      .utimer-bar .utimer-number {
+        font-size: 24px;
+        min-width: 2ch;
+        line-height: 0.9;
+      }
+
+      .utimer-bar .utimer-separator {
+        font-size: 24px;
+        line-height: 0.9;
+      }
+
+      .utimer-bar .utimer-label {
+        font-size: 10px;
+        min-width: 2ch;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      .utimer-bar .utimer-cta {
+        margin: 0;
+        margin-left: 12px;
+        flex-shrink: 0;
+      }
+
+      .utimer-bar .utimer-button {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       @media (max-width: 480px) {

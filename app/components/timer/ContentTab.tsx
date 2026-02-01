@@ -172,14 +172,16 @@ export default function ContentTab({
         autocomplete="off"
         error={hasFieldError("title") ? getFieldError("title") : undefined}
       />
-      <s-text-field
-        label="Subheading"
-        value={subheading}
-        defaultValue={subheading}
-        onInput={(e) => setSubheading(getValue(e))}
-        placeholder="Sale ends in:"
-        autocomplete="off"
-      />
+      {timerType === "product-page" && (
+        <s-text-field
+          label="Subheading"
+          value={subheading}
+          defaultValue={subheading}
+          onInput={(e) => setSubheading(getValue(e))}
+          placeholder="Sale ends in:"
+          autocomplete="off"
+        />
+      )}
       {timerType === "top-bottom-bar" && callToAction && setCallToAction && (
         <BlockStack gap="400">
           <s-select

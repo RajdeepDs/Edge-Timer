@@ -179,15 +179,14 @@
   position: fixed;
   left: 0;
   right: 0;
-  padding: 12px 20px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   z-index: 2147483000;
-  background: #f9fafb;
+  background: #ffffff;
   color: var(--utimer-fg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .utimer-bar.top {
@@ -196,6 +195,15 @@
 
 .utimer-bar.bottom {
   bottom: 0;
+}
+
+/* Add body padding when bar is present */
+body:has(.utimer-bar.top) {
+  padding-top: 70px;
+}
+
+body:has(.utimer-bar.bottom) {
+  padding-bottom: 70px;
 }
 
 /* Remove card visuals inside bar */
@@ -207,22 +215,65 @@
   margin: 0;
   box-shadow: none;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  max-width: none;
+  width: auto;
 }
 
-/* Close button */
+/* Inline layout for bar */
 
-.utimer-close {
-  position: absolute;
-  right: 12px;
-  font-size: 22px;
-  cursor: pointer;
-  color: var(--utimer-muted);
+.utimer-bar .utimer-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.utimer-close:hover {
-  color: var(--utimer-fg);
+.utimer-bar .utimer-sub {
+  display: none;
+}
+
+.utimer-bar .utimer-countdown {
+  margin: 0;
+  row-gap: 0px;
+  column-gap: 2px;
+  align-items: end;
+}
+
+.utimer-bar .utimer-number {
+  font-size: 24px;
+  min-width: 2ch;
+  line-height: 0.9;
+}
+
+.utimer-bar .utimer-separator {
+  font-size: 24px;
+  line-height: 0.9;
+}
+
+.utimer-bar .utimer-label {
+  font-size: 10px;
+  min-width: 2ch;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+.utimer-bar .utimer-cta {
+  margin: 0;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.utimer-bar .utimer-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* =============================
