@@ -2,7 +2,7 @@
 
 client_id = "3e121cdbd42c341879c18784b948d955"
 name = "urgency-timer"
-application_url = "https://collaboration-mile-bra-minutes.trycloudflare.com"
+application_url = "https://replies-airport-aerospace-searching.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ api_version = "2026-04"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://collaboration-mile-bra-minutes.trycloudflare.com/auth" ]
+redirect_urls = [ "https://replies-airport-aerospace-searching.trycloudflare.com/auth" ]
 
 [app_proxy]
-url = "https://collaboration-mile-bra-minutes.trycloudflare.com/proxy"
+url = "https://replies-airport-aerospace-searching.trycloudflare.com/proxy"
 subpath = "urgency-timer"
 prefix = "apps"
