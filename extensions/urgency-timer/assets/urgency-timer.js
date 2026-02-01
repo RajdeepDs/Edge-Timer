@@ -317,8 +317,8 @@
         } else if (dc.backgroundColor != null) {
           bar.style.backgroundColor = dc.backgroundColor;
         }
-        if (dc.paddingTop != null) bar.style.paddingTop = Math.min(dc.paddingTop, 20) + "px";
-        if (dc.paddingBottom != null) bar.style.paddingBottom = Math.min(dc.paddingBottom, 20) + "px";
+        if (dc.paddingTop != null) bar.style.paddingTop = Math.min(dc.paddingTop, 10) + "px";
+        if (dc.paddingBottom != null) bar.style.paddingBottom = Math.min(dc.paddingBottom, 10) + "px";
 
         bar.appendChild(createCountdownDOM(t));
         if (isTop) {
@@ -432,18 +432,17 @@
         cursor: pointer;
       }
 
-      /* Top / Bottom Bar – compact single-row */
+      /* Top / Bottom Bar - compact single-row */
 
       .utimer-bar {
         left: 0;
         right: 0;
-        padding: 8px 16px;
+        padding: 4px 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
         background: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
         flex-wrap: nowrap;
       }
 
@@ -486,7 +485,7 @@
       /* Bar: stack vertically on small screens */
       @media (max-width: 768px) {
         .utimer-bar {
-          padding: 6px 10px;
+          padding: 4px 10px;
           flex-wrap: wrap;
           justify-content: center;
         }
@@ -526,7 +525,7 @@
         .utimer-title { font-size: 18px; }
         .utimer-number, .utimer-separator { font-size: 24px; }
         .utimer-label { font-size: 9px; }
-        .utimer-bar { padding: 8px 10px; }
+        .utimer-bar { padding: 4px 10px; }
         .utimer-bar .utimer-title { font-size: 16px; }
         .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: 22px; }
       }

@@ -178,14 +178,13 @@
 .utimer-bar {
   left: 0;
   right: 0;
-  padding: 8px 16px;
+  padding: 4px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   background: #f9fafb;
   color: var(--utimer-fg);
-  border-bottom: 1px solid #e5e7eb;
   flex-wrap: nowrap;
 }
 
@@ -266,7 +265,7 @@
 
 @media (max-width: 768px) {
   .utimer-bar {
-    padding: 6px 10px;
+    padding: 4px 10px;
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -385,7 +384,7 @@
   }
 
   .utimer-bar {
-    padding: 8px 40px 8px 10px;
+    padding: 4px 10px;
   }
 
   .utimer-bar .utimer-title {
