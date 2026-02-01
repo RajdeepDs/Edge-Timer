@@ -13,9 +13,8 @@
     fetchPromise: null,
   };
 
-  // change to "/apps/urgency-timer/timers" in production
-  const DEFAULT_ENDPOINT =
-    "https://replies-airport-aerospace-searching.trycloudflare.com/public/timers";
+  // App Proxy path: Shopify proxies to your app (works on any merchant store)
+  const DEFAULT_ENDPOINT = "/apps/urgency-timer/timers";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);

@@ -6,7 +6,7 @@
 
 client_id = "3e121cdbd42c341879c18784b948d955"
 name = "Urgency Timer"
-application_url = "https://replies-airport-aerospace-searching.trycloudflare.com"
+application_url = "https://urgency-timer.onrender.com"
 embedded = true
 
 [build]
@@ -32,9 +32,9 @@ api_version = "2026-04"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://replies-airport-aerospace-searching.trycloudflare.com/auth" ]
+redirect_urls = [ "https://urgency-timer.onrender.com/auth" ]
 
 [app_proxy]
-url = "https://replies-airport-aerospace-searching.trycloudflare.com/proxy"
+url = "https://urgency-timer.onrender.com/proxy"
 subpath = "urgency-timer"
 prefix = "apps"
