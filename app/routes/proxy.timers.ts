@@ -11,6 +11,9 @@ import { validateProxyRequest } from "../utils/proxy.server";
  *
  * Query params automatically added by Shopify:
  * - shop: shop domain
+ * - timestamp
+ * - path_prefix
+ * - logged_in_customer_id
  * - signature: HMAC signature for validation
  *
  * Additional params the client can send:
@@ -34,15 +37,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (!validation.isValid && (!isDev || !shopParam)) {
     // Detailed logging to diagnose signature mismatches in production
-
     const debugUrl = new URL(request.url);
 
     const debugSignature = debugUrl.searchParams.get("signature") || "";
-
     const debugShop = debugUrl.searchParams.get("shop");
-
     const debugTimestamp = debugUrl.searchParams.get("timestamp");
-
     const debugPathPrefix = debugUrl.searchParams.get("path_prefix");
 
     const envSecret =
@@ -51,48 +50,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
       process.env.SHOPIFY_API_SECRET_KEY ||
       "(missing)";
 
-    // Reconstruct the exact HMAC message string (raw query minus signature)
-    const rawQuery = debugUrl.search.startsWith("?")
-      ? debugUrl.search.slice(1)
-      : debugUrl.search;
-    const hmacMessage = rawQuery
-      .split("&")
-      .filter((pair) => !pair.startsWith("signature="))
+    // Build the exact HMAC message string the validator uses:
+    //  - remove "signature"
+    //  - sort keys lexicographically
+    //  - join as key=value&key2=value2...
+    const debugParams = new URLSearchParams(debugUrl.search);
+    debugParams.delete("signature");
+
+    const debugKeys = Array.from(debugParams.keys()).sort();
+
+    const hmacMessage = debugKeys
+      .map((key) => {
+        const values = debugParams.getAll(key);
+        return values.map((value) => `${key}=${value}`).join("&");
+      })
+      .filter(Boolean)
       .join("&");
 
     console.error("[proxy.timers] App Proxy validation failed", {
       error: validation.error,
-
       isDev,
-
       shopParam,
-
       requestUrl: request.url,
-
       shop: debugShop,
-
       signature: debugSignature,
-
       signatureLength: debugSignature.length,
       timestamp: debugTimestamp,
-
       path_prefix: debugPathPrefix,
-
       hasSecret: envSecret !== "(missing)",
-
       hmacMessageLength: hmacMessage.length,
       hmacMessage,
     });
 
     return json(
       { error: validation.error || "Unauthorized" },
-
       {
         status: 401,
-
         headers: {
           "Content-Type": "application/json",
-
           "Cache-Control": "no-store",
         },
       },
