@@ -38,7 +38,6 @@ export function TimerForm({
   timerType,
   timerId,
   shop,
-  onCancel,
 }: TimerFormProps) {
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -106,7 +105,7 @@ export function TimerForm({
   }, []);
 
   const handleSubmit = useCallback(
-    async (publish: boolean = false) => {
+    async (intent: "save" | "publish" | "unpublish" = "save") => {
       const finalEndDate =
         formState.timerTypeValue === "countdown"
           ? combineDateTime(
@@ -159,18 +158,27 @@ export function TimerForm({
         excludedPages: null,
 
         geolocation: "all-world",
+
         countries: null,
 
-        isPublished: publish,
+        // Preserve published state on save; toggle on publish/unpublish
+        isPublished:
+          intent === "publish"
+            ? true
+            : intent === "unpublish"
+              ? false
+              : (existingTimer?.isPublished ?? false),
       };
 
-      // Validate form
-      const validation = validateTimerForm(timerData);
-      if (!validation.isValid) {
-        setValidationErrors(validation.errors);
-        // Switch to Content tab if there are errors
-        handleTabChange(0);
-        return;
+      // Validate form unless we're unpublishing (which only toggles isPublished)
+      if (intent !== "unpublish") {
+        const validation = validateTimerForm(timerData);
+        if (!validation.isValid) {
+          setValidationErrors(validation.errors);
+          // Switch to Content tab if there are errors
+          handleTabChange(0);
+          return;
+        }
       }
 
       // Clear validation errors if form is valid
@@ -185,7 +193,7 @@ export function TimerForm({
       if (timerId) {
         formData.append("timerId", timerId);
       }
-      formData.append("intent", publish ? "publish" : "save");
+      formData.append("intent", intent);
 
       submit(formData, {
         method: "POST",
@@ -203,8 +211,23 @@ export function TimerForm({
   );
 
   const handlePublish = useCallback(() => {
-    void handleSubmit(true);
+    void handleSubmit("publish");
   }, [handleSubmit]);
+
+  const handleUnpublish = useCallback(() => {
+    if (!timerId) return;
+    void handleSubmit("unpublish");
+  }, [timerId, handleSubmit]);
+
+  const handleSaveBarSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      // Prevent native form submission which can cause a full-page redirect
+      e.preventDefault();
+      // Run a draft save (or update for existing timer) via Remix submit
+      void handleSubmit("save");
+    },
+    [handleSubmit],
+  );
 
   const handleDeleteClick = useCallback(() => {
     setShowDeleteModal(true);
@@ -324,7 +347,7 @@ export function TimerForm({
           url: "/",
         }}
         titleMetadata={
-          timerId ? (
+          timerId && existingTimer?.isPublished ? (
             <Badge tone="success">Published</Badge>
           ) : (
             <Badge>Draft</Badge>
@@ -333,9 +356,11 @@ export function TimerForm({
         subtitle={timerId ? `Timer ID: ${timerId}` : `Save to show Timer ID`}
         secondaryActions={secondaryActions}
         primaryAction={{
-          content: timerId ? "Update" : "Publish",
+          content: existingTimer?.isPublished ? "Unpublish" : "Publish",
           loading: isSaving,
-          onAction: handlePublish,
+          onAction: existingTimer?.isPublished
+            ? handleUnpublish
+            : handlePublish,
         }}
       >
         {/*
@@ -343,7 +368,12 @@ export function TimerForm({
           - data-save-bar enables automatic Save Bar behavior
           - We give it an id="timer-form" so we can trigger a synthetic submit
         */}
-        <form id="timer-form" method="post" data-save-bar>
+        <form
+          id="timer-form"
+          method="post"
+          data-save-bar
+          onSubmit={handleSaveBarSubmit}
+        >
           <Box paddingBlockEnd="800">
             <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
               <Box paddingBlockStart="400">
