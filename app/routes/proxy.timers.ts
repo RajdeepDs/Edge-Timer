@@ -34,26 +34,54 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (!validation.isValid && (!isDev || !shopParam)) {
     // Detailed logging to diagnose signature mismatches in production
+
     const debugUrl = new URL(request.url);
-    const debugSignature = debugUrl.searchParams.get("signature");
+
+    const debugSignature = debugUrl.searchParams.get("signature") || "";
+
     const debugShop = debugUrl.searchParams.get("shop");
+
     const debugTimestamp = debugUrl.searchParams.get("timestamp");
+
     const debugPathPrefix = debugUrl.searchParams.get("path_prefix");
+
     const envSecret =
       process.env.SHOPIFY_CLIENT_SECRET ||
       process.env.SHOPIFY_API_SECRET ||
       process.env.SHOPIFY_API_SECRET_KEY ||
       "(missing)";
+
+    // Reconstruct the exact HMAC message string (raw query minus signature)
+    const rawQuery = debugUrl.search.startsWith("?")
+      ? debugUrl.search.slice(1)
+      : debugUrl.search;
+    const hmacMessage = rawQuery
+      .split("&")
+      .filter((pair) => !pair.startsWith("signature="))
+      .join("&");
+
     console.error("[proxy.timers] App Proxy validation failed", {
       error: validation.error,
+
       isDev,
+
       shopParam,
+
       requestUrl: request.url,
+
       shop: debugShop,
+
       signature: debugSignature,
+
+      signatureLength: debugSignature.length,
       timestamp: debugTimestamp,
+
       path_prefix: debugPathPrefix,
+
       hasSecret: envSecret !== "(missing)",
+
+      hmacMessageLength: hmacMessage.length,
+      hmacMessage,
     });
 
     return json(
