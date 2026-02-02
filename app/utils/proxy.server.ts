@@ -12,21 +12,19 @@ export interface ProxyValidationResult {
  * Shopify docs:
  * https://shopify.dev/docs/apps/build/online-store/app-proxies/authenticate-app-proxies#verify-the-request
  *
- * IMPORTANT: Shopify calculates the HMAC signature using the URL-encoded query string.
- * We must preserve the encoding when validating.
+ * IMPORTANT: Shopify only signs the parameters IT adds:
+ * - shop
+ * - timestamp
+ * - logged_in_customer_id
+ * - path_prefix
+ * - signature
+ *
+ * Any custom parameters added by your client-side JavaScript are NOT included
+ * in the signature calculation and must be ignored during validation.
  */
 export function validateProxyRequest(request: Request): ProxyValidationResult {
   const url = new URL(request.url);
-
-  // Get the raw query string (preserves URL encoding)
-  const queryString = url.search.substring(1); // Remove leading '?'
-
-  if (!queryString) {
-    return { isValid: false, error: "Missing query parameters" };
-  }
-
-  // Parse params to extract signature and shop (these will be decoded)
-  const params = new URLSearchParams(queryString);
+  const params = new URLSearchParams(url.search);
 
   // 1. Get signature
   const signature = params.get("signature");
@@ -53,20 +51,36 @@ export function validateProxyRequest(request: Request): ProxyValidationResult {
     return { isValid: false, error: "API secret not configured", shop };
   }
 
-  // 4. Build the HMAC message:
-  //    - Remove the signature parameter
-  //    - Sort remaining parameters alphabetically
-  //    - Join with '&'
-  //    CRITICAL: We must work with the RAW (encoded) query string to match Shopify's signature
+  // 4. Build the HMAC message using ONLY Shopify-signed parameters
+  //    Shopify signs these parameters (and only these):
+  //    - shop
+  //    - timestamp
+  //    - logged_in_customer_id
+  //    - path_prefix
+  //
+  //    Any other parameters (productId, pageType, country, etc.) are NOT signed
+  //    and must be excluded from validation.
 
-  const queryParams = queryString.split("&");
+  const shopifySignedParams = [
+    "shop",
+    "timestamp",
+    "logged_in_customer_id",
+    "path_prefix",
+  ];
 
-  // Filter out signature parameter and sort alphabetically
-  const paramsWithoutSignature = queryParams
-    .filter((param) => !param.startsWith("signature="))
-    .sort();
+  // Extract only Shopify-signed parameters
+  const signedPairs: string[] = [];
 
-  const message = paramsWithoutSignature.join("&");
+  for (const key of shopifySignedParams) {
+    const value = params.get(key);
+    if (value !== null) {
+      // Use the exact encoding that URLSearchParams provides
+      signedPairs.push(`${key}=${value}`);
+    }
+  }
+
+  // Sort alphabetically and join
+  const message = signedPairs.sort().join("&");
 
   // 5. Compute HMAC-SHA256 (hex) with app secret
   const computed = crypto
@@ -91,8 +105,10 @@ export function validateProxyRequest(request: Request): ProxyValidationResult {
       shop,
       receivedLength: receivedSig.length,
       computedLength: computedSig.length,
-      messagePreview: message.substring(0, 200),
+      message,
       timestamp: params.get("timestamp"),
+      receivedSig: receivedSig.substring(0, 16) + "...",
+      computedSig: computedSig.substring(0, 16) + "...",
     });
     return { isValid: false, error: "Invalid signature", shop };
   }

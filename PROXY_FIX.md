@@ -78,12 +78,32 @@ I fixed the signature validation in `app/utils/proxy.server.ts` to:
 
 ### How App Proxy Validation Works
 
-1. Shopify adds HMAC signature to requests: `?shop=...&timestamp=...&signature=abc123`
-2. Server removes `signature` parameter
-3. Server sorts remaining parameters alphabetically
-4. Server joins them as: `param1=value1&param2=value2`
+**IMPORTANT**: Shopify only signs the parameters **it** adds to the request. Your custom parameters are not included in the signature!
+
+#### Shopify-Signed Parameters (validated):
+- `shop` - The shop domain
+- `timestamp` - Request timestamp
+- `logged_in_customer_id` - Customer ID (if logged in)
+- `path_prefix` - The proxy path prefix (e.g., `/apps/urgency-timer`)
+- `signature` - The HMAC signature
+
+#### Custom Parameters (NOT validated):
+- `productId` - Added by your JavaScript
+- `pageType` - Added by your JavaScript
+- `country` - Added by your JavaScript
+- `collectionIds` - Added by your JavaScript
+- `productTags` - Added by your JavaScript
+- Any other parameters you add client-side
+
+#### Validation Process:
+1. Shopify proxies the request and adds: `shop`, `timestamp`, `logged_in_customer_id`, `path_prefix`, `signature`
+2. Your client-side JS adds: `productId`, `pageType`, `country`, etc.
+3. Server extracts **only** the Shopify-signed parameters (ignoring custom ones)
+4. Server sorts these parameters alphabetically: `logged_in_customer_id=&path_prefix=/apps/urgency-timer&shop=...&timestamp=...`
 5. Server computes HMAC-SHA256 using your API secret key
 6. Server compares computed signature with received signature
+
+This is why it's critical that the validation code only uses Shopify's parameters!
 
 ## Verification Checklist
 
@@ -106,8 +126,16 @@ I fixed the signature validation in `app/utils/proxy.server.ts` to:
 **Solutions**:
 1. Verify the secret matches your app in Partner Dashboard (not from another app)
 2. Check for extra spaces or line breaks when copying
-3. Make sure you're testing the production URL, not localhost
+3. Make sure you're testing through Shopify's App Proxy URL: `https://your-shop.myshopify.com/apps/urgency-timer/...` (NOT directly to `https://urgency-timer.onrender.com/...`)
 4. Clear your browser cache and try again
+
+### Issue: Request going directly to server instead of through Shopify
+
+If your logs show requests to `http://urgency-timer.onrender.com/proxy/timers` instead of coming through Shopify's proxy:
+
+**This is normal!** Shopify proxies the request from `https://your-shop.myshopify.com/apps/urgency-timer/timers` to your server at `http://urgency-timer.onrender.com/proxy/timers`.
+
+The key is that Shopify adds the signature parameters before forwarding the request to your server.
 
 ### Issue: Timer still not showing
 

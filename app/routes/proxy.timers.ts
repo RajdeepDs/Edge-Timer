@@ -38,12 +38,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!validation.isValid && (!isDev || !shopParam)) {
     // Detailed logging to diagnose signature mismatches in production
     const debugUrl = new URL(request.url);
-    const queryString = debugUrl.search.substring(1);
+    const debugParams = debugUrl.searchParams;
 
-    const debugSignature = debugUrl.searchParams.get("signature") || "";
-    const debugShop = debugUrl.searchParams.get("shop");
-    const debugTimestamp = debugUrl.searchParams.get("timestamp");
-    const debugPathPrefix = debugUrl.searchParams.get("path_prefix");
+    const debugSignature = debugParams.get("signature") || "";
+    const debugShop = debugParams.get("shop");
+    const debugTimestamp = debugParams.get("timestamp");
+    const debugPathPrefix = debugParams.get("path_prefix");
+    const debugLoggedInCustomerId = debugParams.get("logged_in_customer_id");
 
     const envSecret =
       process.env.SHOPIFY_API_SECRET ||
@@ -52,22 +53,49 @@ export async function loader({ request }: LoaderFunctionArgs) {
       "(missing)";
 
     // Build the exact HMAC message string the validator uses
-    const queryParams = queryString.split("&");
-    const paramsWithoutSignature = queryParams
-      .filter((param) => !param.startsWith("signature="))
-      .sort();
-    const hmacMessage = paramsWithoutSignature.join("&");
+    // Only Shopify-signed parameters are included
+    const shopifySignedParams = [
+      "shop",
+      "timestamp",
+      "logged_in_customer_id",
+      "path_prefix",
+    ];
+
+    const signedPairs: string[] = [];
+    for (const key of shopifySignedParams) {
+      const value = debugParams.get(key);
+      if (value !== null) {
+        signedPairs.push(`${key}=${value}`);
+      }
+    }
+    const hmacMessage = signedPairs.sort().join("&");
+
+    // Get custom parameters (not signed by Shopify)
+    const allParams = Array.from(debugParams.keys());
+    const customParams = allParams.filter(
+      (key) => !shopifySignedParams.includes(key) && key !== "signature",
+    );
 
     console.error("[proxy.timers] App Proxy validation failed", {
       error: validation.error,
       isDev,
       shopParam,
       requestUrl: request.url,
-      shop: debugShop,
+      shopifySignedParams: {
+        shop: debugShop,
+        timestamp: debugTimestamp,
+        path_prefix: debugPathPrefix,
+        logged_in_customer_id: debugLoggedInCustomerId,
+      },
+      customParams: customParams.reduce(
+        (acc, key) => {
+          acc[key] = debugParams.get(key);
+          return acc;
+        },
+        {} as Record<string, string | null>,
+      ),
       signature: debugSignature,
       signatureLength: debugSignature.length,
-      timestamp: debugTimestamp,
-      path_prefix: debugPathPrefix,
       hasSecret: envSecret !== "(missing)",
       secretSource: process.env.SHOPIFY_API_SECRET
         ? "SHOPIFY_API_SECRET"
@@ -76,9 +104,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
           : process.env.SHOPIFY_API_SECRET_KEY
             ? "SHOPIFY_API_SECRET_KEY"
             : "none",
-      hmacMessageLength: hmacMessage.length,
       hmacMessage,
-      queryString,
+      hmacMessageLength: hmacMessage.length,
+      note: "Only Shopify-signed params (shop, timestamp, logged_in_customer_id, path_prefix) are validated. Custom params (productId, pageType, etc.) are ignored.",
     });
 
     return json(
