@@ -213,25 +213,17 @@ export function TimerForm({
   const handleDeleteConfirm = useCallback(() => {
     if (!timerId) return;
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = `/timer?id=${timerId}`;
+    const formData = new FormData();
+    formData.append("intent", "delete");
+    formData.append("timerId", timerId);
 
-    const intentInput = document.createElement("input");
-    intentInput.type = "hidden";
-    intentInput.name = "intent";
-    intentInput.value = "delete";
-    form.appendChild(intentInput);
+    submit(formData, {
+      method: "POST",
+      action: `/timer?id=${timerId}`,
+    });
 
-    const timerIdInput = document.createElement("input");
-    timerIdInput.type = "hidden";
-    timerIdInput.name = "timerId";
-    timerIdInput.value = timerId;
-    form.appendChild(timerIdInput);
-
-    document.body.appendChild(form);
-    form.submit();
-  }, [timerId]);
+    setShowDeleteModal(false);
+  }, [timerId, submit]);
 
   const handleDeleteCancel = useCallback(() => {
     setShowDeleteModal(false);
