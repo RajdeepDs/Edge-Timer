@@ -38,6 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!validation.isValid && (!isDev || !shopParam)) {
     // Detailed logging to diagnose signature mismatches in production
     const debugUrl = new URL(request.url);
+    const queryString = debugUrl.search.substring(1);
 
     const debugSignature = debugUrl.searchParams.get("signature") || "";
     const debugShop = debugUrl.searchParams.get("shop");
@@ -45,27 +46,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const debugPathPrefix = debugUrl.searchParams.get("path_prefix");
 
     const envSecret =
-      process.env.SHOPIFY_CLIENT_SECRET ||
       process.env.SHOPIFY_API_SECRET ||
+      process.env.SHOPIFY_CLIENT_SECRET ||
       process.env.SHOPIFY_API_SECRET_KEY ||
       "(missing)";
 
-    // Build the exact HMAC message string the validator uses:
-    //  - remove "signature"
-    //  - sort keys lexicographically
-    //  - join as key=value&key2=value2...
-    const debugParams = new URLSearchParams(debugUrl.search);
-    debugParams.delete("signature");
-
-    const debugKeys = Array.from(debugParams.keys()).sort();
-
-    const hmacMessage = debugKeys
-      .map((key) => {
-        const values = debugParams.getAll(key);
-        return values.map((value) => `${key}=${value}`).join("&");
-      })
-      .filter(Boolean)
-      .join("&");
+    // Build the exact HMAC message string the validator uses
+    const queryParams = queryString.split("&");
+    const paramsWithoutSignature = queryParams
+      .filter((param) => !param.startsWith("signature="))
+      .sort();
+    const hmacMessage = paramsWithoutSignature.join("&");
 
     console.error("[proxy.timers] App Proxy validation failed", {
       error: validation.error,
@@ -78,8 +69,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       timestamp: debugTimestamp,
       path_prefix: debugPathPrefix,
       hasSecret: envSecret !== "(missing)",
+      secretSource: process.env.SHOPIFY_API_SECRET
+        ? "SHOPIFY_API_SECRET"
+        : process.env.SHOPIFY_CLIENT_SECRET
+          ? "SHOPIFY_CLIENT_SECRET"
+          : process.env.SHOPIFY_API_SECRET_KEY
+            ? "SHOPIFY_API_SECRET_KEY"
+            : "none",
       hmacMessageLength: hmacMessage.length,
       hmacMessage,
+      queryString,
     });
 
     return json(
