@@ -207,6 +207,7 @@ export function TimerForm({
       submit,
       handleTabChange,
       triggerSaveBarSubmitEvent,
+      existingTimer,
     ],
   );
 
