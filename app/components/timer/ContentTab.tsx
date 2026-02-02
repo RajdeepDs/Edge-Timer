@@ -187,8 +187,8 @@ export default function ContentTab({
           <s-select
             label="Call to action"
             value={callToAction}
-            onInput={(value) =>
-              setCallToAction(value as unknown as CallToActionType)
+            onInput={(e) =>
+              setCallToAction(getValue(e) as unknown as CallToActionType)
             }
           >
             <s-option value="no">No call to action</s-option>
@@ -393,12 +393,13 @@ export default function ContentTab({
                   autocomplete="off"
                   inputMode="numeric"
                 />
+
                 <s-select
                   label="Period"
                   labelAccessibilityVisibility="exclusive"
                   value={period}
-                  onInput={(value) =>
-                    setPeriod(value as unknown as "AM" | "PM")
+                  onInput={(e) =>
+                    setPeriod(getValue(e) as unknown as "AM" | "PM")
                   }
                 >
                   <s-option value="AM">AM</s-option>
@@ -412,12 +413,13 @@ export default function ContentTab({
             <Text as="span" variant="bodyMd">
               Once it ends
             </Text>
+
             <s-select
               label="Once it ends"
               labelAccessibilityVisibility="exclusive"
               value={onceItEnds}
-              onInput={(value) =>
-                setOnceItEnds(value as unknown as OnExpiryAction)
+              onInput={(e) =>
+                setOnceItEnds(getValue(e) as unknown as OnExpiryAction)
               }
             >
               <s-option value="unpublish">Unpublish timer</s-option>
