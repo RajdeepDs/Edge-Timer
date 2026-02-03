@@ -33,9 +33,7 @@ export function validateProxyRequest(request: Request): ProxyValidationResult {
     .filter((key) => searchParams.has(key))
     .sort()
     .map((key) => `${key}=${searchParams.get(key) || ""}`)
-    .join("&");
-
-  console.log("🔥 HMAC MESSAGE:", message);
+    .join("");
 
   const secret = process.env.SHOPIFY_API_SECRET;
   if (!secret) {
