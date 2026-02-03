@@ -14,11 +14,10 @@ import {
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
 import PlanCard from "app/components/plans/plan-card";
-import { useCallback } from "react";
 import { plans } from "app/config/plans";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useNavigation, useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { getShop } from "../utils/shop.server";
 import { getPlanViewLimit } from "../utils/plan-check.server";
@@ -81,18 +80,7 @@ export default function PricingPlans() {
   const { shop, subscriptionSuccess, subscribedPlan, billingError } =
     useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const navigate = useNavigate();
   const isSubscribing = navigation.state === "loading";
-
-  const handleSubscribe = useCallback(
-    (planId: string) => {
-      console.log(`🔄 Redirecting to managed pricing for plan: ${planId}`);
-      // Use dedicated billing route for server-side redirect
-      // Server-side redirects ensure proper iframe breakout
-      navigate(`/api/billing/managed-pricing?plan=${planId}`);
-    },
-    [navigate],
-  );
 
   const currentPlanName =
     shop.currentPlan.charAt(0).toUpperCase() + shop.currentPlan.slice(1);
@@ -224,7 +212,6 @@ export default function PricingPlans() {
                 yearlyPrice={plan.yearlyTotal}
                 planId={plan.id}
                 currentPlan={shop.currentPlan}
-                onSubscribe={handleSubscribe}
                 isSubscribing={isSubscribing}
               />
             </Layout.Section>

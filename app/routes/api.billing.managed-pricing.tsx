@@ -33,7 +33,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const managedPricingUrl = `https://admin.shopify.com/store/${storeHandle}/charges/${appHandle}/pricing_plans`;
 
     console.log(
-      `🔄 Redirecting to Shopify managed pricing for shop: ${shopDomain}`
+      `🔄 Redirecting to Shopify managed pricing for shop: ${shopDomain}`,
     );
     if (selectedPlan) {
       console.log(`   Selected plan: ${selectedPlan}`);
