@@ -18,81 +18,51 @@ export interface ProxyValidationResult {
  *
  * Any custom params must be ignored.
  */
-export function validateProxyRequest(request: Request): ProxyValidationResult {
+export function validateProxyRequest(request: Request) {
   const url = new URL(request.url);
-  const params = url.searchParams;
 
-  // 1. Signature
-  const signature = params.get("signature");
-  if (!signature) {
-    return { isValid: false, error: "Missing signature parameter" };
-  }
+  // Raw query string WITHOUT leading '?'
+  const rawQuery = url.search.slice(1);
 
-  // 2. Shop
-  const shop = params.get("shop");
-  if (!shop) {
-    return { isValid: false, error: "Missing shop parameter" };
-  }
+  // Split into key=value pairs
+  const pairs = rawQuery
+    .split("&")
+    .filter(Boolean)
+    .filter((p) => !p.startsWith("signature="));
 
-  // 3. API Secret
-  const apiSecret =
-    process.env.SHOPIFY_API_SECRET ||
-    process.env.SHOPIFY_CLIENT_SECRET ||
-    process.env.SHOPIFY_API_SECRET_KEY;
-
-  if (!apiSecret) {
-    console.error(
-      "[proxy.server] Missing API secret. Checked: SHOPIFY_API_SECRET, SHOPIFY_CLIENT_SECRET, SHOPIFY_API_SECRET_KEY",
-    );
-    return { isValid: false, error: "API secret not configured", shop };
-  }
-
-  // 4. Shopify-signed parameters ONLY
-  const shopifySignedParams = [
+  // Only Shopify-signed keys
+  const allowedKeys = new Set([
     "shop",
     "timestamp",
     "logged_in_customer_id",
     "path_prefix",
-  ];
+  ]);
 
-  const signedPairs: string[] = [];
+  const signedPairs = pairs.filter((pair) => {
+    const key = pair.split("=")[0];
+    return allowedKeys.has(key);
+  });
 
-  for (const key of shopifySignedParams) {
-    const value = params.get(key);
-    if (value !== null) {
-      signedPairs.push(`${key}=${value}`);
-    }
-  }
-
-  // Alphabetical order is REQUIRED
+  // Alphabetical order
   const message = signedPairs.sort().join("&");
 
-  // 5. Compute HMAC-SHA256 (hex)
-  const computedSignature = crypto
-    .createHmac("sha256", apiSecret)
-    .update(message, "utf8")
+  const secret = process.env.SHOPIFY_API_SECRET!;
+  const computed = crypto
+    .createHmac("sha256", secret)
+    .update(message)
     .digest("hex");
 
-  // 6. Constant-time comparison (HEX → BUFFER)
-  const receivedBuffer = Buffer.from(signature.toLowerCase(), "hex");
-  const computedBuffer = Buffer.from(computedSignature.toLowerCase(), "hex");
+  const received = new URLSearchParams(rawQuery).get("signature")!;
 
   const isValid =
-    receivedBuffer.length === computedBuffer.length &&
-    crypto.timingSafeEqual(receivedBuffer, computedBuffer);
+    Buffer.from(computed, "hex").length ===
+      Buffer.from(received, "hex").length &&
+    crypto.timingSafeEqual(
+      Buffer.from(computed, "hex"),
+      Buffer.from(received, "hex"),
+    );
 
-  if (!isValid) {
-    console.error("[proxy.server] Signature mismatch", {
-      shop,
-      message,
-      received: signature.slice(0, 16) + "...",
-      computed: computedSignature.slice(0, 16) + "...",
-    });
-
-    return { isValid: false, error: "Invalid signature", shop };
-  }
-
-  return { isValid: true, shop };
+  return { isValid, shop: new URLSearchParams(rawQuery).get("shop") };
 }
 
 /**
