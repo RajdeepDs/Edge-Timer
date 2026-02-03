@@ -1,8 +1,14 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import { getBillingConfig, isValidPlanId } from "../config/billing";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // This route only handles POST requests for creating subscriptions
+  // Redirect GET requests back to the plans page
+  return redirect("/plans");
+};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
@@ -17,16 +23,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const billingCycle = formData.get("billingCycle") as "MONTHLY" | "ANNUAL";
 
     if (!planId || !billingCycle) {
+      console.error("❌ Missing required parameters:", {
+        planId,
+        billingCycle,
+      });
       return json({ error: "Missing planId or billingCycle" }, { status: 400 });
     }
 
     // Validate plan ID
     if (!isValidPlanId(planId)) {
+      console.error("❌ Invalid plan ID:", planId);
       return json({ error: "Invalid plan ID" }, { status: 400 });
     }
 
     // Get billing configuration for the plan
     const config = getBillingConfig(planId, billingCycle);
+    console.log("📋 Creating subscription with config:", {
+      shop: session.shop,
+      planId,
+      billingCycle,
+      config,
+    });
 
     // Create subscription using GraphQL
     const response = await admin.graphql(
@@ -79,8 +96,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const responseJson = await response.json();
     const data = responseJson.data?.appSubscriptionCreate;
 
+    console.log("📝 GraphQL Response:", JSON.stringify(responseJson, null, 2));
+
     if (!data || data.userErrors?.length > 0) {
-      console.error("Subscription creation errors:", data?.userErrors);
+      console.error("❌ Subscription creation errors:", data?.userErrors);
       return json(
         {
           error:
@@ -92,6 +111,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const confirmationUrl = data.confirmationUrl;
     const subscriptionId = data.appSubscription.id;
+
+    if (!confirmationUrl) {
+      console.error("❌ No confirmation URL received from Shopify");
+      return json(
+        { error: "No confirmation URL received from Shopify" },
+        { status: 500 },
+      );
+    }
+
+    console.log("✅ Confirmation URL received:", confirmationUrl);
 
     // Update shop with subscription info (pending)
     const trialEndsAt = new Date();
@@ -121,6 +150,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.log(
       `✅ Created subscription for ${session.shop} - Plan: ${planId}, Trial ends: ${trialEndsAt.toISOString()}`,
     );
+    console.log("🔄 Redirecting to confirmation URL:", confirmationUrl);
 
     // Redirect to Shopify's billing confirmation page
     return redirect(confirmationUrl);

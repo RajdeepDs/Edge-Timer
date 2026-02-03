@@ -55,9 +55,7 @@ export async function validateTimerCreation(
   if (timerData.geolocation && timerData.geolocation !== "all-world") {
     const canUseGeo = await canUseGeolocation(shopDomain);
     if (!canUseGeo) {
-      errors.push(
-        "Geolocation targeting requires the Essential plan or higher",
-      );
+      errors.push("Geolocation targeting requires the Standard plan or higher");
     }
   }
 
@@ -69,9 +67,7 @@ export async function validateTimerCreation(
   ) {
     const canUseTags = await canUseProductTags(shopDomain);
     if (!canUseTags) {
-      errors.push(
-        "Product tag targeting requires the Essential plan or higher",
-      );
+      errors.push("Product tag targeting requires the Standard plan or higher");
     }
   }
 
@@ -199,12 +195,12 @@ export async function canPublishTimer(
 export function getUpgradePrompt(feature: string): string {
   const prompts: Record<string, string> = {
     "landing-page": "Upgrade to Starter plan to create landing page timers",
-    "cart-page": "Upgrade to Essential plan to create cart page timers",
-    email: "Upgrade to Essential plan to create email timers",
+    "cart-page": "Upgrade to Standard plan to create cart page timers",
+    email: "Upgrade to Standard plan to create email timers",
     scheduledTimers: "Upgrade to Starter plan to schedule timers",
     recurringTimers: "Upgrade to Starter plan to create recurring timers",
-    geolocation: "Upgrade to Essential plan to use geolocation targeting",
-    productTags: "Upgrade to Essential plan to use product tag targeting",
+    geolocation: "Upgrade to Standard plan to use geolocation targeting",
+    productTags: "Upgrade to Standard plan to use product tag targeting",
     viewLimit: "Upgrade your plan to increase your monthly view limit",
   };
 

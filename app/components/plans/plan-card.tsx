@@ -40,7 +40,7 @@ export default function PlanCard(props: PlanCardProps) {
   } = props;
 
   const isCurrentPlan = currentPlan === planId;
-  const planOrder = ["free", "starter", "essential", "professional"];
+  const planOrder = ["free", "starter", "standard", "premium"];
   const currentPlanIndex = planOrder.indexOf(currentPlan);
   const thisPlanIndex = planOrder.indexOf(planId);
   const isDowngrade = thisPlanIndex < currentPlanIndex;
@@ -109,7 +109,7 @@ export default function PlanCard(props: PlanCardProps) {
                 onClick={() => onSubscribe(planId)}
                 loading={isSubscribing}
               >
-                Start FREE 7-day trial
+                Start FREE 14-day trial
               </Button>
             )}
           </BlockStack>

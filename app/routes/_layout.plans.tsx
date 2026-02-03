@@ -10,16 +10,15 @@ import {
   Button,
   Icon,
   Image,
-  ButtonGroup,
   Banner,
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
 import PlanCard from "app/components/plans/plan-card";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { plans } from "app/config/plans";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { getShop } from "../utils/shop.server";
 import { getPlanViewLimit } from "../utils/plan-check.server";
@@ -51,6 +50,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         usagePercent,
         billingStatus: shop.billingStatus,
         trialEndsAt: shop.trialEndsAt?.toISOString(),
+        shopDomain: session.shop,
       },
       subscriptionSuccess: successParam === "true",
       subscribedPlan: planParam,
@@ -66,6 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         usagePercent: 0,
         billingStatus: "active",
         trialEndsAt: null,
+        shopDomain: session.shop,
       },
       subscriptionSuccess: false,
       subscribedPlan: null,
@@ -76,32 +77,45 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function PricingPlans() {
   const { shop, subscriptionSuccess, subscribedPlan } =
     useLoaderData<typeof loader>();
-  const [activeButtonIndex, setActiveButtonIndex] = useState(0);
-  const submit = useSubmit();
   const navigation = useNavigation();
-  const isSubscribing = navigation.state === "submitting";
-
-  const handleButtonClick = useCallback(
-    (index: number) => {
-      if (activeButtonIndex === index) return;
-      setActiveButtonIndex(index);
-    },
-    [activeButtonIndex],
-  );
+  const isSubscribing = navigation.state === "loading";
 
   const handleSubscribe = useCallback(
     (planId: string) => {
-      const billingCycle = activeButtonIndex === 0 ? "MONTHLY" : "ANNUAL";
-      const formData = new FormData();
-      formData.append("planId", planId);
-      formData.append("billingCycle", billingCycle);
+      try {
+        // Using Shopify's Managed Pricing - redirect to their hosted plan selection page
+        // Extract store handle from shop domain
+        const shopDomain = shop.shopDomain || "";
 
-      submit(formData, {
-        method: "POST",
-        action: "/api/billing/subscribe",
-      });
+        if (!shopDomain) {
+          console.error("No shop domain available");
+          alert(
+            "Unable to load billing. Please refresh the page and try again.",
+          );
+          return;
+        }
+
+        const storeHandle = shopDomain.replace(".myshopify.com", "");
+        const appHandle = "urgency-timer-3"; // Your app handle from the URL
+
+        // Shopify's managed pricing URL format
+        const managedPricingUrl = `https://admin.shopify.com/store/${storeHandle}/charges/${appHandle}/pricing_plans`;
+
+        console.log(
+          `🔄 Redirecting to Shopify managed pricing: ${managedPricingUrl}`,
+        );
+        console.log(`Selected plan: ${planId}`);
+
+        // Redirect to Shopify's hosted plan selection page
+        window.location.href = managedPricingUrl;
+      } catch (error) {
+        console.error("Error redirecting to billing:", error);
+        alert(
+          "Unable to start subscription. Please try again or contact support.",
+        );
+      }
     },
-    [activeButtonIndex, submit],
+    [shop.shopDomain],
   );
 
   const currentPlanName =
@@ -132,6 +146,17 @@ export default function PricingPlans() {
           </Banner>
         </Box>
       )}
+
+      <Box paddingBlockEnd={{ xs: "400" }}>
+        <Banner tone="info">
+          <p>
+            When you select a plan, you'll be redirected to Shopify's secure
+            billing page to review and approve your subscription. All plans
+            include a <strong>14-day free trial</strong> - you won't be charged
+            until the trial ends.
+          </p>
+        </Banner>
+      </Box>
 
       <Box paddingBlockEnd={{ xs: "400" }}>
         <Card>
@@ -192,24 +217,6 @@ export default function PricingPlans() {
         </Box>
       )}
 
-      <Box padding="600">
-        <InlineStack align="center">
-          <ButtonGroup variant="segmented">
-            <Button
-              pressed={activeButtonIndex === 0}
-              onClick={() => handleButtonClick(0)}
-            >
-              Billed Monthly
-            </Button>
-            <Button
-              pressed={activeButtonIndex === 1}
-              onClick={() => handleButtonClick(1)}
-            >
-              Billed Yearly - Save 20%
-            </Button>
-          </ButtonGroup>
-        </InlineStack>
-      </Box>
       <Box paddingBlockEnd="400">
         <Layout>
           {plans.map((plan) => (
@@ -218,11 +225,9 @@ export default function PricingPlans() {
                 title={plan.title}
                 subtitle={plan.subtitle}
                 badge={plan.badge}
-                price={
-                  activeButtonIndex === 0 ? plan.monthlyPrice : plan.yearlyPrice
-                }
+                price={plan.monthlyPrice}
                 items={plan.items}
-                yearly={activeButtonIndex === 1}
+                yearly={false}
                 yearlyPrice={plan.yearlyTotal}
                 planId={plan.id}
                 currentPlan={shop.currentPlan}

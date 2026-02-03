@@ -25,8 +25,8 @@ export const plans: Plan[] = [
     yearlyTotal: "$47.88",
   },
   {
-    id: "essential",
-    title: "Essential",
+    id: "standard",
+    title: "Standard",
     subtitle: "Up to 50 000 monthly timer views",
     badge: "Popular",
     items: [
@@ -42,8 +42,8 @@ export const plans: Plan[] = [
     yearlyTotal: "$76.68",
   },
   {
-    id: "professional",
-    title: "Professional",
+    id: "premium",
+    title: "Premium",
     subtitle: "Unlimited timer views",
     items: [
       "All premium features",

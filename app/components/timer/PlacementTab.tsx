@@ -357,7 +357,7 @@ export default function PlacementTab({
                   />
                   <Box paddingBlockStart="100">
                     <Text as="p" variant="bodySm" tone="subdued">
-                      Available with Essential plan.{" "}
+                      Available with Standard plan.{" "}
                       <Link url="#" removeUnderline>
                         Upgrade now
                       </Link>
@@ -530,7 +530,7 @@ export default function PlacementTab({
                 />
                 <Box paddingBlockStart="100">
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Available with Essential plan.{" "}
+                    Available with Standard plan.{" "}
                     <Link url="#" removeUnderline>
                       Upgrade now
                     </Link>
@@ -607,7 +607,7 @@ export default function PlacementTab({
                 />
                 <Box paddingBlockStart="100">
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Available with Essential plan.{" "}
+                    Available with Standard plan.{" "}
                     <Link url="#" removeUnderline>
                       Upgrade now
                     </Link>

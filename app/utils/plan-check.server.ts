@@ -34,7 +34,7 @@ export const PLAN_LIMITS = {
       translations: false,
     },
   },
-  essential: {
+  standard: {
     monthlyViews: 50000,
     features: {
       productTimers: true,
@@ -49,7 +49,7 @@ export const PLAN_LIMITS = {
       translations: true,
     },
   },
-  professional: {
+  premium: {
     monthlyViews: -1, // unlimited
     features: {
       productTimers: true,
@@ -264,9 +264,7 @@ export async function validateTimerConfig(
   if (timerConfig.geolocation && timerConfig.geolocation !== "all-world") {
     const canUseGeo = await canUseGeolocation(shopDomain);
     if (!canUseGeo) {
-      errors.push(
-        "Geolocation targeting requires the Essential plan or higher",
-      );
+      errors.push("Geolocation targeting requires the Standard plan or higher");
     }
   }
 
@@ -274,9 +272,7 @@ export async function validateTimerConfig(
   if (timerConfig.productTags) {
     const canUseTags = await canUseProductTags(shopDomain);
     if (!canUseTags) {
-      errors.push(
-        "Product tag targeting requires the Essential plan or higher",
-      );
+      errors.push("Product tag targeting requires the Standard plan or higher");
     }
   }
 
@@ -350,12 +346,7 @@ export async function getUpgradeRecommendations(shopDomain: string): Promise<{
 
     if (usagePercent >= 80) {
       // Recommend next tier
-      const planOrder: PlanTier[] = [
-        "free",
-        "starter",
-        "essential",
-        "professional",
-      ];
+      const planOrder: PlanTier[] = ["free", "starter", "standard", "premium"];
       const currentIndex = planOrder.indexOf(currentPlan);
       const nextPlan = planOrder[currentIndex + 1];
 

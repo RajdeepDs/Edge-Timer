@@ -29,7 +29,9 @@ api_version = "2024-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+# write_products: Required for product management
+# write_own_subscription_contracts: Required for managing app subscriptions and billing
+scopes = "write_products,write_own_subscription_contracts"
 
 [auth]
 redirect_urls = [ "https://urgency-timer.onrender.com/auth" ]

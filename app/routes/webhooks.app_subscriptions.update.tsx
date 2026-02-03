@@ -45,14 +45,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         planStatus = "free";
         break;
       case "FROZEN":
+        billingStatus = "frozen";
+        // Keep current plan but mark as frozen
+        // Don't change planStatus - merchant keeps features until unfrozen
+        console.log(`Subscription frozen for ${shop} - keeping current plan`);
+        break;
       case "PENDING":
-        billingStatus = "paused";
+        billingStatus = "pending";
+        // Keep current plan during pending state
         break;
       case "DECLINED":
         billingStatus = "cancelled";
         planStatus = "free";
         break;
       default:
+        console.warn(`Unknown subscription status: ${status} for ${shop}`);
         billingStatus = "active";
     }
 
@@ -105,8 +112,8 @@ function extractPlanFromName(name: string): string {
   const lowerName = name.toLowerCase();
 
   if (lowerName.includes("starter")) return "starter";
-  if (lowerName.includes("essential")) return "essential";
-  if (lowerName.includes("professional")) return "professional";
+  if (lowerName.includes("standard")) return "standard";
+  if (lowerName.includes("premium")) return "premium";
 
   // Default to starter if we can't determine
   return "starter";

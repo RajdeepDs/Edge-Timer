@@ -109,7 +109,7 @@ model Shop {
   shopDomain String @unique
 
   // Plan & Billing
-  currentPlan    String   @default("free") // "free", "starter", "essential", "professional"
+  currentPlan    String   @default("free") // "free", "starter", "standard", "premium"
   planStartDate  DateTime @default(now())
   subscriptionId String? // Shopify subscription ID
 

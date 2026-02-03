@@ -7,19 +7,19 @@ export const BILLING_CONFIG = {
     amount: 4.99,
     currencyCode: "USD",
     interval: "EVERY_30_DAYS",
-    trialDays: 7,
+    trialDays: 14,
   },
-  essential: {
+  standard: {
     amount: 7.99,
     currencyCode: "USD",
     interval: "EVERY_30_DAYS",
-    trialDays: 7,
+    trialDays: 14,
   },
-  professional: {
+  premium: {
     amount: 14.99,
     currencyCode: "USD",
     interval: "EVERY_30_DAYS",
-    trialDays: 7,
+    trialDays: 14,
   },
 } as const;
 
@@ -30,19 +30,19 @@ export const ANNUAL_BILLING_CONFIG = {
     amount: 47.9, // 4.99 * 12 * 0.8 = 47.904 -> 47.90
     currencyCode: "USD",
     interval: "ANNUAL",
-    trialDays: 7,
+    trialDays: 14,
   },
-  essential: {
+  standard: {
     amount: 76.7, // 7.99 * 12 * 0.8 = 76.704 -> 76.70
     currencyCode: "USD",
     interval: "ANNUAL",
-    trialDays: 7,
+    trialDays: 14,
   },
-  professional: {
+  premium: {
     amount: 143.9, // 14.99 * 12 * 0.8 = 143.904 -> 143.90
     currencyCode: "USD",
     interval: "ANNUAL",
-    trialDays: 7,
+    trialDays: 14,
   },
 } as const;
 
@@ -75,8 +75,8 @@ export function getPlanName(
 ): string {
   const names: Record<PlanId, string> = {
     starter: "Starter Plan",
-    essential: "Essential Plan",
-    professional: "Professional Plan",
+    standard: "Standard Plan",
+    premium: "Premium Plan",
   };
 
   const baseName = names[planId];

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
   Page,
@@ -78,6 +78,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Ensure shop exists and get the shop data
   const shop = await ensureShopExists(session.shop);
   await registerWebhooks({ session });
+
+  // Check if shop has an active paid subscription
+  // Redirect free plan users to plans page to encourage upgrade
+  const requiresPaidPlan = false; // Set to true to enforce paid plans only
+  if (requiresPaidPlan && shop.currentPlan === "free") {
+    return redirect("/plans");
+  }
 
   // Fetch all timers
   const timers = await prisma.timer.findMany({

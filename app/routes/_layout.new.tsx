@@ -48,7 +48,7 @@ const timerTypes: TimerType[] = [
   //   title: "Cart page",
   //   description: "Block in cart page below checkout button.",
   //   image: "/timer-types/cart_page.svg",
-  //   badge: "Essential plan",
+  //   badge: "Standard plan",
   //   requiresUpgrade: true,
   // },
 ];
