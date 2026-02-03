@@ -45,6 +45,7 @@ export function validateProxyRequest(request: Request) {
 
   // Alphabetical order
   const message = signedPairs.sort().join("&");
+  console.log("🔥 HMAC MESSAGE:", message);
 
   const secret = process.env.SHOPIFY_API_SECRET!;
   const computed = crypto

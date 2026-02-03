@@ -3,16 +3,21 @@ import prisma from "../db.server";
 import { validateProxyRequest } from "../utils/proxy.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  console.log("🔥 PROXY ROUTE HIT — BUILD 2026-02-03");
   const validation = validateProxyRequest(request);
 
   const isDev = process.env.NODE_ENV !== "production";
   const url = new URL(request.url);
+
+  console.log("🔥 RAW URL FROM SHOPIFY:", request.url);
+  console.log("🔥 RAW QUERY STRING:", url.search);
+
   const params = url.searchParams;
   const shopParam = params.get("shop");
 
   if (!validation.isValid && (!isDev || !shopParam)) {
     return json(
-      { error: validation.error || "Unauthorized" },
+      { error: validation.isValid || "Unauthorized" },
       {
         status: 401,
         headers: {
