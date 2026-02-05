@@ -5,7 +5,7 @@
  */
 
 (() => {
-  const DEBUG = true;
+  const DEBUG = false;
 
   const STATE = {
     fetched: false,
