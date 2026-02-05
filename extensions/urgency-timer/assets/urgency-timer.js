@@ -112,11 +112,19 @@
     log("Fetching timers:", url);
 
     STATE.fetchPromise = fetch(url)
-      .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then(d => (STATE.timers = d?.timers || []))
+      .then(r => {
+        log("Fetch response status:", r.status, r.ok);
+        return r.ok ? r.json() : Promise.reject(r.status);
+      })
+      .then(d => {
+        STATE.timers = d?.timers || [];
+        log("Timers loaded successfully:", STATE.timers.length, "timers");
+        return STATE.timers;
+      })
       .catch(e => {
-        log("Fetch error", e);
+        log("❌ Fetch error:", e);
         STATE.timers = [];
+        return STATE.timers;
       });
 
     return STATE.fetchPromise;
@@ -143,7 +151,8 @@
     };
 
     const endpoint = getViewEndpoint();
-    log("Tracking view:", endpoint, viewData);
+    log("Tracking view to endpoint:", endpoint);
+    log("View data:", viewData);
 
     // Send view tracking request (best-effort, don't wait for response)
     fetch(endpoint, {
@@ -154,14 +163,24 @@
       body: JSON.stringify(viewData),
     })
       .then(r => {
+        log("View tracking response status:", r.status);
         if (r.ok) {
-          log("View tracked successfully for timer:", timer.id);
+          return r.json().then(data => {
+            log("✅ View tracked successfully for timer:", timer.id, data);
+          }).catch(() => {
+            log("✅ View tracked successfully (no JSON response)");
+          });
         } else {
-          log("View tracking failed with status:", r.status);
+          return r.text().then(text => {
+            log("❌ View tracking failed with status:", r.status, "Response:", text);
+          }).catch(() => {
+            log("❌ View tracking failed with status:", r.status);
+          });
         }
       })
       .catch(e => {
-        log("View tracking error:", e);
+        log("❌ View tracking fetch error:", e.message || e);
+        console.error("[UrgencyTimer] Full error:", e);
       });
   }
 
@@ -353,9 +372,17 @@
   /* ================= Mounting ================= */
 
   function mountProductTimers(ctx, timers) {
-    document.querySelectorAll(".urgency-timer-root").forEach(root => {
+    const roots = document.querySelectorAll(".urgency-timer-root");
+    log("mountProductTimers: found", roots.length, "root elements");
+
+    roots.forEach(root => {
+      log("Looking for product-page timer in:", timers.map(x => x.type));
       const t = timers.find(x => x.type === "product-page");
-      if (!t) return;
+      if (!t) {
+        log("No product-page timer found");
+        return;
+      }
+      log("Mounting product timer:", t.id, t.name);
       root.innerHTML = "";
       root.appendChild(createCountdownDOM(t));
 
@@ -365,9 +392,11 @@
   }
 
   function mountBars(ctx, timers) {
-    timers
-      .filter(t => t.type === "top-bottom-bar")
-      .forEach(t => {
+    const barTimers = timers.filter(t => t.type === "top-bottom-bar");
+    log("mountBars: found", barTimers.length, "bar timers");
+
+    barTimers.forEach(t => {
+        log("Mounting bar timer:", t.id, t.name);
         const bar = document.createElement("div");
         const isTop = t.designConfig?.positioning !== "bottom";
         bar.className = "utimer-bar " + (isTop ? "top" : "bottom");
@@ -621,9 +650,14 @@
   function init() {
      applyMinimalStyles();
     const ctx = detectContext();
-    if (!ctx.shop) return;
+    log("Context detected:", ctx);
+    if (!ctx.shop) {
+      log("No shop found, aborting init");
+      return;
+    }
 
     fetchTimersOnce(ctx).then(timers => {
+      log("Timers fetched:", timers.length, "timers", timers);
       mountProductTimers(ctx, timers);
       mountBars(ctx, timers);
     });
