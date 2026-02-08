@@ -1,4 +1,4 @@
-// Timer Types for Urgency Timer App
+// Timer Types for Edge Timer App
 
 export type TimerType =
   | "product-page"

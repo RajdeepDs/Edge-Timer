@@ -149,7 +149,7 @@ export default function Index() {
 
   return (
     <Page>
-      <TitleBar title="Urgency Timer" />
+      <TitleBar title="Edge Timer" />
       <Box paddingBlock="500">
         <InlineGrid columns={{ lg: 6 }} alignItems="center">
           <Grid.Cell columnSpan={{ lg: 5 }}>

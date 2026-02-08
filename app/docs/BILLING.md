@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the billing and monetization system for the Urgency Timer Shopify app. The system includes subscription management, plan enforcement, and usage tracking.
+This document describes the billing and monetization system for the Edge Timer Shopify app. The system includes subscription management, plan enforcement, and usage tracking.
 
 ## Architecture
 

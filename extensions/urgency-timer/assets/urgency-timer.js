@@ -1,5 +1,5 @@
 /*!
- * Urgency Timer Storefront Script
+ * Edge Timer Storefront Script
  * Grid-based countdown renderer (no separators)
  * Safe for Shopify App Proxy + Extensions
  */

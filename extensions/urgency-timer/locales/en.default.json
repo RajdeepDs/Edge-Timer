@@ -1,7 +1,7 @@
 {
   "urgency_timer": {
     "product_timer": {
-      "name": "Urgency Timer",
+      "name": "Edge Timer",
       "settings": {
         "timer_id": {
           "label": "Timer ID",

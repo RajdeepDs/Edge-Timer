@@ -1,37 +1,32 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "5ed2d50b3a29697af7360b72762d758b"
-name = "Urgency Timer"
+name = "Edge Timer"
 application_url = "https://urgency-timer.onrender.com"
 embedded = true
 
-[build]
-automatically_update_urls_on_dev = true
-
 [webhooks]
 api_version = "2024-07"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
 
   [[webhooks.subscriptions]]
   topics = [ "app_subscriptions/update" ]
   uri = "/webhooks/app_subscriptions/update"
 
   [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
   uri = "/webhooks/compliance"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
   [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-# write_products: Required for product management
-# write_own_subscription_contracts: Required for managing app subscriptions and billing
-scopes = "write_products,write_own_subscription_contracts,read_own_subscription_contracts"
+scopes = "read_own_subscription_contracts,write_own_subscription_contracts,write_products"
 
 [auth]
 redirect_urls = [ "https://urgency-timer.onrender.com/auth" ]
