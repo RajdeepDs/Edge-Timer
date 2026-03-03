@@ -14,10 +14,6 @@ files = [
   "assets/urgency-timer.css",
 ]
 
-# Optional localization config (CLI expects a locales directory)
-[localization]
-default_locale = "en"
-
 # Metadata (optional)
 [metadata]
 category = "Store design"

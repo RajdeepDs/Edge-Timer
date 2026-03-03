@@ -35,3 +35,6 @@ redirect_urls = [ "https://urgency-timer.onrender.com/auth" ]
 url = "https://urgency-timer.onrender.com/proxy"
 subpath = "urgency-timer"
 prefix = "apps"
+
+[build]
+automatically_update_urls_on_dev = true

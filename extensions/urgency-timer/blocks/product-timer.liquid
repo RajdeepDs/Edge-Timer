@@ -1,21 +1,22 @@
 {% comment %}
 Edge Timer - Product Page Block
 
-Renders a countdown/fixed timer for the current product by mounting a client script
-and fetching published timers from the app proxy endpoint (secured with HMAC).
+Renders a countdown/fixed timer for the current product.
+This block only provides the container element - the CSS/JS assets are loaded
+by the app embed (edge-timer-embed.liquid) to prevent duplicate initialization.
 
-Notes:
-- Include assets/urgency-timer.js and assets/urgency-timer.css in your extension assets.
-- Default endpoint: /apps/urgency-timer/timers (Shopify App Proxy - automatically signed)
-- View tracking endpoint: /apps/urgency-timer/views (app proxy endpoint for analytics)
-- You can override endpoints by defining window.URGENCY_TIMER_ENDPOINT and
-  window.URGENCY_TIMER_VIEW_ENDPOINT before the script loads.
-- This block exposes data attributes (shop domain, product ID, timer ID) used by the client script.
+IMPORTANT: This block only works on PRODUCT PAGES. The timer will automatically
+hide on other pages (homepage, collections, cart, etc.).
+
+Requirements:
+- This block MUST be used WITH the app embed enabled in Theme settings → App embeds
+- Add this block to your product template in the theme editor
+- The globally-loaded urgency-timer.js script will detect this container and mount the timer
+- This block exposes data attributes (shop domain, product ID, timer ID) used by the client script
+- Top/bottom bar timers work independently and don't require this block to be present
 {% endcomment %}
 
-
-<link rel="stylesheet" href="{{ 'urgency-timer.css' | asset_url }}" media="all">
-
+{% if product %}
 <div
   id="urgency-timer-product-root"
   class="urgency-timer-root urgency-timer-product"
@@ -31,18 +32,28 @@ Notes:
     </style>
   </noscript>
 </div>
-
-<script src="{{ 'urgency-timer.js' | asset_url }}" defer></script>
+{% else %}
+  <!-- Product timer block only works on product pages -->
+{% endif %}
 
 {% schema %}
 {
-  "name": "Edge Timer",
+  "name": "Edge Timer (Product)",
   "target": "section",
   "settings": [
     {
+      "type": "paragraph",
+      "content": "⚠️ This block only works on PRODUCT PAGES. Make sure to add it to your product template, not homepage or other pages."
+    },
+    {
       "type": "text",
       "id": "timerId",
-      "label": "Timer ID"
+      "label": "Timer ID",
+      "info": "Optional: Enter a specific timer ID to display. Leave blank to show all active product timers."
+    },
+    {
+      "type": "paragraph",
+      "content": "💡 Tip: Enable the Edge Timer app embed in Theme settings → App embeds for this block to work."
     }
   ]
 }

@@ -1,0 +1,47 @@
+{% comment %}
+Edge Timer - App Embed Block
+
+This app embed loads the urgency timer assets and initialization context globally.
+Merchants can enable/disable it in:
+
+  Theme editor → Theme settings → App embeds
+
+Once enabled, your urgency-timer.js script will:
+- Mount product timers on pages where the product-timer block is placed
+- Mount top/bottom bar timers on any page according to your app's configuration
+
+This replaces the need for merchants to manually add snippets to theme.liquid.
+{% endcomment %}
+
+{%- comment -%}
+Load the timer CSS and JS assets globally
+{%- endcomment -%}
+<meta name="shopify-shop" content="{{ shop.permanent_domain }}">
+<link rel="stylesheet" href="{{ 'urgency-timer.css' | asset_url }}" media="all">
+<script src="{{ 'urgency-timer.js' | asset_url }}" defer></script>
+
+{%- comment -%}
+Provide a hidden bar context so top/bottom bars can mount on any page,
+even when no product timer block is present.
+{%- endcomment -%}
+<div
+  id="urgency-timer-bar-context"
+  class="urgency-timer-context"
+  data-shop-domain="{{ shop.permanent_domain }}"
+  style="display: none;"
+>
+  <!-- Hidden context element for bar timers to ensure shop detection works -->
+</div>
+
+{% schema %}
+{
+  "name": "Edge Timer",
+  "target": "head",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Enable this to load the Edge Timer script on all pages. This allows product countdown timers and promotional bars to display where configured in your Edge Timer app dashboard."
+    }
+  ]
+}
+{% endschema %}

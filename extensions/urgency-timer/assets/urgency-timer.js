@@ -64,11 +64,17 @@
 
   function detectContext() {
     const root = document.querySelector(".urgency-timer-root");
+    const barContext = document.querySelector(".urgency-timer-context");
+
+    // Get shop domain from multiple sources to ensure bars work independently
+    const shop = root?.dataset?.shopDomain ||
+                 barContext?.dataset?.shopDomain ||
+                 window.Shopify?.shop ||
+                 document.querySelector('meta[name="shopify-shop"]')?.content ||
+                 "";
+
     return {
-      shop:
-        root?.dataset?.shopDomain ||
-        window.Shopify?.shop ||
-        "",
+      shop: shop,
       productId: root?.dataset?.productId || "",
       timerId: root?.dataset?.timerId || "",
       pageType: detectPageType(root),
@@ -374,6 +380,12 @@
   function mountProductTimers(ctx, timers) {
     const roots = document.querySelectorAll(".urgency-timer-root");
     log("mountProductTimers: found", roots.length, "root elements");
+
+    // Only mount product timers on actual product pages
+    if (ctx.pageType !== "product" || !ctx.productId) {
+      log("Not a product page or no product ID - skipping product timer mount");
+      return;
+    }
 
     roots.forEach(root => {
       log("Looking for product-page timer in:", timers.map(x => x.type));
