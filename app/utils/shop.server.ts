@@ -42,6 +42,11 @@ export async function ensureShopExists(shopDomain: string) {
         monthlyViews: 0,
         viewsResetAt: new Date(),
         billingStatus: "active",
+        setupCompleted: false,
+        embedActivated: false,
+        firstTimerCreated: false,
+        timerConfirmedWorking: false,
+        setupDismissed: false,
       },
     });
     console.log(`Created new Shop record for ${shopDomain}`);

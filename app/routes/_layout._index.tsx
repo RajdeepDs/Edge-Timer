@@ -19,6 +19,7 @@ import prisma from "app/db.server";
 import { EmptyState } from "../components/ui/EmptyState";
 import { TimerDataTable } from "../components/timer/TimerDataTable";
 import { ensureShopExists } from "app/utils/shop.server";
+import { SetupGuideCard } from "../components/setup/SetupGuideCard";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -62,6 +63,30 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ success: true, message: "Timer status updated" });
     }
 
+    if (intent === "dismissSetup") {
+      await prisma.shop.update({
+        where: { shopDomain: session.shop },
+        data: { setupDismissed: true },
+      });
+      return json({ success: true, message: "Setup guide dismissed" });
+    }
+
+    if (intent === "markEmbedDone") {
+      await prisma.shop.update({
+        where: { shopDomain: session.shop },
+        data: { embedActivated: true },
+      });
+      return json({ success: true, message: "Embed marked as activated" });
+    }
+
+    if (intent === "markConfirmedWorking") {
+      await prisma.shop.update({
+        where: { shopDomain: session.shop },
+        data: { timerConfirmedWorking: true, setupCompleted: true },
+      });
+      return json({ success: true, message: "Setup completed" });
+    }
+
     return json({ success: false, error: "Invalid intent" }, { status: 400 });
   } catch (error) {
     console.error("Error in timer action:", error);
@@ -91,6 +116,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     where: { shop: session.shop },
     orderBy: { createdAt: "desc" },
   });
+
+  // Update first timer created status if timers exist
+  if (timers.length > 0 && !shop.firstTimerCreated) {
+    await prisma.shop.update({
+      where: { shopDomain: session.shop },
+      data: { firstTimerCreated: true },
+    });
+    shop.firstTimerCreated = true;
+  }
 
   return json({ shop, timers });
 };
@@ -142,6 +176,31 @@ export default function Index() {
     formData.append("timerId", timerId);
     submit(formData, { method: "post" });
   };
+
+  const handleDismissSetup = () => {
+    const formData = new FormData();
+    formData.append("intent", "dismissSetup");
+    submit(formData, { method: "post" });
+  };
+
+  const handleMarkEmbedDone = () => {
+    const formData = new FormData();
+    formData.append("intent", "markEmbedDone");
+    submit(formData, { method: "post" });
+  };
+
+  const handleMarkConfirmedWorking = () => {
+    const formData = new FormData();
+    formData.append("intent", "markConfirmedWorking");
+    submit(formData, { method: "post" });
+  };
+
+  const handleOpenThemeSettings = () => {
+    const themeUrl = `https://${shop.shopDomain}/admin/themes/current/editor?context=apps`;
+    window.open(themeUrl, "_blank");
+  };
+
+  const showSetupGuide = !shop.setupCompleted && !shop.setupDismissed;
 
   const currentPlanName =
     currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
@@ -202,7 +261,17 @@ export default function Index() {
             <Button url="/plans">Upgrade</Button>
           </InlineStack>
         </Card>
-
+        {showSetupGuide && (
+          <SetupGuideCard
+            embedActivated={shop.embedActivated}
+            firstTimerCreated={shop.firstTimerCreated}
+            timerConfirmedWorking={shop.timerConfirmedWorking}
+            onDismiss={handleDismissSetup}
+            onOpenThemeSettings={handleOpenThemeSettings}
+            onMarkEmbedDone={handleMarkEmbedDone}
+            onMarkConfirmedWorking={handleMarkConfirmedWorking}
+          />
+        )}
         {timers.length === 0 ? (
           <EmptyState
             title="This is where you'll manage your timers."

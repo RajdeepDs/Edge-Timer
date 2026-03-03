@@ -121,6 +121,13 @@ model Shop {
   billingStatus String    @default("active") // "active", "cancelled", "paused"
   trialEndsAt   DateTime?
 
+  // Setup Guide
+  setupCompleted        Boolean @default(false)
+  embedActivated        Boolean @default(false)
+  firstTimerCreated     Boolean @default(false)
+  timerConfirmedWorking Boolean @default(false)
+  setupDismissed        Boolean @default(false)
+
   // Settings
   settings Json?
 
