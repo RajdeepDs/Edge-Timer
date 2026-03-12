@@ -114,10 +114,13 @@
   function fetchTimersOnce(ctx) {
     if (STATE.fetchPromise) return STATE.fetchPromise;
 
-    const url = `${getEndpoint()}?${buildQuery(ctx)}`;
+    // Add cache-busting timestamp to ensure fresh color configs
+    const url = `${getEndpoint()}?${buildQuery(ctx)}&_t=${Date.now()}`;
     log("Fetching timers:", url);
 
-    STATE.fetchPromise = fetch(url)
+    STATE.fetchPromise = fetch(url, {
+      cache: 'no-store' // Prevent browser caching of timer configs
+    })
       .then(r => {
         log("Fetch response status:", r.status, r.ok);
         return r.ok ? r.json() : Promise.reject(r.status);
@@ -282,67 +285,75 @@
 
     /* ========== Sync designConfig with storefront ========== */
     const isBar = timer.type === "top-bottom-bar";
+
     if (!isBar) {
       if (dc.backgroundColor != null || (dc.backgroundType === "gradient" && dc.gradientStartColor && dc.gradientEndColor)) {
         if (dc.backgroundType === "gradient" && dc.gradientStartColor && dc.gradientEndColor) {
-          c.style.background = "linear-gradient(135deg, " + dc.gradientStartColor + ", " + dc.gradientEndColor + ")";
+          c.style.setProperty("background", "linear-gradient(135deg, " + dc.gradientStartColor + ", " + dc.gradientEndColor + ")", "important");
         } else {
-          c.style.backgroundColor = dc.backgroundColor || "";
+          c.style.setProperty("background-color", dc.backgroundColor || "", "important");
         }
       }
-      if (dc.borderRadius != null) c.style.borderRadius = dc.borderRadius + "px";
+      if (dc.borderRadius != null) c.style.setProperty("border-radius", dc.borderRadius + "px", "important");
       if (dc.borderSize != null && dc.borderSize > 0 && dc.borderColor) {
-        c.style.border = dc.borderSize + "px solid " + dc.borderColor;
+        c.style.setProperty("border", dc.borderSize + "px solid " + dc.borderColor, "important");
       }
-      if (dc.paddingTop != null) c.style.paddingTop = dc.paddingTop + "px";
-      if (dc.paddingBottom != null) c.style.paddingBottom = dc.paddingBottom + "px";
-      if (dc.marginTop != null) c.style.marginTop = dc.marginTop + "px";
-      if (dc.marginBottom != null) c.style.marginBottom = dc.marginBottom + "px";
+      if (dc.paddingTop != null) c.style.setProperty("padding-top", dc.paddingTop + "px", "important");
+      if (dc.paddingBottom != null) c.style.setProperty("padding-bottom", dc.paddingBottom + "px", "important");
+      if (dc.marginTop != null) c.style.setProperty("margin-top", dc.marginTop + "px", "important");
+      if (dc.marginBottom != null) c.style.setProperty("margin-bottom", dc.marginBottom + "px", "important");
     }
 
-    if (dc.titleSize != null) title.style.fontSize = dc.titleSize + "px";
-    if (dc.titleColor) title.style.color = dc.titleColor;
-    if (dc.titleFontWeight) title.style.fontWeight = dc.titleFontWeight;
-    if (dc.titleFontFamily) title.style.fontFamily = dc.titleFontFamily;
+    if (dc.titleSize != null) title.style.setProperty("font-size", dc.titleSize + "px", "important");
+    if (dc.titleColor) {
+      title.style.setProperty("color", dc.titleColor, "important");
+    }
+    if (dc.titleFontWeight) title.style.setProperty("font-weight", dc.titleFontWeight, "important");
+    if (dc.titleFontFamily) title.style.setProperty("font-family", dc.titleFontFamily, "important");
 
-    if (dc.subheadingSize != null) sub.style.fontSize = dc.subheadingSize + "px";
-    if (dc.subheadingColor) sub.style.color = dc.subheadingColor;
-    if (dc.subheadingFontWeight) sub.style.fontWeight = dc.subheadingFontWeight;
-    if (dc.subheadingFontFamily) sub.style.fontFamily = dc.subheadingFontFamily;
+    if (dc.subheadingSize != null) sub.style.setProperty("font-size", dc.subheadingSize + "px", "important");
+    if (dc.subheadingColor) sub.style.setProperty("color", dc.subheadingColor, "important");
+    if (dc.subheadingFontWeight) sub.style.setProperty("font-weight", dc.subheadingFontWeight, "important");
+    if (dc.subheadingFontFamily) sub.style.setProperty("font-family", dc.subheadingFontFamily, "important");
 
     if (dc.timerSize != null) {
-      numbersRow.querySelectorAll(".utimer-number").forEach(e => (e.style.fontSize = dc.timerSize + "px"));
-      numbersRow.querySelectorAll(".utimer-separator").forEach(e => (e.style.fontSize = dc.timerSize + "px"));
+      numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("font-size", dc.timerSize + "px", "important"));
+      numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("font-size", dc.timerSize + "px", "important"));
     }
     if (dc.timerColor) {
-      numbersRow.querySelectorAll(".utimer-number").forEach(e => (e.style.color = dc.timerColor));
-      numbersRow.querySelectorAll(".utimer-separator").forEach(e => (e.style.color = dc.timerColor));
+      numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("color", dc.timerColor, "important"));
+      numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("color", dc.timerColor, "important"));
     }
     if (dc.timerFontWeight) {
-      numbersRow.querySelectorAll(".utimer-number").forEach(e => (e.style.fontWeight = dc.timerFontWeight));
-      numbersRow.querySelectorAll(".utimer-separator").forEach(e => (e.style.fontWeight = dc.timerFontWeight));
+      numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("font-weight", dc.timerFontWeight, "important"));
+      numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("font-weight", dc.timerFontWeight, "important"));
     }
     if (dc.timerFontFamily) {
-      numbersRow.querySelectorAll(".utimer-number").forEach(e => (e.style.fontFamily = dc.timerFontFamily));
-      numbersRow.querySelectorAll(".utimer-separator").forEach(e => (e.style.fontFamily = dc.timerFontFamily));
+      numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("font-family", dc.timerFontFamily, "important"));
+      numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("font-family", dc.timerFontFamily, "important"));
     }
 
     if (dc.legendSize != null)
-      labelsRow.querySelectorAll(".utimer-label").forEach(e => (e.style.fontSize = dc.legendSize + "px"));
-    if (dc.legendColor)
-      labelsRow.querySelectorAll(".utimer-label").forEach(e => (e.style.color = dc.legendColor));
+      labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("font-size", dc.legendSize + "px", "important"));
+    if (dc.legendColor) {
+      labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("color", dc.legendColor, "important"));
+    }
     if (dc.legendFontWeight)
-      labelsRow.querySelectorAll(".utimer-label").forEach(e => (e.style.fontWeight = dc.legendFontWeight));
+      labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("font-weight", dc.legendFontWeight, "important"));
     if (dc.legendFontFamily)
-      labelsRow.querySelectorAll(".utimer-label").forEach(e => (e.style.fontFamily = dc.legendFontFamily));
+      labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("font-family", dc.legendFontFamily, "important"));
 
     if (buttonEl) {
-      if (dc.buttonFontSize != null) buttonEl.style.fontSize = dc.buttonFontSize + "px";
-      if (dc.buttonCornerRadius != null) buttonEl.style.borderRadius = dc.buttonCornerRadius + "px";
-      if (dc.buttonColor) buttonEl.style.color = dc.buttonColor;
-      if (dc.buttonBackgroundColor) buttonEl.style.backgroundColor = dc.buttonBackgroundColor;
+      if (dc.buttonFontSize != null) buttonEl.style.setProperty("font-size", dc.buttonFontSize + "px", "important");
+      if (dc.buttonCornerRadius != null) buttonEl.style.setProperty("border-radius", dc.buttonCornerRadius + "px", "important");
+      if (dc.buttonColor) {
+        buttonEl.style.setProperty("color", dc.buttonColor, "important");
+      }
+      if (dc.buttonBackgroundColor) {
+        buttonEl.style.setProperty("background-color", dc.buttonBackgroundColor, "important");
+      }
       if (dc.buttonBorderColor && dc.buttonBorderSize != null && dc.buttonBorderSize > 0) {
-        buttonEl.style.border = dc.buttonBorderSize + "px solid " + dc.buttonBorderColor;
+        buttonEl.style.setProperty("border", dc.buttonBorderSize + "px solid " + dc.buttonBorderColor, "important");
       }
     }
 
@@ -415,12 +426,12 @@
 
         const dc = t.designConfig || {};
         if (dc.backgroundType === "gradient" && dc.gradientStartColor && dc.gradientEndColor) {
-          bar.style.background = "linear-gradient(135deg, " + dc.gradientStartColor + ", " + dc.gradientEndColor + ")";
+          bar.style.setProperty("background", "linear-gradient(135deg, " + dc.gradientStartColor + ", " + dc.gradientEndColor + ")", "important");
         } else if (dc.backgroundColor != null) {
-          bar.style.backgroundColor = dc.backgroundColor;
+          bar.style.setProperty("background-color", dc.backgroundColor, "important");
         }
-        if (dc.paddingTop != null) bar.style.paddingTop = Math.min(dc.paddingTop, 10) + "px";
-        if (dc.paddingBottom != null) bar.style.paddingBottom = Math.min(dc.paddingBottom, 10) + "px";
+        if (dc.paddingTop != null) bar.style.setProperty("padding-top", Math.min(dc.paddingTop, 10) + "px", "important");
+        if (dc.paddingBottom != null) bar.style.setProperty("padding-bottom", Math.min(dc.paddingBottom, 10) + "px", "important");
 
         bar.appendChild(createCountdownDOM(t));
         if (isTop) {
