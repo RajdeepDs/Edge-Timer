@@ -236,7 +236,6 @@ export default function PricingPlans() {
                 badge={plan.badge}
                 price={plan.monthlyPrice}
                 items={plan.items}
-                yearly={false}
                 yearlyPrice={plan.yearlyTotal}
                 planId={plan.id}
                 currentPlan={shop.currentPlan}

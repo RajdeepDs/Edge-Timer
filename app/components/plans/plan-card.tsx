@@ -16,7 +16,6 @@ interface PlanCardProps {
   badge?: string;
   items: string[];
   price: string;
-  yearly?: boolean;
   yearlyPrice?: string;
   planId: string;
   currentPlan: string;
@@ -31,7 +30,6 @@ export default function PlanCard(props: PlanCardProps) {
     badge,
     items,
     price,
-    yearly,
     yearlyPrice,
     planId,
     currentPlan,
@@ -70,28 +68,19 @@ export default function PlanCard(props: PlanCardProps) {
             </BlockStack>
             <Box minHeight="150px">
               <BlockStack gap="100" inlineAlign="baseline">
-                {items.map((item, index) => (
-                  <InlineStack key={index} gap="100" wrap={false}>
+                {items.map((item) => (
+                  <InlineStack key={item} gap="100" wrap={false}>
                     <Icon source={CheckIcon} />
                     <Text as="span">{item}</Text>
                   </InlineStack>
                 ))}
               </BlockStack>
             </Box>
-            <BlockStack>
-              <InlineStack gap="100" blockAlign="baseline">
-                <Text as="h3" variant="heading3xl">
-                  {price}
-                </Text>
-                <Text as="span" tone="subdued" variant="bodyMd">
-                  /month
-                </Text>
-              </InlineStack>
-              {yearly && (
-                <Text as="p">
-                  <Text as="strong">{yearlyPrice}</Text> billed once a year
-                </Text>
-              )}
+            <BlockStack gap="100">
+              <Text as="p" variant="bodyMd">
+                <Text as="strong">{price}/month</Text> or{" "}
+                <Text as="strong">{yearlyPrice}/year</Text>, 14-day trial
+              </Text>
             </BlockStack>
 
             {isCurrentPlan ? (
@@ -107,7 +96,7 @@ export default function PlanCard(props: PlanCardProps) {
                 size="large"
                 variant="primary"
                 loading={isSubscribing}
-                onClick={() => onSelect(planId)} // Trigger the parent's redirect logic
+                onClick={() => onSelect(planId)}
               >
                 Start FREE 14-day trial
               </Button>
