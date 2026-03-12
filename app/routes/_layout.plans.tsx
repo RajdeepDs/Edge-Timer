@@ -21,16 +21,25 @@ import { useLoaderData, useNavigation } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { getShop } from "../utils/shop.server";
 import { getPlanViewLimit } from "../utils/plan-check.server";
+import { verifyAndSyncSubscription } from "../utils/subscription.server";
+import db from "../db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   if (!session?.shop) {
     throw new Response("Unauthorized", { status: 401 });
   }
 
   try {
+    // Sync subscription status from Shopify API to ensure accuracy
+    console.log(
+      `[Pricing Page] Syncing subscription for shop: ${session.shop}`,
+    );
+    await verifyAndSyncSubscription(admin, session.shop, db);
+
     const shop = await getShop(session.shop);
+    console.log(`[Pricing Page] Current plan after sync: ${shop.currentPlan}`);
     const currentPlan = shop.currentPlan || "free";
     const viewLimit = getPlanViewLimit(currentPlan as any);
     const usagePercent =

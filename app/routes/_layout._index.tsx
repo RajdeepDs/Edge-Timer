@@ -20,6 +20,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { TimerDataTable } from "../components/timer/TimerDataTable";
 import { ensureShopExists } from "app/utils/shop.server";
 import { SetupGuideCard } from "../components/setup/SetupGuideCard";
+import { verifyAndSyncSubscription } from "../utils/subscription.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -98,11 +99,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   // Ensure shop exists and get the shop data
   const shop = await ensureShopExists(session.shop);
   await registerWebhooks({ session });
+
+  // Sync subscription status from Shopify API to ensure accuracy
+  await verifyAndSyncSubscription(admin, session.shop, prisma);
 
   // Check if shop has an active paid subscription
   // Redirect free plan users to plans page to encourage upgrade
