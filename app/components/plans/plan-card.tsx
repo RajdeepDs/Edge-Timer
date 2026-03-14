@@ -88,8 +88,12 @@ export default function PlanCard(props: PlanCardProps) {
                 Your current plan
               </Button>
             ) : isDowngrade ? (
-              <Button size="large" disabled>
-                Downgrade not available
+              <Button
+                size="large"
+                loading={isSubscribing}
+                onClick={() => onSelect(planId)}
+              >
+                Downgrade
               </Button>
             ) : (
               <Button
