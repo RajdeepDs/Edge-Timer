@@ -5,18 +5,18 @@ import prisma from "../db.server";
  */
 export const PLAN_LIMITS = {
   free: {
-    monthlyViews: 1000,
+    monthlyViews: 1500,
     timers: 2,
   },
   starter: {
     monthlyViews: 10000,
     timers: -1, // unlimited
   },
-  essential: {
+  standard: {
     monthlyViews: 50000,
     timers: -1, // unlimited
   },
-  professional: {
+  premium: {
     monthlyViews: -1, // unlimited
     timers: -1, // unlimited
   },

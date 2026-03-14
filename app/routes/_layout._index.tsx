@@ -149,8 +149,8 @@ export default function Index() {
   const planLimits: Record<string, number> = {
     free: 1500,
     starter: 10000,
-    essential: 50000,
-    professional: -1,
+    standard: 50000,
+    premium: -1,
   };
 
   const currentPlan = shop?.currentPlan?.toLowerCase() || "free";
