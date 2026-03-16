@@ -272,7 +272,7 @@
     c.append(countdown);
 
     const hasExplicitButton = timer.ctaType === "button" && timer.buttonLink;
-    const isBarWithButton = timer.type === "top-bottom-bar" && timer.ctaType !== "no";
+    const isBarWithButton = timer.type === "top-bottom-bar" && (timer.ctaType === "button" || (!timer.ctaType && timer.buttonLink));
     let buttonEl = null;
     if (hasExplicitButton || isBarWithButton) {
       const ctaWrap = el("div", "utimer-cta", "");
@@ -281,6 +281,13 @@
       buttonEl = a;
       ctaWrap.appendChild(a);
       c.append(ctaWrap);
+    }
+
+    if (timer.type === "top-bottom-bar" && timer.ctaType === "clickable" && timer.buttonLink) {
+      c.style.cursor = "pointer";
+      c.addEventListener("click", () => {
+        window.location.href = timer.buttonLink;
+      });
     }
 
     /* ========== Sync designConfig with storefront ========== */
