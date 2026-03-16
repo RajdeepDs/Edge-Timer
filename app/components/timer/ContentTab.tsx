@@ -195,36 +195,40 @@ export default function ContentTab({
             <s-option value="button">Button</s-option>
             <s-option value="clickable">Make entire bar clickable</s-option>
           </s-select>
-          {buttonText !== undefined && setButtonText && (
-            <s-text-field
-              label="Button Text"
-              value={buttonText}
-              defaultValue={buttonText}
-              onInput={(e) => setButtonText(getValue(e))}
-              placeholder="Shop now!"
-              autocomplete="off"
-              error={
-                hasFieldError("buttonText")
-                  ? getFieldError("buttonText")
-                  : undefined
-              }
-            />
-          )}
-          {buttonLink !== undefined && setButtonLink && (
-            <s-url-field
-              label="Link"
-              placeholder="Enter link"
-              autocomplete="off"
-              value={buttonLink}
-              defaultValue={buttonLink}
-              onInput={(e) => setButtonLink(getValue(e))}
-              error={
-                hasFieldError("buttonLink")
-                  ? getFieldError("buttonLink")
-                  : undefined
-              }
-            />
-          )}
+          {callToAction !== "no" &&
+            buttonText !== undefined &&
+            setButtonText && (
+              <s-text-field
+                label="Button Text"
+                value={buttonText}
+                defaultValue={buttonText}
+                onInput={(e) => setButtonText(getValue(e))}
+                placeholder="Shop now!"
+                autocomplete="off"
+                error={
+                  hasFieldError("buttonText")
+                    ? getFieldError("buttonText")
+                    : undefined
+                }
+              />
+            )}
+          {callToAction !== "no" &&
+            buttonLink !== undefined &&
+            setButtonLink && (
+              <s-url-field
+                label="Link"
+                placeholder="Enter link"
+                autocomplete="off"
+                value={buttonLink}
+                defaultValue={buttonLink}
+                onInput={(e) => setButtonLink(getValue(e))}
+                error={
+                  hasFieldError("buttonLink")
+                    ? getFieldError("buttonLink")
+                    : undefined
+                }
+              />
+            )}
         </BlockStack>
       )}
       <BlockStack gap="100">

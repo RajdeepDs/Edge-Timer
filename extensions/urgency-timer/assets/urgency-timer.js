@@ -272,7 +272,7 @@
     c.append(countdown);
 
     const hasExplicitButton = timer.ctaType === "button" && timer.buttonLink;
-    const isBarWithButton = timer.type === "top-bottom-bar" && timer.ctaType !== "none";
+    const isBarWithButton = timer.type === "top-bottom-bar" && timer.ctaType !== "no";
     let buttonEl = null;
     if (hasExplicitButton || isBarWithButton) {
       const ctaWrap = el("div", "utimer-cta", "");

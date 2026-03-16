@@ -308,6 +308,7 @@ export function TimerForm({
             designConfig={formState.designConfig}
             setDesignConfig={formState.setDesignConfig}
             onContinue={goToNextTab}
+            callToAction={formState.callToAction}
           />
         );
       case 2:
@@ -409,6 +410,7 @@ export function TimerForm({
                       period={formState.period}
                       timerTypeValue={formState.timerTypeValue}
                       fixedMinutes={formState.fixedMinutes}
+                      callToAction={formState.callToAction}
                     />
                   </Box>
                 </div>

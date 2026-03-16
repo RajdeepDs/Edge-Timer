@@ -18,6 +18,7 @@ interface TimerPreviewProps {
   period?: "AM" | "PM";
   timerTypeValue?: "countdown" | "fixed";
   fixedMinutes?: string;
+  callToAction?: "no" | "button" | "clickable";
 }
 
 export default function TimerPreview({
@@ -36,6 +37,7 @@ export default function TimerPreview({
   period = "AM",
   timerTypeValue = "countdown",
   fixedMinutes = "10",
+  callToAction = "button",
 }: TimerPreviewProps) {
   // Calculate target end date/time
   const getTargetDate = useCallback(() => {
@@ -251,15 +253,17 @@ export default function TimerPreview({
           </div>
 
           {/* Button */}
-          <button
-            style={{
-              ...buttonStyle,
-              padding: "8px 16px",
-              fontSize: `${Math.min(buttonFontSize, 14)}px`,
-            }}
-          >
-            {buttonText}
-          </button>
+          {callToAction !== "no" && (
+            <button
+              style={{
+                ...buttonStyle,
+                padding: "8px 16px",
+                fontSize: `${Math.min(buttonFontSize, 14)}px`,
+              }}
+            >
+              {buttonText}
+            </button>
+          )}
         </div>
       </div>
     );

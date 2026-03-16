@@ -18,6 +18,7 @@ interface DesignTabProps {
   designConfig: DesignConfig;
   setDesignConfig: (config: DesignConfig) => void;
   onContinue: () => void;
+  callToAction?: "no" | "button" | "clickable";
 }
 
 export default function DesignTab({
@@ -25,6 +26,7 @@ export default function DesignTab({
   designConfig,
   setDesignConfig,
   onContinue,
+  callToAction,
 }: DesignTabProps) {
   const {
     positioning,
@@ -51,10 +53,6 @@ export default function DesignTab({
     setTitleSize,
     titleColor,
     setTitleColor,
-    subheadingSize,
-    setSubheadingSize,
-    subheadingColor,
-    setSubheadingColor,
     timerSize,
     setTimerSize,
     timerColor,
@@ -255,33 +253,6 @@ export default function DesignTab({
 
         <BlockStack gap="200">
           <Text as="p" variant="bodyMd">
-            Subheading size and color
-          </Text>
-          <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <s-number-field
-              label="Subheading size"
-              labelAccessibilityVisibility="exclusive"
-              value={subheadingSize}
-              defaultValue={subheadingSize}
-              onChange={(e) => setSubheadingSize(getValue(e))}
-              autocomplete="off"
-              suffix="px"
-              inputMode="numeric"
-              min={0}
-              max={100}
-            />
-            <s-color-field
-              name="subHeadingColor"
-              value={subheadingColor}
-              defaultValue={subheadingColor}
-              onChange={(e) => setSubheadingColor(getValue(e))}
-              autocomplete="off"
-            />
-          </InlineStack>
-        </BlockStack>
-
-        <BlockStack gap="200">
-          <Text as="p" variant="bodyMd">
             Timer size and color
           </Text>
           <InlineStack gap="200" blockAlign="stretch" wrap={false}>
@@ -334,7 +305,7 @@ export default function DesignTab({
           </InlineStack>
         </BlockStack>
       </BlockStack>
-      {timerType === "top-bottom-bar" && (
+      {timerType === "top-bottom-bar" && callToAction !== "no" && (
         <BlockStack gap="400">
           <Bleed marginInline={"400"}>
             <Divider />
