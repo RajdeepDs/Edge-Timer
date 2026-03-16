@@ -253,7 +253,7 @@ export default function TimerPreview({
           </div>
 
           {/* Button */}
-          {callToAction !== "no" && (
+          {callToAction === "button" && (
             <button
               style={{
                 ...buttonStyle,

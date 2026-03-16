@@ -305,7 +305,7 @@ export default function DesignTab({
           </InlineStack>
         </BlockStack>
       </BlockStack>
-      {timerType === "top-bottom-bar" && callToAction !== "no" && (
+      {timerType === "top-bottom-bar" && callToAction === "button" && (
         <BlockStack gap="400">
           <Bleed marginInline={"400"}>
             <Divider />
