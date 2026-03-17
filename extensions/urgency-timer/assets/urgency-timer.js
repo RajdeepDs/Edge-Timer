@@ -378,8 +378,34 @@
       units.forEach(u => (valueEls[u].textContent = pad(t[u])));
 
       if (remaining <= 0) {
-        clearInterval(id);
-        if ((timer.onExpiry || "hide") !== "keep") c.remove();
+        const action = (timer.onExpiry || "unpublish").toLowerCase();
+        if (action === "keep") {
+          // Restart the timer from its full duration
+          if (timer.timerType === "fixed") {
+            // Reset the localStorage start time to now
+            const key = `utimer_fixed_${timer.id}_start`;
+            localStorage.setItem(key, Math.floor(Date.now() / 1000));
+          } else if (timer.endDate) {
+            // Calculate original duration and shift endDate forward
+            const start = timer.startsAt ? new Date(timer.startsAt).getTime() : null;
+            const end = new Date(timer.endDate).getTime();
+            const duration = start ? (end - start) : 0;
+            if (duration > 0) {
+              timer.endDate = new Date(Date.now() + duration).toISOString();
+            }
+          }
+          // Don't clear interval — let it keep ticking
+        } else {
+          clearInterval(id);
+          // Get bar parent reference before removing (parentElement is null after remove)
+          const barParent = c.closest(".utimer-bar");
+          // Remove the timer container
+          c.remove();
+          // Also remove the parent bar wrapper if this is a bar timer
+          if (barParent) {
+            barParent.remove();
+          }
+        }
       }
     }
 
@@ -394,6 +420,22 @@
   }
 
   /* ================= Mounting ================= */
+
+  function isAlreadyExpired(timer) {
+    if (timer.timerType === "fixed") {
+      return getFixedTimerRemainingSeconds(timer) <= 0;
+    }
+    if (timer.endDate) {
+      return msUntil(timer.endDate) <= 0;
+    }
+    return false;
+  }
+
+  function shouldSkipExpiredTimer(timer) {
+    if (!isAlreadyExpired(timer)) return false;
+    const action = (timer.onExpiry || "unpublish").toLowerCase();
+    return action !== "keep";
+  }
 
   function mountProductTimers(ctx, timers) {
     const roots = document.querySelectorAll(".urgency-timer-root");
@@ -412,6 +454,12 @@
         log("No product-page timer found");
         return;
       }
+      // Skip mounting if already expired and should be hidden/unpublished
+      if (shouldSkipExpiredTimer(t)) {
+        log("Timer already expired, skipping mount:", t.id, "onExpiry:", t.onExpiry);
+        root.innerHTML = "";
+        return;
+      }
       log("Mounting product timer:", t.id, t.name);
       root.innerHTML = "";
       root.appendChild(createCountdownDOM(t));
@@ -426,6 +474,11 @@
     log("mountBars: found", barTimers.length, "bar timers");
 
     barTimers.forEach(t => {
+        // Skip mounting if already expired and should be hidden/unpublished
+        if (shouldSkipExpiredTimer(t)) {
+          log("Bar timer already expired, skipping mount:", t.id, "onExpiry:", t.onExpiry);
+          return;
+        }
         log("Mounting bar timer:", t.id, t.name);
         const bar = document.createElement("div");
         const isTop = t.designConfig?.positioning !== "bottom";
@@ -653,25 +706,7 @@
         .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: 22px; }
       }
 
-      @media (prefers-color-scheme: dark) {
-        .utimer-container {
-          background: #0b0b0c;
-          color: #e5e7eb;
-        }
 
-        .utimer-title { color: #f3f4f6; }
-        .utimer-label,
-        .utimer-sub,
-
-        .utimer-bar {
-          background: #0f1113;
-          color: #e5e7eb;
-        }
-
-        .utimer-button {
-          background: #2563eb;
-        }
-      }
     `;
     document.head.appendChild(style);
   }
