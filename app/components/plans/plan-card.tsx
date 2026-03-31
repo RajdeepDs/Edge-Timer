@@ -79,7 +79,7 @@ export default function PlanCard(props: PlanCardProps) {
             <BlockStack gap="100">
               <Text as="p" variant="bodyMd">
                 <Text as="strong">{price}/month</Text> or{" "}
-                <Text as="strong">{yearlyPrice}/year</Text>, 14-day trial
+                <Text as="strong">{yearlyPrice}/year</Text>
               </Text>
             </BlockStack>
 
@@ -102,7 +102,7 @@ export default function PlanCard(props: PlanCardProps) {
                 loading={isSubscribing}
                 onClick={() => onSelect(planId)}
               >
-                Start FREE 14-day trial
+                Subscribe
               </Button>
             )}
           </BlockStack>

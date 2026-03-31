@@ -45,7 +45,6 @@ This document describes the billing and monetization system for the Edge Timer S
   - Unlimited landing page timers
   - Scheduled timers
   - Recurring timers
-- **Trial**: 7 days free
 
 ### Essential Plan
 - **Price**: $9.99/month or $95.88/year (save 20%)
@@ -57,7 +56,6 @@ This document describes the billing and monetization system for the Edge Timer S
   - Product tag targeting
   - Geolocation targeting
   - Translations
-- **Trial**: 7 days free
 
 ### Professional Plan
 - **Price**: $29.99/month or $287.88/year (save 20%)
@@ -65,7 +63,6 @@ This document describes the billing and monetization system for the Edge Timer S
 - **Features**:
   - All premium features
   - Unlimited views
-- **Trial**: 7 days free
 
 ## Implementation Details
 
@@ -224,7 +221,6 @@ const billingResponse = await billing.request({
 1. **Free to Paid Upgrade**
    - Select Starter plan
    - Confirm subscription
-   - Verify trial period activated
    - Verify features unlocked
 
 2. **Plan Upgrade**
@@ -238,10 +234,10 @@ const billingResponse = await billing.request({
    - Plan downgraded to Free
    - Features locked
 
-4. **Trial Expiration**
-   - Wait for trial to end
-   - Verify billing starts
-   - Verify features remain active
+4. **Subscription Activation**
+   - Confirm subscription
+   - Verify billing starts immediately
+   - Verify features become active
 
 5. **View Limit Exceeded**
    - Reach monthly limit

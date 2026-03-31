@@ -169,9 +169,7 @@ export default function PricingPlans() {
         <Banner tone="info">
           <p>
             When you select a plan, you'll be redirected to Shopify's secure
-            billing page to review and approve your subscription. All plans
-            include a <strong>14-day free trial</strong> - you won't be charged
-            until the trial ends.
+            billing page to review and approve your subscription.
           </p>
         </Banner>
       </Box>
