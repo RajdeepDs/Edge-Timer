@@ -520,7 +520,7 @@
         color: #1f2937;
         max-width: 720px;
         text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: inherit;
       }
 
       .utimer-title {

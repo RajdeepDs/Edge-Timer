@@ -37,9 +37,7 @@
   border-radius: var(--utimer-radius);
   background: var(--utimer-bg);
   color: var(--utimer-fg);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: inherit;
   text-align: center;
 }
 
