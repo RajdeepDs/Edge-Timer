@@ -54,6 +54,10 @@ export default function DesignTab({
     setTitleSize,
     titleColor,
     setTitleColor,
+    subheadingSize,
+    setSubheadingSize,
+    subheadingColor,
+    setSubheadingColor,
     timerSize,
     setTimerSize,
     timerColor,
@@ -267,6 +271,35 @@ export default function DesignTab({
             />
           </InlineStack>
         </BlockStack>
+
+        {timerType !== "top-bottom-bar" && (
+          <BlockStack gap="200">
+            <Text as="p" variant="bodyMd">
+              Subheading size and color
+            </Text>
+
+            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+              <s-number-field
+                label="Subheading size"
+                labelAccessibilityVisibility="exclusive"
+                value={subheadingSize}
+                defaultValue={subheadingSize}
+                onInput={(e) => setSubheadingSize(getValue(e))}
+                autocomplete="off"
+                suffix="px"
+                inputMode="numeric"
+                min={0}
+                max={100}
+              />
+              <s-color-field
+                name="subheadingColor"
+                value={subheadingColor}
+                onInput={handleColorChange(setSubheadingColor)}
+                autocomplete="off"
+              />
+            </InlineStack>
+          </BlockStack>
+        )}
 
         <BlockStack gap="200">
           <Text as="p" variant="bodyMd">
