@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type {
   TimerTypeValue,
   TimerStarts,
@@ -15,92 +15,99 @@ interface UseTimerFormProps {
 }
 
 export function useTimerForm({ existingTimer, timerType }: UseTimerFormProps) {
-  // Basic Information
-  const [timerName, setTimerName] = useState(
-    existingTimer?.name || "Timer name",
-  );
-  const [title, setTitle] = useState(existingTimer?.title || "Hurry up!");
-  const [subheading, setSubheading] = useState(
-    existingTimer?.subheading || "Sale ends in:",
-  );
-
-  // Timer Type Settings
-  const [timerTypeValue, setTimerTypeValue] = useState<TimerTypeValue>(
-    (existingTimer?.timerType as TimerTypeValue) || "countdown",
-  );
-  const [timerStarts, setTimerStarts] = useState<TimerStarts>("now");
-
-  // Date & Time
   const getDefaultEndDate = () => {
     const date = new Date();
     date.setHours(date.getHours() + 24);
     return date;
   };
 
-  const [endDate, setEndDate] = useState<Date>(
-    existingTimer?.endDate
+  const initialState = useMemo(() => {
+    const endDate = existingTimer?.endDate
       ? new Date(existingTimer.endDate)
-      : getDefaultEndDate(),
-  );
-  const date = existingTimer?.endDate
-    ? new Date(existingTimer.endDate)
-    : getDefaultEndDate();
-  const hours = date.getHours();
-  const mins = date.getMinutes();
+      : getDefaultEndDate();
+    const hours = endDate.getHours();
+    const mins = endDate.getMinutes();
 
-  const [hour, setHour] = useState(
-    hours > 12 ? String(hours - 12) : String(hours || 12),
+    return {
+      timerName: existingTimer?.name || "Timer name",
+      title: existingTimer?.title || "Hurry up!",
+      subheading:
+        existingTimer?.subheading ||
+        (timerType === "product-page" ? "Sale ends in:" : ""),
+      timerTypeValue:
+        (existingTimer?.timerType as TimerTypeValue) || "countdown",
+      timerStarts: "now" as TimerStarts,
+      endDate,
+      hour: hours > 12 ? String(hours - 12) : String(hours || 12),
+      minute: String(mins).padStart(2, "0"),
+      period: (hours >= 12 ? "PM" : "AM") as "AM" | "PM",
+      fixedMinutes: String(existingTimer?.fixedMinutes || "10"),
+      daysLabel: existingTimer?.daysLabel || "Days",
+      hoursLabel: existingTimer?.hoursLabel || "Hrs",
+      minutesLabel: existingTimer?.minutesLabel || "Mins",
+      secondsLabel: existingTimer?.secondsLabel || "Secs",
+      onceItEnds: (existingTimer?.onExpiry as OnExpiryAction) || "unpublish",
+      callToAction: (existingTimer?.ctaType as CallToActionType) || "no",
+      buttonText: existingTimer?.buttonText || "Shop now!",
+      buttonLink: existingTimer?.buttonLink || "",
+      designConfig: existingTimer?.designConfig || {},
+      placementConfig: existingTimer?.placementConfig || {},
+      isPublished: existingTimer?.isPublished || false,
+    };
+  }, [existingTimer, timerType]);
+
+  // Basic Information
+  const [timerName, setTimerName] = useState(initialState.timerName);
+  const [title, setTitle] = useState(initialState.title);
+  const [subheading, setSubheading] = useState(initialState.subheading);
+
+  // Timer Type Settings
+  const [timerTypeValue, setTimerTypeValue] = useState<TimerTypeValue>(
+    initialState.timerTypeValue,
   );
-  const [minute, setMinute] = useState(String(mins).padStart(2, "0"));
-  const [period, setPeriod] = useState<"AM" | "PM">(hours >= 12 ? "PM" : "AM");
+  const [timerStarts, setTimerStarts] = useState<TimerStarts>(
+    initialState.timerStarts,
+  );
+
+  // Date & Time
+  const [endDate, setEndDate] = useState<Date>(initialState.endDate);
+  const [hour, setHour] = useState(initialState.hour);
+  const [minute, setMinute] = useState(initialState.minute);
+  const [period, setPeriod] = useState<"AM" | "PM">(initialState.period);
 
   // Fixed Minutes
-  const [fixedMinutes, setFixedMinutes] = useState(
-    String(existingTimer?.fixedMinutes || "10"),
-  );
+  const [fixedMinutes, setFixedMinutes] = useState(initialState.fixedMinutes);
 
   // Timer Labels
-  const [daysLabel, setDaysLabel] = useState(
-    existingTimer?.daysLabel || "Days",
-  );
-  const [hoursLabel, setHoursLabel] = useState(
-    existingTimer?.hoursLabel || "Hrs",
-  );
-  const [minutesLabel, setMinutesLabel] = useState(
-    existingTimer?.minutesLabel || "Mins",
-  );
-  const [secondsLabel, setSecondsLabel] = useState(
-    existingTimer?.secondsLabel || "Secs",
-  );
+  const [daysLabel, setDaysLabel] = useState(initialState.daysLabel);
+  const [hoursLabel, setHoursLabel] = useState(initialState.hoursLabel);
+  const [minutesLabel, setMinutesLabel] = useState(initialState.minutesLabel);
+  const [secondsLabel, setSecondsLabel] = useState(initialState.secondsLabel);
 
   // Once It Ends
   const [onceItEnds, setOnceItEnds] = useState<OnExpiryAction>(
-    (existingTimer?.onExpiry as OnExpiryAction) || "unpublish",
+    initialState.onceItEnds,
   );
 
   // Call to Action (for top-bottom-bar)
   const [callToAction, setCallToAction] = useState<CallToActionType>(
-    (existingTimer?.ctaType as CallToActionType) || "no",
+    initialState.callToAction,
   );
-  const [buttonText, setButtonText] = useState(
-    existingTimer?.buttonText || "Shop now!",
-  );
-  const [buttonLink, setButtonLink] = useState(existingTimer?.buttonLink || "");
+  const [buttonText, setButtonText] = useState(initialState.buttonText);
+  const [buttonLink, setButtonLink] = useState(initialState.buttonLink);
 
   // Design Configuration
   const [designConfig, setDesignConfig] = useState<DesignConfig>(
-    existingTimer?.designConfig || {},
+    initialState.designConfig,
   );
 
   // Placement Configuration
   const [placementConfig, setPlacementConfig] = useState<PlacementConfig>(
-    existingTimer?.placementConfig || {},
+    initialState.placementConfig,
   );
 
   // Published State
-  const [isPublished, setIsPublished] = useState(
-    existingTimer?.isPublished || false,
-  );
+  const [isPublished, setIsPublished] = useState(initialState.isPublished);
 
   // Update design config
   const updateDesignConfig = useCallback((updates: Partial<DesignConfig>) => {
@@ -117,30 +124,28 @@ export function useTimerForm({ existingTimer, timerType }: UseTimerFormProps) {
 
   // Reset form
   const resetForm = useCallback(() => {
-    setTimerName("Timer name");
-    setTitle("Hurry up!");
-    setSubheading("Sale ends in:");
-    setTimerTypeValue("countdown");
-    setTimerStarts("now");
-    const defaultDate = new Date();
-    defaultDate.setHours(defaultDate.getHours() + 24);
-    setEndDate(defaultDate);
-    setHour("12");
-    setMinute("00");
-    setPeriod("AM");
-    setFixedMinutes("10");
-    setDaysLabel("Days");
-    setHoursLabel("Hrs");
-    setMinutesLabel("Mins");
-    setSecondsLabel("Secs");
-    setOnceItEnds("unpublish");
-    setCallToAction("no");
-    setButtonText("Shop now!");
-    setButtonLink("");
-    setDesignConfig({});
-    setPlacementConfig({});
-    setIsPublished(false);
-  }, []);
+    setTimerName(initialState.timerName);
+    setTitle(initialState.title);
+    setSubheading(initialState.subheading);
+    setTimerTypeValue(initialState.timerTypeValue);
+    setTimerStarts(initialState.timerStarts);
+    setEndDate(new Date(initialState.endDate));
+    setHour(initialState.hour);
+    setMinute(initialState.minute);
+    setPeriod(initialState.period);
+    setFixedMinutes(initialState.fixedMinutes);
+    setDaysLabel(initialState.daysLabel);
+    setHoursLabel(initialState.hoursLabel);
+    setMinutesLabel(initialState.minutesLabel);
+    setSecondsLabel(initialState.secondsLabel);
+    setOnceItEnds(initialState.onceItEnds);
+    setCallToAction(initialState.callToAction);
+    setButtonText(initialState.buttonText);
+    setButtonLink(initialState.buttonLink);
+    setDesignConfig(initialState.designConfig);
+    setPlacementConfig(initialState.placementConfig);
+    setIsPublished(initialState.isPublished);
+  }, [initialState]);
 
   // Get form data for submission
   const getFormData = useCallback(() => {

@@ -102,6 +102,11 @@ export default function DesignTab({
       setter(normalizeColorValue(colorValue));
     };
 
+  const getColorFieldProps = (setter: (color: string) => void) => ({
+    onInput: handleColorChange(setter),
+    onChange: handleColorChange(setter),
+  });
+
   return (
     <FormLayout>
       {timerType === "top-bottom-bar" && (
@@ -135,8 +140,8 @@ export default function DesignTab({
             <s-color-field
               name="bgColor"
               value={backgroundColor}
-              onInput={handleColorChange(setBackgroundColor)}
               autocomplete="off"
+              {...getColorFieldProps(setBackgroundColor)}
             />
           )}
         </BlockStack>
@@ -172,8 +177,8 @@ export default function DesignTab({
             <s-color-field
               name="borderColor"
               value={borderColor}
-              onInput={handleColorChange(setBorderColor)}
               autocomplete="off"
+              {...getColorFieldProps(setBorderColor)}
             />
           </BlockStack>
         </Box>
@@ -266,8 +271,8 @@ export default function DesignTab({
             <s-color-field
               name="titleColor"
               value={titleColor}
-              onInput={handleColorChange(setTitleColor)}
               autocomplete="off"
+              {...getColorFieldProps(setTitleColor)}
             />
           </InlineStack>
         </BlockStack>
@@ -294,8 +299,8 @@ export default function DesignTab({
               <s-color-field
                 name="subheadingColor"
                 value={subheadingColor}
-                onInput={handleColorChange(setSubheadingColor)}
                 autocomplete="off"
+                {...getColorFieldProps(setSubheadingColor)}
               />
             </InlineStack>
           </BlockStack>
@@ -321,8 +326,8 @@ export default function DesignTab({
             <s-color-field
               name="timerColor"
               value={timerColor}
-              onInput={handleColorChange(setTimerColor)}
               autocomplete="off"
+              {...getColorFieldProps(setTimerColor)}
             />
           </InlineStack>
         </BlockStack>
@@ -347,8 +352,8 @@ export default function DesignTab({
             <s-color-field
               name="legendColor"
               value={legendColor}
-              onInput={handleColorChange(setLegendColor)}
               autocomplete="off"
+              {...getColorFieldProps(setLegendColor)}
             />
           </InlineStack>
         </BlockStack>
@@ -364,8 +369,8 @@ export default function DesignTab({
           <s-color-field
             name="Button background color"
             value={buttonBackgroundColor}
-            onInput={handleColorChange(setButtonBackgroundColor)}
             autocomplete="off"
+            {...getColorFieldProps(setButtonBackgroundColor)}
           />
           <BlockStack gap="100">
             <Text as="p" variant="bodyMd">
@@ -388,8 +393,8 @@ export default function DesignTab({
                 name="Button Color"
                 labelAccessibilityVisibility="exclusive"
                 value={buttonColor}
-                onInput={handleColorChange(setButtonColor)}
                 autocomplete="off"
+                {...getColorFieldProps(setButtonColor)}
               />
             </InlineStack>
           </BlockStack>

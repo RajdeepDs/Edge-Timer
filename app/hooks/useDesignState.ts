@@ -111,6 +111,42 @@ export function useDesignState({
     initialConfig.buttonBackgroundColor || "#202223",
   );
 
+  useEffect(() => {
+    setPositioning(initialConfig.positioning || "top");
+    setBackgroundType(initialConfig.backgroundType || "single");
+    setBackgroundColor(initialConfig.backgroundColor || "#ffffff");
+    setBorderRadius(String(initialConfig.borderRadius || 8));
+    setBorderSize(String(initialConfig.borderSize || 0));
+    setBorderColor(initialConfig.borderColor || "#d1d5db");
+    setInsideTop(String(initialConfig.paddingTop || 30));
+    setInsideBottom(String(initialConfig.paddingBottom || 30));
+    setOutsideTop(String(initialConfig.marginTop || 0));
+    setOutsideBottom(String(initialConfig.marginBottom || 0));
+    setTitleSize(
+      String(initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32)),
+    );
+    setTitleColor(initialConfig.titleColor || "#212121");
+    setSubheadingSize(
+      String(
+        initialConfig.subheadingSize ||
+          (timerType === "top-bottom-bar" ? 14 : 16),
+      ),
+    );
+    setSubheadingColor(initialConfig.subheadingColor || "#212121");
+    setTimerSize(
+      String(initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48)),
+    );
+    setTimerColor(initialConfig.timerColor || "#212121");
+    setLegendSize(
+      String(initialConfig.legendSize || (timerType === "top-bottom-bar" ? 10 : 14)),
+    );
+    setLegendColor(initialConfig.legendColor || "#707070");
+    setButtonFontSize(String(initialConfig.buttonFontSize || 16));
+    setCornerRadius(String(initialConfig.buttonCornerRadius || 4));
+    setButtonColor(initialConfig.buttonColor || "#ffffff");
+    setButtonBackgroundColor(initialConfig.buttonBackgroundColor || "#202223");
+  }, [initialConfig, timerType]);
+
   // Update config whenever any value changes
   useEffect(() => {
     const newConfig: DesignConfig = {

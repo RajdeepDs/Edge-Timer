@@ -230,6 +230,15 @@ export function TimerForm({
     [handleSubmit],
   );
 
+  const handleFormReset = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      formState.resetForm();
+      setValidationErrors([]);
+    },
+    [formState, setValidationErrors],
+  );
+
   const handleDeleteClick = useCallback(() => {
     setShowDeleteModal(true);
   }, []);
@@ -375,6 +384,7 @@ export function TimerForm({
           method="post"
           data-save-bar
           onSubmit={handleSaveBarSubmit}
+          onReset={handleFormReset}
         >
           <Box paddingBlockEnd="800">
             <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
