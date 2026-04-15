@@ -311,22 +311,19 @@
       if (dc.marginBottom != null) c.style.setProperty("margin-bottom", dc.marginBottom + "px", "important");
     }
 
-    if (dc.titleSize != null) title.style.setProperty("font-size", dc.titleSize + "px", "important");
+    if (dc.titleSize != null) c.style.setProperty("--utimer-title-size", dc.titleSize + "px");
     if (dc.titleColor) {
       title.style.setProperty("color", dc.titleColor, "important");
     }
     if (dc.titleFontWeight) title.style.setProperty("font-weight", dc.titleFontWeight, "important");
     if (dc.titleFontFamily) title.style.setProperty("font-family", dc.titleFontFamily, "important");
 
-    if (dc.subheadingSize != null) sub.style.setProperty("font-size", dc.subheadingSize + "px", "important");
+    if (dc.subheadingSize != null) c.style.setProperty("--utimer-sub-size", dc.subheadingSize + "px");
     if (dc.subheadingColor) sub.style.setProperty("color", dc.subheadingColor, "important");
     if (dc.subheadingFontWeight) sub.style.setProperty("font-weight", dc.subheadingFontWeight, "important");
     if (dc.subheadingFontFamily) sub.style.setProperty("font-family", dc.subheadingFontFamily, "important");
 
-    if (dc.timerSize != null) {
-      numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("font-size", dc.timerSize + "px", "important"));
-      numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("font-size", dc.timerSize + "px", "important"));
-    }
+    if (dc.timerSize != null) c.style.setProperty("--utimer-number-size", dc.timerSize + "px");
     if (dc.timerColor) {
       numbersRow.querySelectorAll(".utimer-number").forEach(e => e.style.setProperty("color", dc.timerColor, "important"));
       numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("color", dc.timerColor, "important"));
@@ -340,8 +337,7 @@
       numbersRow.querySelectorAll(".utimer-separator").forEach(e => e.style.setProperty("font-family", dc.timerFontFamily, "important"));
     }
 
-    if (dc.legendSize != null)
-      labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("font-size", dc.legendSize + "px", "important"));
+    if (dc.legendSize != null) c.style.setProperty("--utimer-label-size", dc.legendSize + "px");
     if (dc.legendColor) {
       labelsRow.querySelectorAll(".utimer-label").forEach(e => e.style.setProperty("color", dc.legendColor, "important"));
     }
@@ -518,22 +514,26 @@
         border-radius: 8px;
         background: #ffffff;
         color: #1f2937;
+        width: 100%;
         max-width: 720px;
         text-align: center;
         font-family: inherit;
+        container-type: inline-size;
       }
 
       .utimer-title {
-        font-size: 28px;
+        font-size: clamp(20px, 7cqi, var(--utimer-title-size, 28px));
         font-weight: 700;
         line-height: 1.2;
         margin: 0;
+        overflow-wrap: anywhere;
       }
 
       .utimer-sub {
-        font-size: 16px;
+        font-size: clamp(13px, 4.5cqi, var(--utimer-sub-size, 16px));
         color: #4b5563;
         margin: 0 0 6px 0;
+        overflow-wrap: anywhere;
       }
 
       /* Grid-based countdown */
@@ -542,11 +542,12 @@
         display: grid;
         grid-template-columns: repeat(4, auto) repeat(3, auto);
         grid-template-rows: auto auto;
-        column-gap: 4px;
-        row-gap: 6px;
+        column-gap: clamp(2px, 1cqi, 4px);
+        row-gap: clamp(4px, 1.5cqi, 6px);
         justify-items: center;
         align-items: start;
-        width: fit-content;
+        width: min(100%, fit-content);
+        max-width: 100%;
         margin-left: auto;
         margin-right: auto;
       }
@@ -557,7 +558,7 @@
 
       .utimer-number {
         grid-row: 1;
-        font-size: 40px;
+        font-size: clamp(24px, 11cqi, var(--utimer-number-size, 40px));
         font-weight: 700;
         line-height: 1;
         font-feature-settings: "tnum" 1, "lnum" 1;
@@ -568,7 +569,7 @@
 
       .utimer-separator {
         grid-row: 1;
-        font-size: 40px;
+        font-size: clamp(24px, 11cqi, var(--utimer-number-size, 40px));
         font-weight: 700;
         line-height: 1;
         text-align: center;
@@ -581,7 +582,7 @@
 
       .utimer-label {
         grid-row: 2;
-        font-size: 14px;
+        font-size: clamp(10px, 3.5cqi, var(--utimer-label-size, 14px));
         color: #6b7280;
         text-align: center;
         min-width: 3ch;
