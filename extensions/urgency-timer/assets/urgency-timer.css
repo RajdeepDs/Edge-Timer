@@ -207,6 +207,8 @@
 /* Remove card visuals inside bar – compact single-row layout */
 
 .utimer-bar .utimer-container {
+  --utimer-mobile-bar-scale: 1;
+  --utimer-mobile-button-scale: 1;
   background: transparent;
   border: none;
   padding: 0;
@@ -220,6 +222,14 @@
   flex-wrap: nowrap;
   width: fit-content;
   max-width: 100%;
+}
+
+.utimer-bar .utimer-bar-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 /* Bar: smaller typography and countdown so everything fits in one line */
@@ -284,10 +294,21 @@
     align-items: center;
   }
 
+  .utimer-bar .utimer-bar-main {
+    flex-direction: column;
+    gap: calc(6px * var(--utimer-mobile-bar-scale));
+    max-width: 100%;
+  }
+
   .utimer-bar .utimer-title {
-    font-size: 16px;
+    font-size: calc(16px * var(--utimer-mobile-bar-scale));
     margin: 0;
     flex-shrink: 0;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
   }
 
   .utimer-bar .utimer-countdown {
@@ -297,11 +318,11 @@
 
   .utimer-bar .utimer-number,
   .utimer-bar .utimer-separator {
-    font-size: 24px;
+    font-size: calc(24px * var(--utimer-mobile-bar-scale));
   }
 
   .utimer-bar .utimer-label {
-    font-size: 10px;
+    font-size: calc(10px * var(--utimer-mobile-bar-scale));
   }
 
   .utimer-bar .utimer-cta {
@@ -312,8 +333,9 @@
   }
 
   .utimer-bar .utimer-button {
-    font-size: 13px;
-    padding: 5px 12px;
+    font-size: calc(13px * var(--utimer-mobile-button-scale));
+    padding: calc(5px * var(--utimer-mobile-button-scale))
+      calc(12px * var(--utimer-mobile-button-scale));
     flex-shrink: 0;
   }
 }

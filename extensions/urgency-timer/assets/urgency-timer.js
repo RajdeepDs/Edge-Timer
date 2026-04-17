@@ -225,6 +225,7 @@
   function createCountdownDOM(timer) {
     const c = document.createElement("div");
     c.className = "utimer-container";
+    const isBar = timer.type === "top-bottom-bar";
 
     const title = el("div", "utimer-title", timer.title);
     const sub = el("div", "utimer-sub", timer.subheading);
@@ -267,9 +268,15 @@
 
     const dc = timer.designConfig || {};
 
-    c.append(title);
-    if (timer.subheading) c.append(sub);
-    c.append(countdown);
+    if (isBar) {
+      const barMain = el("div", "utimer-bar-main", "");
+      barMain.append(title, countdown);
+      c.append(barMain);
+    } else {
+      c.append(title);
+      if (timer.subheading) c.append(sub);
+      c.append(countdown);
+    }
 
     const hasExplicitButton = timer.ctaType === "button" && timer.buttonLink;
     const isBarWithButton = timer.type === "top-bottom-bar" && timer.ctaType === "button" && timer.buttonLink;
@@ -291,7 +298,6 @@
     }
 
     /* ========== Sync designConfig with storefront ========== */
-    const isBar = timer.type === "top-bottom-bar";
 
     if (!isBar) {
       if (dc.backgroundColor != null || (dc.backgroundType === "gradient" && dc.gradientStartColor && dc.gradientEndColor)) {
@@ -362,6 +368,59 @@
 
     let id = setInterval(update, 1000);
     update();
+
+    if (isBar) {
+      const syncBarScale = () => {
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        c.style.setProperty("--utimer-mobile-bar-scale", "1");
+        c.style.setProperty("--utimer-mobile-button-scale", "1");
+
+        if (!isMobile) return;
+
+        const availableWidth =
+          c.clientWidth ||
+          c.parentElement?.clientWidth ||
+          window.innerWidth;
+
+        const mainRow = c.querySelector(".utimer-bar-main");
+        if (mainRow && availableWidth > 0) {
+          const contentWidth = mainRow.scrollWidth;
+          const scale =
+            contentWidth > 0
+              ? Math.max(0.58, Math.min(1, availableWidth / contentWidth))
+              : 1;
+          c.style.setProperty("--utimer-mobile-bar-scale", scale.toFixed(3));
+        }
+
+        if (buttonEl && availableWidth > 0) {
+          const ctaWidth = buttonEl.scrollWidth;
+          const buttonScale =
+            ctaWidth > 0
+              ? Math.max(0.72, Math.min(1, availableWidth / ctaWidth))
+              : 1;
+          c.style.setProperty(
+            "--utimer-mobile-button-scale",
+            buttonScale.toFixed(3),
+          );
+        }
+      };
+
+      const scheduleBarScaleSync = () => {
+        if (typeof window.requestAnimationFrame === "function") {
+          window.requestAnimationFrame(syncBarScale);
+          return;
+        }
+        syncBarScale();
+      };
+
+      scheduleBarScaleSync();
+      window.addEventListener("resize", scheduleBarScaleSync);
+
+      if (typeof ResizeObserver !== "undefined") {
+        const resizeObserver = new ResizeObserver(scheduleBarScaleSync);
+        resizeObserver.observe(c);
+      }
+    }
 
     function update() {
       let remaining = 0;
@@ -636,6 +695,8 @@
       }
 
       .utimer-bar .utimer-container {
+        --utimer-mobile-bar-scale: 1;
+        --utimer-mobile-button-scale: 1;
         background: transparent;
         padding: 0;
         margin: 0;
@@ -649,6 +710,14 @@
         flex-wrap: nowrap;
         width: fit-content;
         max-width: 100%;
+      }
+
+      .utimer-bar .utimer-bar-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 0;
       }
 
       .utimer-bar .utimer-title { font-size: 14px; font-weight: 700; margin: 0; white-space: nowrap; }
@@ -677,12 +746,30 @@
           justify-content: center;
           align-items: center;
         }
-        .utimer-bar .utimer-title { font-size: 16px; margin: 0; flex-shrink: 0; }
+        .utimer-bar .utimer-bar-main {
+          flex-direction: column;
+          gap: calc(6px * var(--utimer-mobile-bar-scale));
+          max-width: 100%;
+        }
+        .utimer-bar .utimer-title {
+          font-size: calc(16px * var(--utimer-mobile-bar-scale));
+          margin: 0;
+          flex-shrink: 0;
+          text-align: center;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          max-width: 100%;
+        }
         .utimer-bar .utimer-countdown { margin: 0; row-gap: 2px; }
-        .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: 24px; }
-        .utimer-bar .utimer-label { font-size: 10px; }
+        .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: calc(24px * var(--utimer-mobile-bar-scale)); }
+        .utimer-bar .utimer-label { font-size: calc(10px * var(--utimer-mobile-bar-scale)); }
         .utimer-bar .utimer-cta { flex-basis: 100%; margin: 0; display: flex; justify-content: center; }
-        .utimer-bar .utimer-button { font-size: 13px; padding: 5px 12px; flex-shrink: 0; }
+        .utimer-bar .utimer-button {
+          font-size: calc(13px * var(--utimer-mobile-button-scale));
+          padding: calc(5px * var(--utimer-mobile-button-scale)) calc(12px * var(--utimer-mobile-button-scale));
+          flex-shrink: 0;
+        }
       }
 
       @media (max-width: 480px) {
