@@ -214,17 +214,17 @@
   padding: 0;
   margin: 0;
   box-shadow: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
   overflow: visible;
-  flex-wrap: nowrap;
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
 }
 
 .utimer-bar .utimer-bar-main {
+  grid-column: 2;
+  justify-self: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,6 +261,8 @@
 }
 
 .utimer-bar .utimer-cta {
+  grid-column: 3;
+  justify-self: end;
   margin: 0;
   flex-shrink: 0;
 }
@@ -284,6 +286,7 @@
 
   /* Row 1: title + countdown on same line; Row 2: button */
   .utimer-bar .utimer-container {
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 6px 10px;
@@ -326,6 +329,8 @@
   }
 
   .utimer-bar .utimer-cta {
+    grid-column: unset;
+    justify-self: unset;
     flex-basis: 100%;
     margin: 0;
     display: flex;

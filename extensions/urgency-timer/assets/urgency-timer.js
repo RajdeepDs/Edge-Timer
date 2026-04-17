@@ -702,17 +702,17 @@
         margin: 0;
         border: none;
         box-shadow: none;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: center;
-        gap: 10px;
         overflow: visible;
-        flex-wrap: nowrap;
-        width: fit-content;
+        width: 100%;
         max-width: 100%;
       }
 
       .utimer-bar .utimer-bar-main {
+        grid-column: 2;
+        justify-self: center;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -725,7 +725,7 @@
       .utimer-bar .utimer-countdown { margin: 0; column-gap: 2px; row-gap: 2px; }
       .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: 20px; font-weight: 700; }
       .utimer-bar .utimer-label { font-size: 10px; }
-      .utimer-bar .utimer-cta { margin: 0; flex-shrink: 0; }
+      .utimer-bar .utimer-cta { grid-column: 3; justify-self: end; margin: 0; flex-shrink: 0; }
       .utimer-bar .utimer-button { padding: 6px 12px; font-size: 13px; white-space: nowrap; }
 
       /* Bar: stack vertically on small screens */
@@ -737,6 +737,7 @@
         }
         .utimer-bar .utimer-sub { display: none; }
         .utimer-bar .utimer-container {
+          display: flex;
           flex-direction: row;
           flex-wrap: wrap;
           gap: 6px 10px;
@@ -747,6 +748,8 @@
           align-items: center;
         }
         .utimer-bar .utimer-bar-main {
+          grid-column: unset;
+          justify-self: unset;
           flex-direction: column;
           gap: calc(6px * var(--utimer-mobile-bar-scale));
           max-width: 100%;
@@ -764,7 +767,7 @@
         .utimer-bar .utimer-countdown { margin: 0; row-gap: 2px; }
         .utimer-bar .utimer-number, .utimer-bar .utimer-separator { font-size: calc(24px * var(--utimer-mobile-bar-scale)); }
         .utimer-bar .utimer-label { font-size: calc(10px * var(--utimer-mobile-bar-scale)); }
-        .utimer-bar .utimer-cta { flex-basis: 100%; margin: 0; display: flex; justify-content: center; }
+        .utimer-bar .utimer-cta { grid-column: unset; justify-self: unset; flex-basis: 100%; margin: 0; display: flex; justify-content: center; }
         .utimer-bar .utimer-button {
           font-size: calc(13px * var(--utimer-mobile-button-scale));
           padding: calc(5px * var(--utimer-mobile-button-scale)) calc(12px * var(--utimer-mobile-button-scale));
