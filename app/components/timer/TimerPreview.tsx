@@ -185,92 +185,83 @@ export default function TimerPreview({
     display: "inline-block",
   };
 
-  if (timerType === "top-bottom-bar") {
-    const barTitleStyle: React.CSSProperties = {
-      fontSize: `${Math.min(titleSize, 18)}px`,
-      color: titleColor,
-      fontWeight: 600,
-      lineHeight: 1.2,
-    };
+  const typeLabel =
+    timerType === "product" ? "Product page" : "Top / bottom bar";
 
-    return (
-      <div
-        style={{
-          ...cardStyle,
-          paddingLeft: "24px",
-          paddingRight: "24px",
-          paddingTop: `${Math.min(paddingTop, 16)}px`,
-          paddingBottom: `${Math.min(paddingBottom, 16)}px`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "16px",
-        }}
-        className="select-none"
-      >
-        {/* Left side: Title and subheading in one line */}
-        <div style={{ ...barTitleStyle, whiteSpace: "nowrap" }}>
-          {title || "Hurry up! Sale ends in:"}{" "}
-        </div>
+  const barTitleStyle: React.CSSProperties = {
+    fontSize: `${Math.min(titleSize, 18)}px`,
+    color: titleColor,
+    fontWeight: 600,
+    lineHeight: 1.2,
+  };
 
-        {/* Right side: Timer and button */}
-        <div className={cn("flex items-center gap-3 shrink-0")}>
-          {/* Timer - Horizontal layout with colons */}
-          <div className={cn("flex items-start gap-1 shrink-0")}>
-            <div style={{ textAlign: "center" }}>
-              <div style={timerDigitStyle}>{formatTime(timeLeft.days)}</div>
-              <div style={{ ...legendStyle, marginTop: "2px" }}>
-                {daysLabel}
-              </div>
-            </div>
-            <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
-              :
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={timerDigitStyle}>{formatTime(timeLeft.hours)}</div>
-              <div style={{ ...legendStyle, marginTop: "2px" }}>
-                {hoursLabel}
-              </div>
-            </div>
-            <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
-              :
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={timerDigitStyle}>{formatTime(timeLeft.minutes)}</div>
-              <div style={{ ...legendStyle, marginTop: "2px" }}>
-                {minutesLabel}
-              </div>
-            </div>
-            <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
-              :
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={timerDigitStyle}>{formatTime(timeLeft.seconds)}</div>
-              <div style={{ ...legendStyle, marginTop: "2px" }}>
-                {secondsLabel}
-              </div>
+  const timerBar = (
+    <div
+      style={{
+        ...cardStyle,
+        paddingLeft: "24px",
+        paddingRight: "24px",
+        paddingTop: `${Math.min(paddingTop, 16)}px`,
+        paddingBottom: `${Math.min(paddingBottom, 16)}px`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "16px",
+        borderRadius: 0,
+      }}
+    >
+      <div style={{ ...barTitleStyle, whiteSpace: "nowrap" }}>
+        {title || "Hurry up! Sale ends in:"}
+      </div>
+      <div className={cn("flex items-center gap-3 shrink-0")}>
+        <div className={cn("flex items-start gap-1 shrink-0")}>
+          <div style={{ textAlign: "center" }}>
+            <div style={timerDigitStyle}>{formatTime(timeLeft.days)}</div>
+            <div style={{ ...legendStyle, marginTop: "2px" }}>{daysLabel}</div>
+          </div>
+          <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
+            :
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={timerDigitStyle}>{formatTime(timeLeft.hours)}</div>
+            <div style={{ ...legendStyle, marginTop: "2px" }}>{hoursLabel}</div>
+          </div>
+          <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
+            :
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={timerDigitStyle}>{formatTime(timeLeft.minutes)}</div>
+            <div style={{ ...legendStyle, marginTop: "2px" }}>
+              {minutesLabel}
             </div>
           </div>
-
-          {/* Button */}
-          {callToAction === "button" && (
-            <button
-              style={{
-                ...buttonStyle,
-                padding: "8px 16px",
-                fontSize: `${Math.min(buttonFontSize, 14)}px`,
-              }}
-            >
-              {buttonText}
-            </button>
-          )}
+          <div style={{ ...timerDigitStyle, lineHeight: `${timerSize}px` }}>
+            :
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={timerDigitStyle}>{formatTime(timeLeft.seconds)}</div>
+            <div style={{ ...legendStyle, marginTop: "2px" }}>
+              {secondsLabel}
+            </div>
+          </div>
         </div>
+        {callToAction === "button" && (
+          <button
+            style={{
+              ...buttonStyle,
+              padding: "8px 16px",
+              fontSize: `${Math.min(buttonFontSize, 14)}px`,
+            }}
+          >
+            {buttonText}
+          </button>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 
-  return (
-    <div style={cardStyle} className={cn("sticky select-none")}>
+  const productTimer = (
+    <div style={{ ...cardStyle, padding: "40px 24px" }}>
       <div className="flex items-center flex-col gap-0.5">
         <div style={{ ...titleStyle, textAlign: "center" }}>
           {title || "Hurry up!"}
@@ -309,6 +300,81 @@ export default function TimerPreview({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      className="select-none"
+      style={{
+        borderRadius: "10px",
+        overflow: "hidden",
+        border: "1px solid #e1e3e5",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "calc(100vh - 12rem)",
+      }}
+    >
+      {/* Browser chrome header */}
+      <div
+        style={{
+          backgroundColor: "#f1f2f3",
+          borderBottom: "1px solid #e1e3e5",
+          padding: "12px 16px",
+          display: "flex",
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
+        {/* Window control dots */}
+        <div style={{ display: "flex", gap: "6px", zIndex: 1 }}>
+          {["#d9d9d9", "#d9d9d9", "#d9d9d9"].map((color, i) => (
+            <div
+              key={i}
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor: color,
+              }}
+            />
+          ))}
+        </div>
+        {/* Centered label */}
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "12px",
+            color: "#6d7175",
+            fontWeight: 400,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {typeLabel}
+        </div>
+      </div>
+
+      {/* Page body */}
+      <div style={{ backgroundColor: "#ffffff", flex: 1 }}>
+        {timerType === "top-bottom-bar" ? (
+          <>{timerBar}</>
+        ) : (
+          <div style={{ padding: "24px" }}>
+            <div
+              style={{
+                maxWidth: "420px",
+                minWidth: "320px",
+                marginInline: "auto",
+              }}
+            >
+              {productTimer}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

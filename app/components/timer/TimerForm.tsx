@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Page,
   Box,
@@ -8,6 +8,7 @@ import {
   Modal,
   Text,
   BlockStack,
+  InlineStack,
 } from "@shopify/polaris";
 import { useSubmit, useNavigation, useActionData } from "@remix-run/react";
 import { useTimerForm } from "../../hooks/useTimerForm";
@@ -261,6 +262,19 @@ export function TimerForm({
     setShowDeleteModal(false);
   }, []);
 
+  const [copied, setCopied] = useState(false);
+  const copyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopyTimerId = useCallback(() => {
+    if (!timerId || copied) return;
+    if (copyDebounceRef.current) clearTimeout(copyDebounceRef.current);
+    navigator.clipboard.writeText(timerId).then(() => {
+      setCopied(true);
+      shopify.toast.show("Copied to clipboard", { duration: 2000 });
+      copyDebounceRef.current = setTimeout(() => setCopied(false), 2000);
+    });
+  }, [timerId, copied]);
+
   const renderTabContent = () => {
     switch (selectedTab) {
       case 0:
@@ -363,7 +377,35 @@ export function TimerForm({
             <Badge>Draft</Badge>
           )
         }
-        subtitle={timerId ? `Timer ID: ${timerId}` : `Save to show Timer ID`}
+        subtitle={timerId ? undefined : "Save to show Timer ID"}
+        additionalMetadata={
+          timerId ? (
+            <InlineStack gap="100" blockAlign="center">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Timer ID: {timerId}
+              </Text>
+              <button
+                onClick={handleCopyTimerId}
+                aria-label="Copy timer ID"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "2px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  color: "#616161",
+                }}
+              >
+                {copied ? (
+                  <s-icon type="clipboard-check" color="base" size="small" />
+                ) : (
+                  <s-icon type="clipboard" color="base" size="small" />
+                )}
+              </button>
+            </InlineStack>
+          ) : undefined
+        }
         secondaryActions={secondaryActions}
         primaryAction={{
           content: existingTimer?.isPublished ? "Unpublish" : "Publish",
@@ -399,7 +441,7 @@ export function TimerForm({
                   <div
                     style={{
                       position: "sticky",
-                      top: "0px",
+                      top: "1rem",
                       height: "fit-content",
                     }}
                   >
