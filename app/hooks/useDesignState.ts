@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   DesignConfig,
   ColorHSBA,
@@ -125,16 +125,25 @@ export function useDesignState({
     initialConfig.buttonBackgroundColor || "#202223",
   );
 
+  // Track the last config we emitted so we can distinguish our own updates
+  // bouncing back (internal cycle) from genuine external resets like Discard.
+  const lastEmittedConfig = useRef<DesignConfig | null>(null);
+
   useEffect(() => {
+    // Skip if this incoming config is the same object we just emitted —
+    // that means it's our own onConfigChange call reflecting back, not an
+    // external reset. Only sync when it's truly a new external config.
+    if (initialConfig === lastEmittedConfig.current) return;
+
     setFontFamily(initialConfig.fontFamily || "theme");
     setPositioning(initialConfig.positioning || "top");
     setBackgroundType(initialConfig.backgroundType || "single");
     setBackgroundColor(initialConfig.backgroundColor || "#ffffff");
     setGradientStartColor(initialConfig.gradientStartColor || "#ffffff");
-    setGradientEndColor(initialConfig.gradientEndColor || "#000000");
+    setGradientEndColor(initialConfig.gradientEndColor || "#dddddd");
     setGradientAngle(initialConfig.gradientAngle ?? 90);
     setBorderRadius(String(initialConfig.borderRadius || 8));
-    setBorderSize(String(initialConfig.borderSize || 0));
+    setBorderSize(String(initialConfig.borderSize ?? 0));
     setBorderColor(initialConfig.borderColor || "#d1d5db");
     setInsideTop(String(initialConfig.paddingTop || 30));
     setInsideBottom(String(initialConfig.paddingBottom || 30));
@@ -211,6 +220,7 @@ export function useDesignState({
       buttonBackgroundColor,
     };
 
+    lastEmittedConfig.current = newConfig;
     onConfigChange?.(newConfig);
   }, [
     fontFamily,

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   BlockStack,
   Text,
@@ -90,6 +90,140 @@ export default function DesignTab({
   // Local state for slider — decoupled from hook to avoid re-render feedback jitter
   const [localAngle, setLocalAngle] = useState(gradientAngle);
 
+  // Template presets
+  const [selectedTemplate, setSelectedTemplate] = useState("Custom");
+  const isApplyingTemplate = useRef(false);
+
+  type TemplateConfig = {
+    backgroundType?: "single" | "gradient";
+    backgroundColor?: string;
+    gradientStartColor?: string;
+    gradientEndColor?: string;
+    gradientAngle?: number;
+    titleColor?: string;
+    subheadingColor?: string;
+    timerColor?: string;
+    legendColor?: string;
+    borderRadius?: string;
+    borderSize?: string;
+    borderColor?: string;
+  };
+
+  const TEMPLATES: Record<string, TemplateConfig> = {
+    Custom: {
+      backgroundType: "single",
+      backgroundColor: "#ffffff",
+      gradientStartColor: "#ffffff",
+      gradientEndColor: "#dddddd",
+      gradientAngle: 90,
+      titleColor: "#212121",
+      subheadingColor: "#212121",
+      timerColor: "#212121",
+      legendColor: "#707070",
+      borderRadius: "8",
+      borderSize: "0",
+      borderColor: "#d1d5db",
+    },
+    Dawn: {
+      backgroundType: "gradient",
+      gradientStartColor: "#fff7ed",
+      gradientEndColor: "#fed7aa",
+      gradientAngle: 135,
+      titleColor: "#c2410c",
+      subheadingColor: "#9a3412",
+      timerColor: "#ea580c",
+      legendColor: "#9a3412",
+      borderRadius: "12",
+      borderSize: "0",
+    },
+    Forest: {
+      backgroundType: "single",
+      backgroundColor: "#14532d",
+      titleColor: "#ffffff",
+      subheadingColor: "#bbf7d0",
+      timerColor: "#4ade80",
+      legendColor: "#86efac",
+      borderRadius: "8",
+      borderSize: "0",
+    },
+    "Shades of Gray": {
+      backgroundType: "single",
+      backgroundColor: "#f3f4f6",
+      titleColor: "#111827",
+      subheadingColor: "#374151",
+      timerColor: "#4b5563",
+      legendColor: "#9ca3af",
+      borderRadius: "8",
+      borderSize: "1",
+      borderColor: "#d1d5db",
+    },
+    Neon: {
+      backgroundType: "single",
+      backgroundColor: "#0a0a0a",
+      titleColor: "#39ff14",
+      subheadingColor: "#ffffff",
+      timerColor: "#00ffff",
+      legendColor: "#ff00ff",
+      borderRadius: "4",
+      borderSize: "1",
+      borderColor: "#39ff14",
+    },
+    "Black and Yellow": {
+      backgroundType: "single",
+      backgroundColor: "#000000",
+      titleColor: "#fde047",
+      subheadingColor: "#fde047",
+      timerColor: "#fde047",
+      legendColor: "#ffffff",
+      borderRadius: "4",
+      borderSize: "0",
+    },
+  };
+
+  const handleTemplateChange = useCallback(
+    (template: string) => {
+      setSelectedTemplate(template);
+      const t = TEMPLATES[template];
+      if (!t) return;
+      isApplyingTemplate.current = true;
+      if (t.backgroundType !== undefined) setBackgroundType(t.backgroundType);
+      if (t.backgroundColor !== undefined)
+        setBackgroundColor(t.backgroundColor);
+      if (t.gradientStartColor !== undefined)
+        setGradientStartColor(t.gradientStartColor);
+      if (t.gradientEndColor !== undefined)
+        setGradientEndColor(t.gradientEndColor);
+      if (t.gradientAngle !== undefined) {
+        setGradientAngle(t.gradientAngle);
+        setLocalAngle(t.gradientAngle);
+      }
+      if (t.titleColor !== undefined) setTitleColor(t.titleColor);
+      if (t.subheadingColor !== undefined)
+        setSubheadingColor(t.subheadingColor);
+      if (t.timerColor !== undefined) setTimerColor(t.timerColor);
+      if (t.legendColor !== undefined) setLegendColor(t.legendColor);
+      if (t.borderRadius !== undefined) setBorderRadius(t.borderRadius);
+      if (t.borderSize !== undefined) setBorderSize(t.borderSize);
+      if (t.borderColor !== undefined) setBorderColor(t.borderColor);
+      isApplyingTemplate.current = false;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      setBackgroundType,
+      setBackgroundColor,
+      setGradientStartColor,
+      setGradientEndColor,
+      setGradientAngle,
+      setTitleColor,
+      setSubheadingColor,
+      setTimerColor,
+      setLegendColor,
+      setBorderRadius,
+      setBorderSize,
+      setBorderColor,
+    ],
+  );
+
   const handleAngleChange = useCallback(
     (value: number | [number, number]) => {
       const v = value as number;
@@ -152,6 +286,26 @@ export default function DesignTab({
           </s-select>
         </Card>
       )}
+
+      <Card padding="400">
+        <BlockStack gap="400">
+          <Text as="h4" variant="headingSm" fontWeight="semibold">
+            Template
+          </Text>
+          <s-select
+            label="Style"
+            value={selectedTemplate}
+            onInput={(e) => handleTemplateChange(getValue(e))}
+          >
+            <s-option value="Custom">Custom</s-option>
+            <s-option value="Dawn">Dawn</s-option>
+            <s-option value="Forest">Forest</s-option>
+            <s-option value="Shades of Gray">Shades of Gray</s-option>
+            <s-option value="Neon">Neon</s-option>
+            <s-option value="Black and Yellow">Black and Yellow</s-option>
+          </s-select>
+        </BlockStack>
+      </Card>
 
       <Card padding="400">
         <BlockStack gap="400">
