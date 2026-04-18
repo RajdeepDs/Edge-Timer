@@ -239,38 +239,33 @@ export default function DesignTab({
     event?.target?.value ??
     "";
 
-  const normalizeColorValue = (value: string) => {
-    const trimmed = value.trim();
+  const applyColor = useCallback(
+    (setter: (color: string) => void, raw: string) => {
+      const trimmed = raw.trim();
+      if (isValidHex(trimmed)) setter(normalizeHex(trimmed));
+    },
+    [],
+  );
 
-    if (trimmed === "") {
-      return "";
-    }
-
-    return isValidHex(trimmed) ? normalizeHex(trimmed) : trimmed;
-  };
-
-  const handleColorInput =
-    (setter: (color: string) => void) => (value: any) => {
-      const raw = (typeof value === "string" ? value : getValue(value)).trim();
-      // Only commit to state for a complete 6-char hex — ignore partial values
-      // so the initialConfig sync useEffect never sees an empty/partial color
-      // and triggers the || default fallback with a wrong color
-      if (/^#?[A-Fa-f0-9]{6}$/.test(raw)) {
-        setter(`#${raw.replace("#", "").toLowerCase()}`);
-      }
-    };
-
-  const handleColorChange =
-    (setter: (color: string) => void) => (value: any) => {
-      const colorValue = typeof value === "string" ? value : getValue(value);
-      const normalized = normalizeColorValue(colorValue);
-      if (normalized) setter(normalized);
-    };
-
-  const getColorFieldProps = (setter: (color: string) => void) => ({
-    onInput: handleColorInput(setter),
-    onChange: handleColorChange(setter),
-  });
+  const getColorFieldProps = useCallback(
+    (setter: (color: string) => void) => ({
+      // Picker fires custom events with detail.value — apply live while dragging.
+      onInput: (event: any) => {
+        const detail = event?.detail?.value;
+        if (detail == null) return; // ignore text-input events; handled by onChange
+        applyColor(setter, String(detail));
+      },
+      // Text field commits on blur / Enter. detail.value is absent for these events.
+      // Ignoring auto-corrected colors from the component: if the field is cleared,
+      // currentTarget.value will be empty → isValidHex fails → state unchanged.
+      onChange: (event: any) => {
+        if (event?.detail?.value != null) return; // skip picker events (already handled)
+        const raw = event?.currentTarget?.value ?? event?.target?.value ?? "";
+        applyColor(setter, raw);
+      },
+    }),
+    [applyColor],
+  );
 
   return (
     <BlockStack gap="400">

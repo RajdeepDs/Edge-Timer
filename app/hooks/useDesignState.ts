@@ -1,11 +1,9 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import type {
   DesignConfig,
-  ColorHSBA,
   PositioningType,
   BackgroundType,
 } from "../types/timer";
-import { hexToHsb } from "../utils/timer/color";
 
 interface UseDesignStateProps {
   timerType: "product" | "top-bottom-bar";
@@ -253,30 +251,6 @@ export function useDesignState({
     timerType,
   ]);
 
-  // Helper to handle hex text input
-  const handleHexChange = useCallback(
-    (
-      value: string,
-      setter: (color: ColorHSBA) => void,
-      textSetter: (text: string) => void,
-    ) => {
-      textSetter(value);
-
-      if (!value.startsWith("#") && value.length > 0) {
-        value = "#" + value;
-      }
-
-      const hexPattern = /^#([A-Fa-f0-9]{6})$/;
-      const match = value.match(hexPattern);
-
-      if (match) {
-        const hsb = hexToHsb(value);
-        setter(hsb);
-      }
-    },
-    [],
-  );
-
   return {
     // Font
     fontFamily,
@@ -349,8 +323,5 @@ export function useDesignState({
     setButtonColor,
     buttonBackgroundColor,
     setButtonBackgroundColor,
-
-    // Utility
-    handleHexChange,
   };
 }
