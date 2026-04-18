@@ -89,10 +89,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       // Respect expiry: if expired, apply onExpiry behavior
       const expired = isExpired(t, now);
       if (expired) {
-        if (t.onExpiry === "unpublish" || t.onExpiry === "hide") {
-          return false; // do not include
+        const behavior = (t.onExpiry || "unpublish").toLowerCase();
+        // "keep" and "nothing" freeze at zeros; "repeat" restarts — all must be served
+        if (behavior !== "keep" && behavior !== "nothing" && behavior !== "repeat") {
+          return false;
         }
-        // onExpiry === "keep" -> keep included
       }
 
       // Respect geolocation targeting

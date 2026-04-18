@@ -434,32 +434,21 @@
 
       if (remaining <= 0) {
         const action = (timer.onExpiry || "unpublish").toLowerCase();
-        if (action === "keep") {
-          // Restart the timer from its full duration
-          if (timer.timerType === "fixed") {
-            // Reset the localStorage start time to now
-            const key = `utimer_fixed_${timer.id}_start`;
-            localStorage.setItem(key, Math.floor(Date.now() / 1000));
-          } else if (timer.endDate) {
-            // Calculate original duration and shift endDate forward
-            const start = timer.startsAt ? new Date(timer.startsAt).getTime() : null;
-            const end = new Date(timer.endDate).getTime();
-            const duration = start ? (end - start) : 0;
-            if (duration > 0) {
-              timer.endDate = new Date(Date.now() + duration).toISOString();
-            }
-          }
-          // Don't clear interval — let it keep ticking
-        } else {
+
+        if (action === "repeat") {
+          // Fixed timer only: restart from full duration
+          const key = `utimer_fixed_${timer.id}_start`;
+          localStorage.setItem(key, Math.floor(Date.now() / 1000));
+          // Keep ticking
+        } else if (action === "keep" || action === "nothing") {
+          // Freeze at zeros — stop ticking but leave the element visible
           clearInterval(id);
-          // Get bar parent reference before removing (parentElement is null after remove)
+        } else {
+          // "unpublish", "hide", "hide-buyer" — remove from DOM
+          clearInterval(id);
           const barParent = c.closest(".utimer-bar");
-          // Remove the timer container
           c.remove();
-          // Also remove the parent bar wrapper if this is a bar timer
-          if (barParent) {
-            barParent.remove();
-          }
+          if (barParent) barParent.remove();
         }
       }
     }
@@ -489,7 +478,8 @@
   function shouldSkipExpiredTimer(timer) {
     if (!isAlreadyExpired(timer)) return false;
     const action = (timer.onExpiry || "unpublish").toLowerCase();
-    return action !== "keep";
+    // "keep" and "nothing" show frozen at zeros; "repeat" restarts — all should mount
+    return action !== "keep" && action !== "nothing" && action !== "repeat";
   }
 
   function mountProductTimers(ctx, timers) {

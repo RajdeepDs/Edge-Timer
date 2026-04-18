@@ -132,10 +132,6 @@ export default function TimerPreview({
     timerColor = "#212121",
     legendSize = timerType === "top-bottom-bar" ? 10 : 14,
     legendColor = "#707070",
-    buttonFontSize = 16,
-    buttonCornerRadius = 4,
-    buttonColor = "#ffffff",
-    buttonBackgroundColor = "#202223",
   } = designConfig;
 
   // Simple CSS (inline) for primary styling
@@ -190,18 +186,6 @@ export default function TimerPreview({
     lineHeight: 1.2,
   };
 
-  const buttonStyle: React.CSSProperties = {
-    fontSize: `${buttonFontSize}px`,
-    color: buttonColor,
-    backgroundColor: buttonBackgroundColor,
-    borderRadius: `${buttonCornerRadius}px`,
-    padding: "12px 24px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 500,
-    display: "inline-block",
-  };
-
   const typeLabel =
     timerType === "product" ? "Product page" : "Top / bottom bar";
 
@@ -221,13 +205,14 @@ export default function TimerPreview({
         paddingTop: `${Math.min(paddingTop, 16)}px`,
         paddingBottom: `${Math.min(paddingBottom, 16)}px`,
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "16px",
+        gap: "8px",
         borderRadius: 0,
       }}
     >
-      <div style={{ ...barTitleStyle, whiteSpace: "nowrap" }}>
+      <div style={{ ...barTitleStyle, textAlign: "center" }}>
         {title || "Hurry up! Sale ends in:"}
       </div>
       <div className={cn("flex items-center gap-3 shrink-0")}>
@@ -262,17 +247,6 @@ export default function TimerPreview({
             </div>
           </div>
         </div>
-        {callToAction === "button" && (
-          <button
-            style={{
-              ...buttonStyle,
-              padding: "8px 16px",
-              fontSize: `${Math.min(buttonFontSize, 14)}px`,
-            }}
-          >
-            {buttonText}
-          </button>
-        )}
       </div>
     </div>
   );
@@ -291,14 +265,26 @@ export default function TimerPreview({
             <div style={timerDigitStyle}>{formatTime(timeLeft.days)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>{daysLabel}</div>
           </div>
-          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              height: `${timerSize}px`,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <div style={colonStyle}>:</div>
           </div>
           <div style={digitCellStyle}>
             <div style={timerDigitStyle}>{formatTime(timeLeft.hours)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>{hoursLabel}</div>
           </div>
-          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              height: `${timerSize}px`,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <div style={colonStyle}>:</div>
           </div>
           <div style={digitCellStyle}>
@@ -307,7 +293,13 @@ export default function TimerPreview({
               {minutesLabel}
             </div>
           </div>
-          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              height: `${timerSize}px`,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <div style={colonStyle}>:</div>
           </div>
           <div style={digitCellStyle}>

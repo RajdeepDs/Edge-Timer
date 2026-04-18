@@ -10,7 +10,7 @@ export type TimerTypeValue = "countdown" | "fixed";
 
 export type TimerStarts = "now" | "later";
 
-export type OnExpiryAction = "unpublish" | "keep" | "hide";
+export type OnExpiryAction = "unpublish" | "keep" | "hide" | "hide-buyer" | "repeat" | "nothing";
 
 export type CallToActionType = "no" | "button" | "clickable";
 

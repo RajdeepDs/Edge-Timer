@@ -312,12 +312,6 @@ export function TimerForm({
             setSecondsLabel={formState.setSecondsLabel}
             onceItEnds={formState.onceItEnds}
             setOnceItEnds={formState.setOnceItEnds}
-            callToAction={formState.callToAction}
-            setCallToAction={formState.setCallToAction}
-            buttonText={formState.buttonText}
-            setButtonText={formState.setButtonText}
-            buttonLink={formState.buttonLink}
-            setButtonLink={formState.setButtonLink}
             showTimerLabels={showTimerLabels}
             setShowTimerLabels={setShowTimerLabels}
             validationErrors={validationErrors}

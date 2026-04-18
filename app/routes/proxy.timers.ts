@@ -56,7 +56,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
         if (isExpired(timer, now)) {
           const behavior = (timer.onExpiry || "unpublish").toLowerCase();
-          if (behavior !== "keep") return false;
+          // "keep" and "nothing" freeze at zeros; "repeat" restarts — all must be served
+          if (behavior !== "keep" && behavior !== "nothing" && behavior !== "repeat") return false;
         }
 
         if (

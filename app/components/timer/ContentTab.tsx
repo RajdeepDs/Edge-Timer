@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   TextField,
   BlockStack,
@@ -15,7 +16,6 @@ import type {
   TimerTypeValue,
   TimerStarts,
   OnExpiryAction,
-  CallToActionType,
 } from "../../types/timer";
 import { useDateTimePicker } from "../../hooks/useDateTimePicker";
 import type { ValidationError } from "../../utils/timer/validation";
@@ -63,14 +63,6 @@ interface ContentTabProps {
   onceItEnds: OnExpiryAction;
   setOnceItEnds: (value: OnExpiryAction) => void;
 
-  // CTA (for top-bottom-bar)
-  callToAction?: CallToActionType;
-  setCallToAction?: (value: CallToActionType) => void;
-  buttonText?: string;
-  setButtonText?: (value: string) => void;
-  buttonLink?: string;
-  setButtonLink?: (value: string) => void;
-
   showTimerLabels: boolean;
   setShowTimerLabels: (value: boolean) => void;
   validationErrors: ValidationError[];
@@ -109,12 +101,6 @@ export default function ContentTab({
   setSecondsLabel,
   onceItEnds,
   setOnceItEnds,
-  callToAction,
-  setCallToAction,
-  buttonText,
-  setButtonText,
-  buttonLink,
-  setButtonLink,
   showTimerLabels,
   setShowTimerLabels,
   validationErrors,
@@ -134,6 +120,14 @@ export default function ContentTab({
     onDateChange: setEndDate,
   });
 
+
+  useEffect(() => {
+    if (timerTypeValue === "fixed") {
+      setOnceItEnds("hide-buyer");
+    } else {
+      setOnceItEnds("unpublish");
+    }
+  }, [timerTypeValue]);
 
   const getValue = (e: any) => {
     // Support both native inputs and custom elements emitting detail.value
@@ -190,59 +184,6 @@ export default function ContentTab({
               autocomplete="off"
             />
           )}
-          {timerType === "top-bottom-bar" &&
-            callToAction &&
-            setCallToAction && (
-              <BlockStack gap="400">
-                <s-select
-                  label="Call to action"
-                  value={callToAction}
-                  onInput={(e) =>
-                    setCallToAction(getValue(e) as unknown as CallToActionType)
-                  }
-                >
-                  <s-option value="no">No call to action</s-option>
-                  <s-option value="button">Button</s-option>
-                  <s-option value="clickable">
-                    Make entire bar clickable
-                  </s-option>
-                </s-select>
-                {callToAction !== "no" &&
-                  buttonText !== undefined &&
-                  setButtonText && (
-                    <s-text-field
-                      label="Button Text"
-                      value={buttonText}
-                      defaultValue={buttonText}
-                      onInput={(e) => setButtonText(getValue(e))}
-                      placeholder="Shop now!"
-                      autocomplete="off"
-                      error={
-                        hasFieldError("buttonText")
-                          ? getFieldError("buttonText")
-                          : undefined
-                      }
-                    />
-                  )}
-                {callToAction !== "no" &&
-                  buttonLink !== undefined &&
-                  setButtonLink && (
-                    <s-url-field
-                      label="Link"
-                      placeholder="Enter link"
-                      autocomplete="off"
-                      value={buttonLink}
-                      defaultValue={buttonLink}
-                      onInput={(e) => setButtonLink(getValue(e))}
-                      error={
-                        hasFieldError("buttonLink")
-                          ? getFieldError("buttonLink")
-                          : undefined
-                      }
-                    />
-                  )}
-              </BlockStack>
-            )}
           <BlockStack gap="100">
             <div
               style={{
@@ -339,30 +280,32 @@ export default function ContentTab({
               />
             )}
 
-            <BlockStack as="fieldset" gap={{ xs: "400", md: "0" }}>
-              <Box as="legend" paddingBlockEnd={{ xs: "0", md: "100" }}>
-                <Text as="span" variant="bodyMd">
-                  Timer starts
-                </Text>
-              </Box>
-              <BlockStack as="ul">
-                <RadioButton
-                  label="Right now"
-                  checked={timerStarts === "now"}
-                  id="now"
-                  name="timerStarts"
-                  onChange={() => setTimerStarts("now")}
-                />
-                <RadioButton
-                  disabled
-                  label="Schedule to start later"
-                  checked={timerStarts === "later"}
-                  id="later"
-                  name="timerStarts"
-                  onChange={() => setTimerStarts("later")}
-                />
+            {timerTypeValue === "countdown" && (
+              <BlockStack as="fieldset" gap={{ xs: "400", md: "0" }}>
+                <Box as="legend" paddingBlockEnd={{ xs: "0", md: "100" }}>
+                  <Text as="span" variant="bodyMd">
+                    Timer starts
+                  </Text>
+                </Box>
+                <BlockStack as="ul">
+                  <RadioButton
+                    label="Right now"
+                    checked={timerStarts === "now"}
+                    id="now"
+                    name="timerStarts"
+                    onChange={() => setTimerStarts("now")}
+                  />
+                  <RadioButton
+                    disabled
+                    label="Schedule to start later"
+                    checked={timerStarts === "later"}
+                    id="later"
+                    name="timerStarts"
+                    onChange={() => setTimerStarts("later")}
+                  />
+                </BlockStack>
               </BlockStack>
-            </BlockStack>
+            )}
 
             {timerTypeValue === "countdown" && (
               <BlockStack gap="200">
@@ -449,9 +392,19 @@ export default function ContentTab({
                   setOnceItEnds(getValue(e) as unknown as OnExpiryAction)
                 }
               >
-                <s-option value="unpublish">Unpublish timer</s-option>
-                <s-option value="keep">Keep timer visible</s-option>
-                <s-option value="hide">Hide timer</s-option>
+                {timerTypeValue === "fixed" ? (
+                  <>
+                    <s-option value="hide-buyer">Hide the timer for the buyer</s-option>
+                    <s-option value="repeat">Repeat the countdown</s-option>
+                    <s-option value="nothing">Do nothing</s-option>
+                  </>
+                ) : (
+                  <>
+                    <s-option value="unpublish">Unpublish timer</s-option>
+                    <s-option value="keep">Keep timer visible</s-option>
+                    <s-option value="hide">Hide timer</s-option>
+                  </>
+                )}
               </s-select>
             </BlockStack>
           </BlockStack>
