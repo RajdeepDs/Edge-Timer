@@ -96,14 +96,26 @@ export default function DesignTab({
     return isValidHex(trimmed) ? normalizeHex(trimmed) : trimmed;
   };
 
+  const handleColorInput =
+    (setter: (color: string) => void) => (value: any) => {
+      const raw = (typeof value === "string" ? value : getValue(value)).trim();
+      // Only commit to state for a complete 6-char hex — ignore partial values
+      // so the initialConfig sync useEffect never sees an empty/partial color
+      // and triggers the || default fallback with a wrong color
+      if (/^#?[A-Fa-f0-9]{6}$/.test(raw)) {
+        setter(`#${raw.replace("#", "").toLowerCase()}`);
+      }
+    };
+
   const handleColorChange =
     (setter: (color: string) => void) => (value: any) => {
       const colorValue = typeof value === "string" ? value : getValue(value);
-      setter(normalizeColorValue(colorValue));
+      const normalized = normalizeColorValue(colorValue);
+      if (normalized) setter(normalized);
     };
 
   const getColorFieldProps = (setter: (color: string) => void) => ({
-    onInput: handleColorChange(setter),
+    onInput: handleColorInput(setter),
     onChange: handleColorChange(setter),
   });
 
