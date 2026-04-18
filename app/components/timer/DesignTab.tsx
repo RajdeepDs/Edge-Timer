@@ -11,7 +11,7 @@ import {
 } from "@shopify/polaris";
 import type { DesignConfig } from "../../types/timer";
 import { useDesignState } from "../../hooks/useDesignState";
-import { isValidHex, normalizeHex } from "../../utils/timer/color";
+import ColorField from "../ui/ColorField";
 
 interface DesignTabProps {
   timerType: "product" | "top-bottom-bar";
@@ -239,34 +239,6 @@ export default function DesignTab({
     event?.target?.value ??
     "";
 
-  const applyColor = useCallback(
-    (setter: (color: string) => void, raw: string) => {
-      const trimmed = raw.trim();
-      if (isValidHex(trimmed)) setter(normalizeHex(trimmed));
-    },
-    [],
-  );
-
-  const getColorFieldProps = useCallback(
-    (setter: (color: string) => void) => ({
-      // Picker fires custom events with detail.value — apply live while dragging.
-      onInput: (event: any) => {
-        const detail = event?.detail?.value;
-        if (detail == null) return; // ignore text-input events; handled by onChange
-        applyColor(setter, String(detail));
-      },
-      // Text field commits on blur / Enter. detail.value is absent for these events.
-      // Ignoring auto-corrected colors from the component: if the field is cleared,
-      // currentTarget.value will be empty → isValidHex fails → state unchanged.
-      onChange: (event: any) => {
-        if (event?.detail?.value != null) return; // skip picker events (already handled)
-        const raw = event?.currentTarget?.value ?? event?.target?.value ?? "";
-        applyColor(setter, raw);
-      },
-    }),
-    [applyColor],
-  );
-
   return (
     <BlockStack gap="400">
       {timerType === "top-bottom-bar" && (
@@ -316,12 +288,7 @@ export default function DesignTab({
               onChange={() => setBackgroundType("single")}
             />
             {backgroundType === "single" && (
-              <s-color-field
-                name="bgColor"
-                value={backgroundColor}
-                autocomplete="off"
-                {...getColorFieldProps(setBackgroundColor)}
-              />
+              <ColorField value={backgroundColor} onChange={setBackgroundColor} />
             )}
             <RadioButton
               label="Gradient background"
@@ -346,23 +313,13 @@ export default function DesignTab({
                     <Text as="p" variant="bodySm">
                       Start color
                     </Text>
-                    <s-color-field
-                      name="gradientStartColor"
-                      value={gradientStartColor}
-                      autocomplete="off"
-                      {...getColorFieldProps(setGradientStartColor)}
-                    />
+                    <ColorField value={gradientStartColor} onChange={setGradientStartColor} />
                   </BlockStack>
                   <BlockStack gap="100">
                     <Text as="p" variant="bodySm">
                       End color
                     </Text>
-                    <s-color-field
-                      name="gradientEndColor"
-                      value={gradientEndColor}
-                      autocomplete="off"
-                      {...getColorFieldProps(setGradientEndColor)}
-                    />
+                    <ColorField value={gradientEndColor} onChange={setGradientEndColor} />
                   </BlockStack>
                 </InlineGrid>
               </BlockStack>
@@ -396,12 +353,7 @@ export default function DesignTab({
             <Text as="p" variant="bodyMd">
               Border color
             </Text>
-            <s-color-field
-              name="borderColor"
-              value={borderColor}
-              autocomplete="off"
-              {...getColorFieldProps(setBorderColor)}
-            />
+            <ColorField value={borderColor} onChange={setBorderColor} />
           </BlockStack>
         </BlockStack>
       </Card>
@@ -496,12 +448,7 @@ export default function DesignTab({
                 min={0}
                 max={100}
               />
-              <s-color-field
-                name="titleColor"
-                value={titleColor}
-                autocomplete="off"
-                {...getColorFieldProps(setTitleColor)}
-              />
+              <ColorField value={titleColor} onChange={setTitleColor} />
             </InlineStack>
           </BlockStack>
 
@@ -523,12 +470,7 @@ export default function DesignTab({
                   min={0}
                   max={100}
                 />
-                <s-color-field
-                  name="subheadingColor"
-                  value={subheadingColor}
-                  autocomplete="off"
-                  {...getColorFieldProps(setSubheadingColor)}
-                />
+                <ColorField value={subheadingColor} onChange={setSubheadingColor} />
               </InlineStack>
             </BlockStack>
           )}
@@ -550,12 +492,7 @@ export default function DesignTab({
                 min={0}
                 max={120}
               />
-              <s-color-field
-                name="timerColor"
-                value={timerColor}
-                autocomplete="off"
-                {...getColorFieldProps(setTimerColor)}
-              />
+              <ColorField value={timerColor} onChange={setTimerColor} />
             </InlineStack>
           </BlockStack>
 
@@ -576,12 +513,7 @@ export default function DesignTab({
                 min={0}
                 max={100}
               />
-              <s-color-field
-                name="legendColor"
-                value={legendColor}
-                autocomplete="off"
-                {...getColorFieldProps(setLegendColor)}
-              />
+              <ColorField value={legendColor} onChange={setLegendColor} />
             </InlineStack>
           </BlockStack>
         </BlockStack>
@@ -593,12 +525,7 @@ export default function DesignTab({
             <Text as="h4" variant="headingSm" fontWeight="semibold">
               Button
             </Text>
-            <s-color-field
-              name="Button background color"
-              value={buttonBackgroundColor}
-              autocomplete="off"
-              {...getColorFieldProps(setButtonBackgroundColor)}
-            />
+            <ColorField value={buttonBackgroundColor} onChange={setButtonBackgroundColor} label="Button background color" />
             <BlockStack gap="100">
               <Text as="p" variant="bodyMd">
                 Button font size and color
@@ -616,13 +543,7 @@ export default function DesignTab({
                   min={0}
                   max={100}
                 />
-                <s-color-field
-                  name="Button Color"
-                  labelAccessibilityVisibility="exclusive"
-                  value={buttonColor}
-                  autocomplete="off"
-                  {...getColorFieldProps(setButtonColor)}
-                />
+                <ColorField value={buttonColor} onChange={setButtonColor} />
               </InlineStack>
             </BlockStack>
             <s-number-field
