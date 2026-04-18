@@ -18,6 +18,11 @@ export function useDesignState({
   initialConfig = {},
   onConfigChange,
 }: UseDesignStateProps) {
+  // Global font
+  const [fontFamily, setFontFamily] = useState(
+    initialConfig.fontFamily || "theme",
+  );
+
   // Positioning (for top-bottom-bar)
   const [positioning, setPositioning] = useState<PositioningType>(
     initialConfig.positioning || "top",
@@ -112,6 +117,7 @@ export function useDesignState({
   );
 
   useEffect(() => {
+    setFontFamily(initialConfig.fontFamily || "theme");
     setPositioning(initialConfig.positioning || "top");
     setBackgroundType(initialConfig.backgroundType || "single");
     setBackgroundColor(initialConfig.backgroundColor || "#ffffff");
@@ -150,6 +156,8 @@ export function useDesignState({
   // Update config whenever any value changes
   useEffect(() => {
     const newConfig: DesignConfig = {
+      // Global font
+      fontFamily,
       // Positioning
       positioning,
       // Background
@@ -183,6 +191,7 @@ export function useDesignState({
 
     onConfigChange?.(newConfig);
   }, [
+    fontFamily,
     positioning,
     backgroundType,
     backgroundColor,
@@ -234,6 +243,10 @@ export function useDesignState({
   );
 
   return {
+    // Font
+    fontFamily,
+    setFontFamily,
+
     // Positioning
     positioning,
     setPositioning,

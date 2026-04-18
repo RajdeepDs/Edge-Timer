@@ -27,6 +27,8 @@ export default function DesignTab({
   callToAction,
 }: DesignTabProps) {
   const {
+    fontFamily,
+    setFontFamily,
     positioning,
     setPositioning,
     backgroundType,
@@ -254,6 +256,16 @@ export default function DesignTab({
           <Text as="h4" variant="headingSm" fontWeight="semibold">
             Typography
           </Text>
+          <s-select
+            label="Font"
+            value={fontFamily}
+            onInput={(e) => setFontFamily(getValue(e))}
+          >
+            <s-option value="theme">Use your theme fonts</s-option>
+            <s-option value="Helvetica">Helvetica</s-option>
+            <s-option value="Tahoma">Tahoma</s-option>
+<s-option value="Courier New">Courier New</s-option>
+          </s-select>
           <BlockStack gap="200">
             <Text as="p" variant="bodyMd">
               Title size and color

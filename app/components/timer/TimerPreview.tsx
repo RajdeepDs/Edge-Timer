@@ -132,7 +132,10 @@ export default function TimerPreview({
     timerColor = "#212121",
     legendSize = timerType === "top-bottom-bar" ? 10 : 14,
     legendColor = "#707070",
+    fontFamily = "theme",
   } = designConfig;
+
+  const resolvedFont = fontFamily === "theme" ? "inherit" : `"${fontFamily}", sans-serif`;
 
   // Simple CSS (inline) for primary styling
   const cardStyle: React.CSSProperties = {
@@ -148,6 +151,7 @@ export default function TimerPreview({
     color: titleColor,
     fontWeight: 800,
     lineHeight: 1.2,
+    fontFamily: resolvedFont,
   };
 
   const subheadingStyle: React.CSSProperties = {
@@ -155,6 +159,7 @@ export default function TimerPreview({
     color: subheadingColor,
     lineHeight: 1.4,
     marginBottom: "12px",
+    fontFamily: resolvedFont,
   };
 
   const timerDigitStyle: React.CSSProperties = {
@@ -164,6 +169,7 @@ export default function TimerPreview({
     lineHeight: 1,
     fontVariantNumeric: "tabular-nums",
     fontFeatureSettings: '"tnum"',
+    fontFamily: resolvedFont,
   };
 
   const colonStyle: React.CSSProperties = {
@@ -171,6 +177,7 @@ export default function TimerPreview({
     color: timerColor,
     fontWeight: 700,
     lineHeight: 1,
+    fontFamily: resolvedFont,
   };
 
   // Fixed cell width prevents layout shift when digit count changes (e.g. "10" → "9")
@@ -184,6 +191,7 @@ export default function TimerPreview({
     fontSize: `${legendSize}px`,
     color: legendColor,
     lineHeight: 1.2,
+    fontFamily: resolvedFont,
   };
 
   const typeLabel =
@@ -194,6 +202,7 @@ export default function TimerPreview({
     color: titleColor,
     fontWeight: 600,
     lineHeight: 1.2,
+    fontFamily: resolvedFont,
   };
 
   const timerBar = (
@@ -317,6 +326,7 @@ export default function TimerPreview({
     <div
       className="select-none"
       style={{
+        fontFamily: resolvedFont,
         borderRadius: "10px",
         overflow: "hidden",
         border: "1px solid #e1e3e5",

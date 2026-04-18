@@ -52,6 +52,9 @@ export interface DesignConfig {
   // Positioning (for top-bottom-bar)
   positioning?: PositioningType;
 
+  // Global font
+  fontFamily?: string;
+
   // Background
   backgroundType?: BackgroundType;
   backgroundColor?: string; // Hex color
