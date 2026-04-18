@@ -118,7 +118,11 @@ export default function TimerPreview({
 
   // Extract design config values with defaults
   const {
+    backgroundType = "single",
     backgroundColor = "#ffffff",
+    gradientStartColor = "#ffffff",
+    gradientEndColor = "#DDDDDD",
+    gradientAngle = 90,
     borderRadius = 8,
     borderSize = 0,
     borderColor = "#d1d5db",
@@ -135,11 +139,18 @@ export default function TimerPreview({
     fontFamily = "theme",
   } = designConfig;
 
-  const resolvedFont = fontFamily === "theme" ? "inherit" : `"${fontFamily}", sans-serif`;
+  const resolvedFont =
+    fontFamily === "theme" ? "inherit" : `"${fontFamily}", sans-serif`;
+  const resolvedBackground =
+    backgroundType === "gradient"
+      ? {
+          background: `linear-gradient(${gradientAngle}deg, ${gradientStartColor}, ${gradientEndColor})`,
+        }
+      : { backgroundColor };
 
   // Simple CSS (inline) for primary styling
   const cardStyle: React.CSSProperties = {
-    backgroundColor,
+    ...resolvedBackground,
     borderRadius: `${borderRadius}px`,
     border: borderSize > 0 ? `${borderSize}px solid ${borderColor}` : "none",
     paddingTop: `${paddingTop}px`,

@@ -60,6 +60,7 @@ export interface DesignConfig {
   backgroundColor?: string; // Hex color
   gradientStartColor?: string;
   gradientEndColor?: string;
+  gradientAngle?: number;
 
   // Border
   borderRadius?: number;

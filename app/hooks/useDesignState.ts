@@ -35,6 +35,15 @@ export function useDesignState({
   const [backgroundColor, setBackgroundColor] = useState(
     initialConfig.backgroundColor || "#ffffff",
   );
+  const [gradientStartColor, setGradientStartColor] = useState(
+    initialConfig.gradientStartColor || "#ffffff",
+  );
+  const [gradientEndColor, setGradientEndColor] = useState(
+    initialConfig.gradientEndColor || "#DDDDDD",
+  );
+  const [gradientAngle, setGradientAngle] = useState(
+    initialConfig.gradientAngle ?? 90,
+  );
 
   // Border
   const [borderRadius, setBorderRadius] = useState(
@@ -121,6 +130,9 @@ export function useDesignState({
     setPositioning(initialConfig.positioning || "top");
     setBackgroundType(initialConfig.backgroundType || "single");
     setBackgroundColor(initialConfig.backgroundColor || "#ffffff");
+    setGradientStartColor(initialConfig.gradientStartColor || "#ffffff");
+    setGradientEndColor(initialConfig.gradientEndColor || "#000000");
+    setGradientAngle(initialConfig.gradientAngle ?? 90);
     setBorderRadius(String(initialConfig.borderRadius || 8));
     setBorderSize(String(initialConfig.borderSize || 0));
     setBorderColor(initialConfig.borderColor || "#d1d5db");
@@ -129,7 +141,9 @@ export function useDesignState({
     setOutsideTop(String(initialConfig.marginTop || 0));
     setOutsideBottom(String(initialConfig.marginBottom || 0));
     setTitleSize(
-      String(initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28)),
+      String(
+        initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28),
+      ),
     );
     setTitleColor(initialConfig.titleColor || "#212121");
     setSubheadingSize(
@@ -140,11 +154,15 @@ export function useDesignState({
     );
     setSubheadingColor(initialConfig.subheadingColor || "#212121");
     setTimerSize(
-      String(initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40)),
+      String(
+        initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40),
+      ),
     );
     setTimerColor(initialConfig.timerColor || "#212121");
     setLegendSize(
-      String(initialConfig.legendSize || (timerType === "top-bottom-bar" ? 10 : 14)),
+      String(
+        initialConfig.legendSize || (timerType === "top-bottom-bar" ? 10 : 14),
+      ),
     );
     setLegendColor(initialConfig.legendColor || "#707070");
     setButtonFontSize(String(initialConfig.buttonFontSize || 16));
@@ -163,6 +181,9 @@ export function useDesignState({
       // Background
       backgroundType,
       backgroundColor,
+      gradientStartColor,
+      gradientEndColor,
+      gradientAngle,
       // Border
       borderRadius: parseInt(borderRadius) || 8,
       borderSize: parseInt(borderSize) || 0,
@@ -173,7 +194,8 @@ export function useDesignState({
       marginTop: parseInt(outsideTop) || 0,
       marginBottom: parseInt(outsideBottom) || 0,
       // Typography
-      titleSize: parseInt(titleSize) || (timerType === "top-bottom-bar" ? 18 : 28),
+      titleSize:
+        parseInt(titleSize) || (timerType === "top-bottom-bar" ? 18 : 28),
       titleColor,
       subheadingSize: parseInt(subheadingSize) || 16,
       subheadingColor,
@@ -195,6 +217,9 @@ export function useDesignState({
     positioning,
     backgroundType,
     backgroundColor,
+    gradientStartColor,
+    gradientEndColor,
+    gradientAngle,
     borderRadius,
     borderSize,
     borderColor,
@@ -256,6 +281,12 @@ export function useDesignState({
     setBackgroundType,
     backgroundColor,
     setBackgroundColor,
+    gradientStartColor,
+    setGradientStartColor,
+    gradientEndColor,
+    setGradientEndColor,
+    gradientAngle,
+    setGradientAngle,
 
     // Border
     borderRadius,

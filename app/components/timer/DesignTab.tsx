@@ -1,9 +1,11 @@
+import { useState, useCallback } from "react";
 import {
   BlockStack,
   Text,
   Card,
   Button,
   RadioButton,
+  RangeSlider,
   InlineGrid,
   InlineStack,
 } from "@shopify/polaris";
@@ -35,6 +37,12 @@ export default function DesignTab({
     setBackgroundType,
     backgroundColor,
     setBackgroundColor,
+    gradientStartColor,
+    setGradientStartColor,
+    gradientEndColor,
+    setGradientEndColor,
+    gradientAngle,
+    setGradientAngle,
     borderRadius,
     setBorderRadius,
     borderSize,
@@ -78,6 +86,18 @@ export default function DesignTab({
     initialConfig: designConfig,
     onConfigChange: setDesignConfig,
   });
+
+  // Local state for slider — decoupled from hook to avoid re-render feedback jitter
+  const [localAngle, setLocalAngle] = useState(gradientAngle);
+
+  const handleAngleChange = useCallback(
+    (value: number | [number, number]) => {
+      const v = value as number;
+      setLocalAngle(v);
+      setGradientAngle(v);
+    },
+    [setGradientAngle],
+  );
 
   const getValue = (event: any) =>
     event?.detail?.value ??
@@ -153,6 +173,50 @@ export default function DesignTab({
                 autocomplete="off"
                 {...getColorFieldProps(setBackgroundColor)}
               />
+            )}
+            <RadioButton
+              label="Gradient background"
+              checked={backgroundType === "gradient"}
+              id="gradient"
+              name="backgroundType"
+              onChange={() => setBackgroundType("gradient")}
+            />
+            {backgroundType === "gradient" && (
+              <BlockStack gap="300">
+                <RangeSlider
+                  label="Gradient angle"
+                  value={localAngle}
+                  min={0}
+                  step={1}
+                  max={360}
+                  onChange={handleAngleChange}
+                  output
+                />
+                <InlineGrid columns={2} gap="200">
+                  <BlockStack gap="100">
+                    <Text as="p" variant="bodySm">
+                      Start color
+                    </Text>
+                    <s-color-field
+                      name="gradientStartColor"
+                      value={gradientStartColor}
+                      autocomplete="off"
+                      {...getColorFieldProps(setGradientStartColor)}
+                    />
+                  </BlockStack>
+                  <BlockStack gap="100">
+                    <Text as="p" variant="bodySm">
+                      End color
+                    </Text>
+                    <s-color-field
+                      name="gradientEndColor"
+                      value={gradientEndColor}
+                      autocomplete="off"
+                      {...getColorFieldProps(setGradientEndColor)}
+                    />
+                  </BlockStack>
+                </InlineGrid>
+              </BlockStack>
             )}
           </BlockStack>
           <InlineGrid columns={2} gap="200">
@@ -264,7 +328,7 @@ export default function DesignTab({
             <s-option value="theme">Use your theme fonts</s-option>
             <s-option value="Helvetica">Helvetica</s-option>
             <s-option value="Tahoma">Tahoma</s-option>
-<s-option value="Courier New">Courier New</s-option>
+            <s-option value="Courier New">Courier New</s-option>
           </s-select>
           <BlockStack gap="200">
             <Text as="p" variant="bodyMd">
