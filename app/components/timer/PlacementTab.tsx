@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   BlockStack,
   Text,
@@ -9,91 +9,215 @@ import {
   Button,
   InlineStack,
   Tag,
+  Divider,
 } from "@shopify/polaris";
-import { usePlacementState } from "../../hooks/usePlacementState";
 import { ProductPicker, CollectionPicker } from "../ui";
+import type {
+  ProductSelectionType,
+  PageSelectionType,
+  GeolocationTargeting,
+} from "../../types/timer";
 
 interface PlacementTabProps {
   timerType: "product" | "top-bottom-bar";
   timerId?: string;
   shop?: string;
+  // Placement state owned by TimerForm
+  productSelection: ProductSelectionType;
+  onProductSelectionChange: (value: string) => void;
+  pageSelection: PageSelectionType;
+  onPageSelectionChange: (value: string) => void;
+  geolocation: GeolocationTargeting;
+  onGeolocationChange: (value: string) => void;
+  // Array setters — IDs go to the parent for submission
+  setSelectedProducts: (ids: string[]) => void;
+  setSelectedCollections: (ids: string[]) => void;
+  setExcludedProducts: (ids: string[]) => void;
+  setExcludedPages: (ids: string[]) => void;
 }
+
+// Shopify GraphQL IDs look like "gid://shopify/Product/1234567890".
+// Liquid's {{ product.id }} and the storefront script send only the numeric part.
+const extractShopifyId = (gid: string): string => gid.split("/").pop() ?? gid;
 
 export default function PlacementTab({
   timerType,
   timerId,
   shop,
+  productSelection,
+  onProductSelectionChange,
+  pageSelection,
+  onPageSelectionChange,
+  geolocation,
+  onGeolocationChange,
+  setSelectedProducts,
+  setSelectedCollections,
+  setExcludedProducts,
+  setExcludedPages,
 }: PlacementTabProps) {
-  // Use custom hook for placement state management
-  const {
-    productSelection,
-    handleProductSelectionChange,
-    pageSelection,
-    handlePageSelectionChange,
-    geolocation,
-    handleGeolocationChange,
-    setSelectedProducts,
-    setSelectedCollections,
-  } = usePlacementState({ timerType });
+  const [copied, setCopied] = useState(false);
+  const copyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Modal states
+  const handleCopyTimerId = () => {
+    if (!timerId || copied) return;
+    if (copyDebounceRef.current) clearTimeout(copyDebounceRef.current);
+    navigator.clipboard.writeText(timerId).then(() => {
+      setCopied(true);
+      shopify.toast.show("Copied to clipboard", { duration: 2000 });
+      copyDebounceRef.current = setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  // Modal open states
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [showExcludeProductPicker, setShowExcludeProductPicker] =
     useState(false);
   const [showExcludePagePicker, setShowExcludePagePicker] = useState(false);
 
-  // Store product/collection data with full objects
+  // Display data — full objects needed to render Tag labels
   const [productData, setProductData] = useState<any[]>([]);
   const [collectionData, setCollectionData] = useState<any[]>([]);
   const [excludedProductData, setExcludedProductData] = useState<any[]>([]);
   const [excludedPageData, setExcludedPageData] = useState<any[]>([]);
 
-  // Handle product selection
+  // Product selection — store numeric IDs (strips GID prefix)
   const handleProductSelect = (products: any[]) => {
     setProductData(products);
-    setSelectedProducts(products.map((p) => p.id));
+    setSelectedProducts(products.map((p) => extractShopifyId(p.id)));
   };
-
-  // Handle collection selection
-  const handleCollectionSelect = (collections: any[]) => {
-    setCollectionData(collections);
-    setSelectedCollections(collections.map((c) => c.id));
-  };
-
-  // Remove individual product
   const removeProduct = (id: string) => {
     const filtered = productData.filter((p) => p.id !== id);
     setProductData(filtered);
-    setSelectedProducts(filtered.map((p) => p.id));
+    setSelectedProducts(filtered.map((p) => extractShopifyId(p.id)));
   };
 
-  // Remove individual collection
+  // Collection selection — store handles because the storefront script detects
+  // the active collection by parsing the handle from the page URL, not by numeric ID.
+  const handleCollectionSelect = (collections: any[]) => {
+    setCollectionData(collections);
+    setSelectedCollections(collections.map((c) => c.handle));
+  };
   const removeCollection = (id: string) => {
     const filtered = collectionData.filter((c) => c.id !== id);
     setCollectionData(filtered);
-    setSelectedCollections(filtered.map((c) => c.id));
+    setSelectedCollections(filtered.map((c) => c.handle));
   };
 
-  // Handle excluded products
+  // Excluded products — store numeric IDs
   const handleExcludedProductSelect = (products: any[]) => {
     setExcludedProductData(products);
+    setExcludedProducts(products.map((p) => extractShopifyId(p.id)));
   };
-
   const removeExcludedProduct = (id: string) => {
     const filtered = excludedProductData.filter((p) => p.id !== id);
     setExcludedProductData(filtered);
+    setExcludedProducts(filtered.map((p) => extractShopifyId(p.id)));
   };
 
-  // Handle excluded pages
+  // Excluded pages — store numeric product IDs
   const handleExcludedPageSelect = (pages: any[]) => {
     setExcludedPageData(pages);
+    setExcludedPages(pages.map((p) => extractShopifyId(p.id)));
   };
-
   const removeExcludedPage = (id: string) => {
     const filtered = excludedPageData.filter((p) => p.id !== id);
     setExcludedPageData(filtered);
+    setExcludedPages(filtered.map((p) => extractShopifyId(p.id)));
   };
+
+  const timerIdSection = (
+    <Box>
+      <Box paddingBlockEnd="400">
+        <Divider />
+      </Box>
+      <Text as="p" variant="headingSm" fontWeight="semibold">
+        Timer ID
+      </Text>
+      <Box paddingBlockStart="200">
+        {timerId ? (
+          <InlineStack gap="100" blockAlign="center">
+            <Text as="p" variant="bodyMd">
+              {timerId}
+            </Text>
+            <button
+              onClick={handleCopyTimerId}
+              aria-label="Copy timer ID"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px",
+                display: "inline-flex",
+                alignItems: "center",
+                color: "#616161",
+              }}
+            >
+              {copied ? (
+                <s-icon type="clipboard-check" color="base" size="small" />
+              ) : (
+                <s-icon type="clipboard" color="base" size="small" />
+              )}
+            </button>
+          </InlineStack>
+        ) : (
+          <Text as="p" variant="bodySm" tone="subdued">
+            Save or Publish to show timer ID
+          </Text>
+        )}
+        <Box paddingBlockStart="100">
+          <Text as="p" variant="bodySm" tone="subdued">
+            Countdown timer app block can be added, removed, repositioned, and
+            customized through the theme editor using timer ID.
+          </Text>
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  const geolocationSection = (
+    <Card padding="400">
+      <BlockStack gap="400">
+        <Text as="h4" variant="headingSm" fontWeight="semibold">
+          Geolocation targeting
+        </Text>
+        <BlockStack gap="200">
+          <Box>
+            <RadioButton
+              label="All world"
+              checked={geolocation === "all-world"}
+              id="all-world"
+              name="geolocation"
+              onChange={() => onGeolocationChange("all-world")}
+            />
+            <Box paddingBlockStart="100">
+              <Text as="p" variant="bodySm" tone="subdued">
+                Excluding specific countries from other timers
+              </Text>
+            </Box>
+          </Box>
+          <Box>
+            <RadioButton
+              label="Specific countries"
+              checked={geolocation === "specific-countries"}
+              id="specific-countries"
+              name="geolocation"
+              onChange={() => onGeolocationChange("specific-countries")}
+              disabled
+            />
+            <Box paddingBlockStart="100">
+              <Text as="p" variant="bodySm" tone="subdued">
+                Available with Standard plan.{" "}
+                <Link url="#" removeUnderline>
+                  Upgrade now
+                </Link>
+              </Text>
+            </Box>
+          </Box>
+        </BlockStack>
+      </BlockStack>
+    </Card>
+  );
 
   if (timerType === "top-bottom-bar") {
     return (
@@ -112,7 +236,7 @@ export default function PlacementTab({
                     checked={pageSelection === "every-page"}
                     id="every-page"
                     name="pageSelection"
-                    onChange={() => handlePageSelectionChange("every-page")}
+                    onChange={() => onPageSelectionChange("every-page")}
                     helpText={
                       <Button
                         variant="plain"
@@ -148,7 +272,7 @@ export default function PlacementTab({
                   checked={pageSelection === "home-page"}
                   id="home-page"
                   name="pageSelection"
-                  onChange={() => handlePageSelectionChange("home-page")}
+                  onChange={() => onPageSelectionChange("home-page")}
                 />
 
                 <RadioButton
@@ -156,9 +280,7 @@ export default function PlacementTab({
                   checked={pageSelection === "all-product-pages"}
                   id="all-product-pages"
                   name="pageSelection"
-                  onChange={() =>
-                    handlePageSelectionChange("all-product-pages")
-                  }
+                  onChange={() => onPageSelectionChange("all-product-pages")}
                 />
 
                 <Box>
@@ -168,7 +290,7 @@ export default function PlacementTab({
                     id="specific-product-pages"
                     name="pageSelection"
                     onChange={() =>
-                      handlePageSelectionChange("specific-product-pages")
+                      onPageSelectionChange("specific-product-pages")
                     }
                   />
                   {pageSelection === "specific-product-pages" && (
@@ -199,52 +321,12 @@ export default function PlacementTab({
                   )}
                 </Box>
 
-                <Box>
-                  <RadioButton
-                    label="All products in specific collections"
-                    checked={pageSelection === "specific-collections"}
-                    id="specific-collections"
-                    name="pageSelection"
-                    onChange={() =>
-                      handlePageSelectionChange("specific-collections")
-                    }
-                  />
-                  {pageSelection === "specific-collections" && (
-                    <Box paddingBlockStart="200" paddingInlineStart="600">
-                      <Button
-                        onClick={() => setShowCollectionPicker(true)}
-                        size="slim"
-                      >
-                        {collectionData.length > 0
-                          ? `${collectionData.length} collection${collectionData.length === 1 ? "" : "s"} selected`
-                          : "Select collections"}
-                      </Button>
-                      {collectionData.length > 0 && (
-                        <Box paddingBlockStart="200">
-                          <InlineStack gap="200" wrap>
-                            {collectionData.map((collection) => (
-                              <Tag
-                                key={collection.id}
-                                onRemove={() => removeCollection(collection.id)}
-                              >
-                                {collection.title}
-                              </Tag>
-                            ))}
-                          </InlineStack>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
-                </Box>
-
                 <RadioButton
                   label="Show on all collection pages"
                   checked={pageSelection === "all-collection-pages"}
                   id="all-collection-pages"
                   name="pageSelection"
-                  onChange={() =>
-                    handlePageSelectionChange("all-collection-pages")
-                  }
+                  onChange={() => onPageSelectionChange("all-collection-pages")}
                 />
 
                 <Box>
@@ -254,7 +336,7 @@ export default function PlacementTab({
                     id="specific-collection-pages"
                     name="pageSelection"
                     onChange={() =>
-                      handlePageSelectionChange("specific-collection-pages")
+                      onPageSelectionChange("specific-collection-pages")
                     }
                   />
                   {pageSelection === "specific-collection-pages" && (
@@ -286,89 +368,13 @@ export default function PlacementTab({
                 </Box>
               </BlockStack>
 
-              <Box>
-                <Text as="p" variant="headingSm" fontWeight="semibold">
-                  Timer ID
-                </Text>
-                <Box paddingBlockStart="200">
-                  {timerId ? (
-                    <>
-                      <Text as="p" variant="bodyMd" fontWeight="semibold">
-                        {timerId}
-                      </Text>
-                      {shop && (
-                        <Box paddingBlockStart="100">
-                          <Text as="p" variant="bodySm" tone="subdued">
-                            Store: {shop}
-                          </Text>
-                        </Box>
-                      )}
-                    </>
-                  ) : (
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Save or Publish to show timer ID
-                    </Text>
-                  )}
-                  <Box paddingBlockStart="100">
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Countdown timer app block can be added, removed,
-                      repositioned, and customized through the theme editor
-                      using timer ID.
-                    </Text>
-                  </Box>
-                </Box>
-              </Box>
+              {timerIdSection}
             </BlockStack>
           </Card>
 
-          <Card padding="400">
-            <BlockStack gap="400">
-              <Text as="h4" variant="headingSm" fontWeight="semibold">
-                Geolocation targeting
-              </Text>
-
-              <BlockStack gap="200">
-                <Box>
-                  <RadioButton
-                    label="All world"
-                    checked={geolocation === "all-world"}
-                    id="all-world"
-                    name="geolocation"
-                    onChange={() => handleGeolocationChange("all-world")}
-                  />
-                  <Box paddingBlockStart="100">
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Excluding specific countries from other timers
-                    </Text>
-                  </Box>
-                </Box>
-
-                <Box>
-                  <RadioButton
-                    label="Specific countries"
-                    checked={geolocation === "specific-countries"}
-                    id="specific-countries"
-                    name="geolocation"
-                    onChange={() =>
-                      handleGeolocationChange("specific-countries")
-                    }
-                    disabled
-                  />
-                  <Box paddingBlockStart="100">
-                    <Text as="p" variant="bodySm" tone="subdued">
-                      Available with Standard plan.{" "}
-                      <Link url="#" removeUnderline>
-                        Upgrade now
-                      </Link>
-                    </Text>
-                  </Box>
-                </Box>
-              </BlockStack>
-            </BlockStack>
-          </Card>
+          {geolocationSection}
         </BlockStack>
 
-        {/* Pickers */}
         <ProductPicker
           open={showProductPicker}
           onClose={() => setShowProductPicker(false)}
@@ -376,7 +382,6 @@ export default function PlacementTab({
           selectedProducts={productData}
           allowMultiple={true}
         />
-
         <CollectionPicker
           open={showCollectionPicker}
           onClose={() => setShowCollectionPicker(false)}
@@ -384,8 +389,6 @@ export default function PlacementTab({
           selectedCollections={collectionData}
           allowMultiple={true}
         />
-
-        {/* Exclude Product Picker for pages */}
         <ProductPicker
           open={showExcludePagePicker}
           onClose={() => setShowExcludePagePicker(false)}
@@ -415,7 +418,7 @@ export default function PlacementTab({
                   checked={productSelection === "all"}
                   id="all"
                   name="productSelection"
-                  onChange={() => handleProductSelectionChange("all")}
+                  onChange={() => onProductSelectionChange("all")}
                   helpText={
                     <Button
                       variant="plain"
@@ -452,7 +455,7 @@ export default function PlacementTab({
                   checked={productSelection === "specific"}
                   id="specific"
                   name="productSelection"
-                  onChange={() => handleProductSelectionChange("specific")}
+                  onChange={() => onProductSelectionChange("specific")}
                 />
                 {productSelection === "specific" && (
                   <Box paddingBlockStart="200" paddingInlineStart="600">
@@ -488,7 +491,7 @@ export default function PlacementTab({
                   checked={productSelection === "collections"}
                   id="collections"
                   name="productSelection"
-                  onChange={() => handleProductSelectionChange("collections")}
+                  onChange={() => onProductSelectionChange("collections")}
                 />
                 {productSelection === "collections" && (
                   <Box paddingBlockStart="200" paddingInlineStart="600">
@@ -524,7 +527,7 @@ export default function PlacementTab({
                   checked={productSelection === "tags"}
                   id="tags"
                   name="productSelection"
-                  onChange={() => handleProductSelectionChange("tags")}
+                  onChange={() => onProductSelectionChange("tags")}
                   disabled
                 />
                 <Box paddingBlockStart="100">
@@ -538,87 +541,13 @@ export default function PlacementTab({
               </Box>
             </BlockStack>
 
-            <Box>
-              <Text as="p" variant="headingSm" fontWeight="semibold">
-                Timer ID
-              </Text>
-              <Box paddingBlockStart="200">
-                {timerId ? (
-                  <>
-                    <Text as="p" variant="bodyMd" fontWeight="semibold">
-                      {timerId}
-                    </Text>
-                    {shop && (
-                      <Box paddingBlockStart="100">
-                        <Text as="p" variant="bodySm" tone="subdued">
-                          Store: {shop}
-                        </Text>
-                      </Box>
-                    )}
-                  </>
-                ) : (
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Save or Publish to show timer ID
-                  </Text>
-                )}
-                <Box paddingBlockStart="100">
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Countdown timer app block can be added, removed,
-                    repositioned, and customized through the theme editor using
-                    timer ID.
-                  </Text>
-                </Box>
-              </Box>
-            </Box>
+            {timerIdSection}
           </BlockStack>
         </Card>
 
-        <Card padding="400">
-          <BlockStack gap="400">
-            <Text as="h4" variant="headingSm" fontWeight="semibold">
-              Geolocation targeting
-            </Text>
-
-            <BlockStack gap="200">
-              <Box>
-                <RadioButton
-                  label="All world"
-                  checked={geolocation === "all-world"}
-                  id="all-world"
-                  name="geolocation"
-                  onChange={() => handleGeolocationChange("all-world")}
-                />
-                <Box paddingBlockStart="100">
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Excluding specific countries from other timers
-                  </Text>
-                </Box>
-              </Box>
-
-              <Box>
-                <RadioButton
-                  label="Specific countries"
-                  checked={geolocation === "specific-countries"}
-                  id="specific-countries"
-                  name="geolocation"
-                  onChange={() => handleGeolocationChange("specific-countries")}
-                  disabled
-                />
-                <Box paddingBlockStart="100">
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Available with Standard plan.{" "}
-                    <Link url="#" removeUnderline>
-                      Upgrade now
-                    </Link>
-                  </Text>
-                </Box>
-              </Box>
-            </BlockStack>
-          </BlockStack>
-        </Card>
+        {geolocationSection}
       </BlockStack>
 
-      {/* Pickers */}
       <ProductPicker
         open={showProductPicker}
         onClose={() => setShowProductPicker(false)}
@@ -626,7 +555,6 @@ export default function PlacementTab({
         selectedProducts={productData}
         allowMultiple={true}
       />
-
       <CollectionPicker
         open={showCollectionPicker}
         onClose={() => setShowCollectionPicker(false)}
@@ -634,8 +562,6 @@ export default function PlacementTab({
         selectedCollections={collectionData}
         allowMultiple={true}
       />
-
-      {/* Exclude Product Picker */}
       <ProductPicker
         open={showExcludeProductPicker}
         onClose={() => setShowExcludeProductPicker(false)}

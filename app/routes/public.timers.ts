@@ -295,6 +295,11 @@ function matchSpecificPages(
  * productSelection: "all" | "specific" | "collections" | "tags" | "custom"
  * selectedProducts, selectedCollections, excludedProducts, productTags: arrays stored on the timer
  */
+// Strip Shopify GID prefix: "gid://shopify/Product/123" → "123"
+function normalizeShopifyId(id: string): string {
+  return String(id).split("/").pop() ?? String(id);
+}
+
 function matchesProductSelection(
   productSelection: string | null,
   selectedProducts: string[],
@@ -306,9 +311,10 @@ function matchesProductSelection(
   productTags: string[],
 ): boolean {
   // Exclusions first: if current product is excluded, deny
+  // Normalize both sides to handle legacy GID-format data
   if (
     productId &&
-    excludedProducts.map((id) => id.toString()).includes(productId.toString())
+    excludedProducts.map(normalizeShopifyId).includes(normalizeShopifyId(productId))
   ) {
     return false;
   }
@@ -320,14 +326,16 @@ function matchesProductSelection(
       return true;
     case "specific":
       if (!productId) return false;
+      // Normalize stored IDs in case legacy data still has GID format
       return selectedProducts
-        .map((id) => id.toString())
-        .includes(productId.toString());
+        .map(normalizeShopifyId)
+        .includes(normalizeShopifyId(productId));
     case "collections":
       if (collectionIds.length === 0 || selectedCollections.length === 0)
         return false;
+      // collectionIds from storefront are handles; selectedCollections stores handles
       return selectedCollections.some((cid) =>
-        collectionIds.map((c) => c.toString()).includes(cid.toString()),
+        collectionIds.map((c) => c.toString().toLowerCase()).includes(cid.toString().toLowerCase()),
       );
     case "tags": {
       if (timerProductTags.length === 0 || productTags.length === 0)

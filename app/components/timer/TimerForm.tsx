@@ -13,6 +13,8 @@ import {
 import { useSubmit, useNavigation, useActionData } from "@remix-run/react";
 import { useTimerForm } from "../../hooks/useTimerForm";
 import { useTimerTabs } from "../../hooks/useTimerTabs";
+import { usePlacementState } from "../../hooks/usePlacementState";
+import type { ProductSelectionType, PageSelectionType, GeolocationTargeting } from "../../types/timer";
 import ContentTab from "./ContentTab";
 import DesignTab from "./DesignTab";
 import PlacementTab from "./PlacementTab";
@@ -46,6 +48,18 @@ export function TimerForm({
 
   // Single, top-level call to your form state hook
   const formState = useTimerForm({ existingTimer, timerType });
+
+  // Placement state — lifted here so handleSubmit can read it
+  const placement = usePlacementState({
+    timerType: timerType === "product-page" ? "product" : "top-bottom-bar",
+    initialProductSelection: (existingTimer?.productSelection as ProductSelectionType) || "all",
+    initialPageSelection: (existingTimer?.pageSelection as PageSelectionType) || "every-page",
+    initialGeolocation: (existingTimer?.geolocation as GeolocationTargeting) || "all-world",
+    initialSelectedProducts: (existingTimer?.selectedProducts as string[]) || [],
+    initialSelectedCollections: (existingTimer?.selectedCollections as string[]) || [],
+    initialExcludedProducts: (existingTimer?.excludedProducts as string[]) || [],
+    initialExcludedPages: (existingTimer?.excludedPages as string[]) || [],
+  });
 
   const { selectedTab, handleTabChange, goToNextTab } = useTimerTabs();
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
@@ -148,18 +162,18 @@ export function TimerForm({
         designConfig: formState.designConfig,
         placementConfig: formState.placementConfig,
 
-        productSelection: "all",
-        selectedProducts: null,
-        selectedCollections: null,
-        excludedProducts: null,
-        productTags: null,
+        productSelection: placement.productSelection,
+        selectedProducts: placement.selectedProducts.length > 0 ? placement.selectedProducts : null,
+        selectedCollections: placement.selectedCollections.length > 0 ? placement.selectedCollections : null,
+        excludedProducts: placement.excludedProducts.length > 0 ? placement.excludedProducts : null,
+        productTags: placement.productTags.length > 0 ? placement.productTags : null,
 
-        pageSelection: timerType === "top-bottom-bar" ? "every-page" : null,
-        excludedPages: null,
+        pageSelection: timerType === "top-bottom-bar" ? placement.pageSelection : null,
+        excludedPages: placement.excludedPages.length > 0 ? placement.excludedPages : null,
 
-        geolocation: "all-world",
+        geolocation: placement.geolocation,
 
-        countries: null,
+        countries: placement.selectedCountries.length > 0 ? placement.selectedCountries : null,
 
         // Preserve published state on save; toggle on publish/unpublish
         isPublished:
@@ -202,6 +216,7 @@ export function TimerForm({
     },
     [
       formState,
+      placement,
       timerType,
       timerId,
       submit,
@@ -338,6 +353,16 @@ export function TimerForm({
             }
             timerId={timerId}
             shop={shop}
+            productSelection={placement.productSelection}
+            onProductSelectionChange={placement.handleProductSelectionChange}
+            pageSelection={placement.pageSelection}
+            onPageSelectionChange={placement.handlePageSelectionChange}
+            geolocation={placement.geolocation}
+            onGeolocationChange={placement.handleGeolocationChange}
+            setSelectedProducts={placement.setSelectedProducts}
+            setSelectedCollections={placement.setSelectedCollections}
+            setExcludedProducts={placement.setExcludedProducts}
+            setExcludedPages={placement.setExcludedPages}
           />
         );
       default:
