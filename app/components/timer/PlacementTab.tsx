@@ -3,7 +3,6 @@ import {
   BlockStack,
   Text,
   Box,
-  FormLayout,
   RadioButton,
   Link,
   Card,
@@ -99,7 +98,7 @@ export default function PlacementTab({
   if (timerType === "top-bottom-bar") {
     return (
       <>
-        <FormLayout>
+        <BlockStack gap="400">
           <Card padding="400">
             <BlockStack gap="400">
               <Text as="h4" variant="headingSm" fontWeight="semibold">
@@ -367,7 +366,7 @@ export default function PlacementTab({
               </BlockStack>
             </BlockStack>
           </Card>
-        </FormLayout>
+        </BlockStack>
 
         {/* Pickers */}
         <ProductPicker
@@ -402,7 +401,7 @@ export default function PlacementTab({
   // Product timer type
   return (
     <>
-      <FormLayout>
+      <BlockStack gap="400">
         <Card padding="400">
           <BlockStack gap="400">
             <Text as="h4" variant="headingSm" fontWeight="semibold">
@@ -617,7 +616,7 @@ export default function PlacementTab({
             </BlockStack>
           </BlockStack>
         </Card>
-      </FormLayout>
+      </BlockStack>
 
       {/* Pickers */}
       <ProductPicker

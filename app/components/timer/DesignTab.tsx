@@ -1,14 +1,11 @@
 import {
   BlockStack,
   Text,
-  Box,
-  FormLayout,
+  Card,
   Button,
   RadioButton,
   InlineGrid,
   InlineStack,
-  Divider,
-  Bleed,
 } from "@shopify/polaris";
 import type { DesignConfig } from "../../types/timer";
 import { useDesignState } from "../../hooks/useDesignState";
@@ -120,9 +117,9 @@ export default function DesignTab({
   });
 
   return (
-    <FormLayout>
+    <BlockStack gap="400">
       {timerType === "top-bottom-bar" && (
-        <BlockStack gap="400">
+        <Card padding="400">
           <s-select
             label="Positioning"
             value={positioning}
@@ -131,57 +128,55 @@ export default function DesignTab({
             <s-option value="top">Top page</s-option>
             <s-option value="bottom">Bottom page</s-option>
           </s-select>
-          <Bleed marginInline={"400"}>
-            <Divider />
-          </Bleed>
-        </BlockStack>
+        </Card>
       )}
-      <BlockStack gap="400">
-        <Text as="h4" variant="headingSm" fontWeight="semibold">
-          Card
-        </Text>
-        <BlockStack gap="200">
-          <RadioButton
-            label="Single color background"
-            checked={backgroundType === "single"}
-            id="single"
-            name="backgroundType"
-            onChange={() => setBackgroundType("single")}
-          />
-          {backgroundType === "single" && (
-            <s-color-field
-              name="bgColor"
-              value={backgroundColor}
-              autocomplete="off"
-              {...getColorFieldProps(setBackgroundColor)}
+
+      <Card padding="400">
+        <BlockStack gap="400">
+          <Text as="h4" variant="headingSm" fontWeight="semibold">
+            Card
+          </Text>
+          <BlockStack gap="200">
+            <RadioButton
+              label="Single color background"
+              checked={backgroundType === "single"}
+              id="single"
+              name="backgroundType"
+              onChange={() => setBackgroundType("single")}
             />
-          )}
-        </BlockStack>
-        <InlineGrid columns={2} gap="200">
-          <s-number-field
-            label="Border radius"
-            value={borderRadius}
-            defaultValue={borderRadius}
-            onInput={(e) => setBorderRadius(getValue(e))}
-            autocomplete="off"
-            suffix="px"
-            inputMode="numeric"
-            min={0}
-            max={100}
-          />
-          <s-number-field
-            label="Border size"
-            value={borderSize}
-            defaultValue={borderSize}
-            onInput={(e) => setBorderSize(getValue(e))}
-            autocomplete="off"
-            suffix="px"
-            inputMode="numeric"
-            min={0}
-            max={100}
-          />
-        </InlineGrid>
-        <Box>
+            {backgroundType === "single" && (
+              <s-color-field
+                name="bgColor"
+                value={backgroundColor}
+                autocomplete="off"
+                {...getColorFieldProps(setBackgroundColor)}
+              />
+            )}
+          </BlockStack>
+          <InlineGrid columns={2} gap="200">
+            <s-number-field
+              label="Border radius"
+              value={borderRadius}
+              defaultValue={borderRadius}
+              onInput={(e) => setBorderRadius(getValue(e))}
+              autocomplete="off"
+              suffix="px"
+              inputMode="numeric"
+              min={0}
+              max={100}
+            />
+            <s-number-field
+              label="Border size"
+              value={borderSize}
+              defaultValue={borderSize}
+              onInput={(e) => setBorderSize(getValue(e))}
+              autocomplete="off"
+              suffix="px"
+              inputMode="numeric"
+              min={0}
+              max={100}
+            />
+          </InlineGrid>
           <BlockStack gap="100">
             <Text as="p" variant="bodyMd">
               Border color
@@ -193,12 +188,12 @@ export default function DesignTab({
               {...getColorFieldProps(setBorderColor)}
             />
           </BlockStack>
-        </Box>
-        {timerType !== "top-bottom-bar" && (
+        </BlockStack>
+      </Card>
+
+      {timerType !== "top-bottom-bar" && (
+        <Card padding="400">
           <BlockStack gap="400">
-            <Bleed marginInline={"400"}>
-              <Divider />
-            </Bleed>
             <Text as="p" variant="bodyMd" fontWeight="medium">
               Spacing
             </Text>
@@ -226,7 +221,6 @@ export default function DesignTab({
                 max={100}
               />
             </InlineGrid>
-
             <InlineGrid columns={2} gap="200">
               <s-number-field
                 label="Outside top"
@@ -252,56 +246,25 @@ export default function DesignTab({
               />
             </InlineGrid>
           </BlockStack>
-        )}
-      </BlockStack>
-      <Bleed marginInline={"400"}>
-        <Divider />
-      </Bleed>
+        </Card>
+      )}
 
-      <BlockStack gap="400">
-        <Text as="h4" variant="headingSm" fontWeight="semibold">
-          Typography
-        </Text>
-        <BlockStack gap="200">
-          <Text as="p" variant="bodyMd">
-            Title size and color
+      <Card padding="400">
+        <BlockStack gap="400">
+          <Text as="h4" variant="headingSm" fontWeight="semibold">
+            Typography
           </Text>
-
-          <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <s-number-field
-              label="Title size"
-              labelAccessibilityVisibility="exclusive"
-              value={titleSize}
-              defaultValue={titleSize}
-              onInput={(e) => setTitleSize(getValue(e))}
-              autocomplete="off"
-              suffix="px"
-              inputMode="numeric"
-              min={0}
-              max={100}
-            />
-            <s-color-field
-              name="titleColor"
-              value={titleColor}
-              autocomplete="off"
-              {...getColorFieldProps(setTitleColor)}
-            />
-          </InlineStack>
-        </BlockStack>
-
-        {timerType !== "top-bottom-bar" && (
           <BlockStack gap="200">
             <Text as="p" variant="bodyMd">
-              Subheading size and color
+              Title size and color
             </Text>
-
             <InlineStack gap="200" blockAlign="stretch" wrap={false}>
               <s-number-field
-                label="Subheading size"
+                label="Title size"
                 labelAccessibilityVisibility="exclusive"
-                value={subheadingSize}
-                defaultValue={subheadingSize}
-                onInput={(e) => setSubheadingSize(getValue(e))}
+                value={titleSize}
+                defaultValue={titleSize}
+                onInput={(e) => setTitleSize(getValue(e))}
                 autocomplete="off"
                 suffix="px"
                 inputMode="numeric"
@@ -309,130 +272,152 @@ export default function DesignTab({
                 max={100}
               />
               <s-color-field
-                name="subheadingColor"
-                value={subheadingColor}
+                name="titleColor"
+                value={titleColor}
                 autocomplete="off"
-                {...getColorFieldProps(setSubheadingColor)}
+                {...getColorFieldProps(setTitleColor)}
               />
             </InlineStack>
           </BlockStack>
-        )}
 
-        <BlockStack gap="200">
-          <Text as="p" variant="bodyMd">
-            Timer size and color
-          </Text>
-          <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-            <s-number-field
-              label="Timer size"
-              labelAccessibilityVisibility="exclusive"
-              value={timerSize}
-              defaultValue={timerSize}
-              onInput={(e) => setTimerSize(getValue(e))}
-              autocomplete="off"
-              suffix="px"
-              inputMode="numeric"
-              min={0}
-              max={120}
-            />
-            <s-color-field
-              name="timerColor"
-              value={timerColor}
-              autocomplete="off"
-              {...getColorFieldProps(setTimerColor)}
-            />
-          </InlineStack>
+          {timerType !== "top-bottom-bar" && (
+            <BlockStack gap="200">
+              <Text as="p" variant="bodyMd">
+                Subheading size and color
+              </Text>
+              <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+                <s-number-field
+                  label="Subheading size"
+                  labelAccessibilityVisibility="exclusive"
+                  value={subheadingSize}
+                  defaultValue={subheadingSize}
+                  onInput={(e) => setSubheadingSize(getValue(e))}
+                  autocomplete="off"
+                  suffix="px"
+                  inputMode="numeric"
+                  min={0}
+                  max={100}
+                />
+                <s-color-field
+                  name="subheadingColor"
+                  value={subheadingColor}
+                  autocomplete="off"
+                  {...getColorFieldProps(setSubheadingColor)}
+                />
+              </InlineStack>
+            </BlockStack>
+          )}
+
+          <BlockStack gap="200">
+            <Text as="p" variant="bodyMd">
+              Timer size and color
+            </Text>
+            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+              <s-number-field
+                label="Timer size"
+                labelAccessibilityVisibility="exclusive"
+                value={timerSize}
+                defaultValue={timerSize}
+                onInput={(e) => setTimerSize(getValue(e))}
+                autocomplete="off"
+                suffix="px"
+                inputMode="numeric"
+                min={0}
+                max={120}
+              />
+              <s-color-field
+                name="timerColor"
+                value={timerColor}
+                autocomplete="off"
+                {...getColorFieldProps(setTimerColor)}
+              />
+            </InlineStack>
+          </BlockStack>
+
+          <BlockStack gap="200">
+            <Text as="p" variant="bodyMd">
+              Legend size and color
+            </Text>
+            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+              <s-number-field
+                label="Legend size"
+                labelAccessibilityVisibility="exclusive"
+                value={legendSize}
+                defaultValue={legendSize}
+                onInput={(e) => setLegendSize(getValue(e))}
+                autocomplete="off"
+                suffix="px"
+                inputMode="numeric"
+                min={0}
+                max={100}
+              />
+              <s-color-field
+                name="legendColor"
+                value={legendColor}
+                autocomplete="off"
+                {...getColorFieldProps(setLegendColor)}
+              />
+            </InlineStack>
+          </BlockStack>
         </BlockStack>
+      </Card>
 
-        <BlockStack gap="200">
-          <Text as="p" variant="bodyMd">
-            Legend size and color
-          </Text>
-          <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+      {timerType === "top-bottom-bar" && callToAction === "button" && (
+        <Card padding="400">
+          <BlockStack gap="400">
+            <Text as="h4" variant="headingSm" fontWeight="semibold">
+              Button
+            </Text>
+            <s-color-field
+              name="Button background color"
+              value={buttonBackgroundColor}
+              autocomplete="off"
+              {...getColorFieldProps(setButtonBackgroundColor)}
+            />
+            <BlockStack gap="100">
+              <Text as="p" variant="bodyMd">
+                Button font size and color
+              </Text>
+              <InlineStack gap="200" blockAlign="stretch" wrap={false}>
+                <s-number-field
+                  label="Button font size"
+                  labelAccessibilityVisibility="exclusive"
+                  value={buttonFontSize}
+                  defaultValue={buttonFontSize}
+                  onInput={(e) => setButtonFontSize(getValue(e))}
+                  autocomplete="off"
+                  suffix="px"
+                  inputMode="numeric"
+                  min={0}
+                  max={100}
+                />
+                <s-color-field
+                  name="Button Color"
+                  labelAccessibilityVisibility="exclusive"
+                  value={buttonColor}
+                  autocomplete="off"
+                  {...getColorFieldProps(setButtonColor)}
+                />
+              </InlineStack>
+            </BlockStack>
             <s-number-field
-              label="Legend size"
-              labelAccessibilityVisibility="exclusive"
-              value={legendSize}
-              defaultValue={legendSize}
-              onInput={(e) => setLegendSize(getValue(e))}
+              label="Corner radius"
+              value={cornerRadius}
+              defaultValue={cornerRadius}
+              onInput={(e) => setCornerRadius(getValue(e))}
               autocomplete="off"
               suffix="px"
               inputMode="numeric"
               min={0}
               max={100}
             />
-            <s-color-field
-              name="legendColor"
-              value={legendColor}
-              autocomplete="off"
-              {...getColorFieldProps(setLegendColor)}
-            />
-          </InlineStack>
-        </BlockStack>
-      </BlockStack>
-      {timerType === "top-bottom-bar" && callToAction === "button" && (
-        <BlockStack gap="400">
-          <Bleed marginInline={"400"}>
-            <Divider />
-          </Bleed>
-          <Text as="h4" variant="headingSm" fontWeight="semibold">
-            Button
-          </Text>
-          <s-color-field
-            name="Button background color"
-            value={buttonBackgroundColor}
-            autocomplete="off"
-            {...getColorFieldProps(setButtonBackgroundColor)}
-          />
-          <BlockStack gap="100">
-            <Text as="p" variant="bodyMd">
-              Button font size and color
-            </Text>
-            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-              <s-number-field
-                label="Button font size"
-                labelAccessibilityVisibility="exclusive"
-                value={buttonFontSize}
-                defaultValue={buttonFontSize}
-                onInput={(e) => setButtonFontSize(getValue(e))}
-                autocomplete="off"
-                suffix="px"
-                inputMode="numeric"
-                min={0}
-                max={100}
-              />
-              <s-color-field
-                name="Button Color"
-                labelAccessibilityVisibility="exclusive"
-                value={buttonColor}
-                autocomplete="off"
-                {...getColorFieldProps(setButtonColor)}
-              />
-            </InlineStack>
           </BlockStack>
-          <BlockStack gap="100">
-            <InlineStack gap="200" blockAlign="stretch" wrap={false}>
-              <s-number-field
-                label="Corner radius"
-                value={cornerRadius}
-                defaultValue={cornerRadius}
-                onInput={(e) => setCornerRadius(getValue(e))}
-                autocomplete="off"
-                suffix="px"
-                inputMode="numeric"
-                min={0}
-                max={100}
-              />
-            </InlineStack>
-          </BlockStack>
-        </BlockStack>
+        </Card>
       )}
-      <Bleed marginInline={"400"}>
-        <Divider />
-      </Bleed>
-      <Button fullWidth onClick={onContinue}>
+
+      <Button fullWidth onClick={onContinue} size="large">
         Continue to Placement
       </Button>
-    </FormLayout>
+    </BlockStack>
   );
 }

@@ -3,7 +3,6 @@ import {
   Page,
   Box,
   Tabs,
-  Card,
   Frame,
   Badge,
   Modal,
@@ -396,10 +395,14 @@ export function TimerForm({
                     gridTemplateColumns: "minmax(324px, 1fr) 2fr",
                   }}
                 >
-                  <Box>
-                    <Card padding="400">{renderTabContent()}</Card>
-                  </Box>
-                  <Box>
+                  <Box>{renderTabContent()}</Box>
+                  <div
+                    style={{
+                      position: "sticky",
+                      top: "0px",
+                      height: "fit-content",
+                    }}
+                  >
                     <TimerPreview
                       title={formState.title}
                       subheading={formState.subheading}
@@ -422,7 +425,7 @@ export function TimerForm({
                       fixedMinutes={formState.fixedMinutes}
                       callToAction={formState.callToAction}
                     />
-                  </Box>
+                  </div>
                 </div>
               </Box>
             </Tabs>
