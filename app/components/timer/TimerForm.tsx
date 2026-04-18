@@ -374,7 +374,7 @@ export function TimerForm({
           timerId && existingTimer?.isPublished ? (
             <Badge tone="success">Published</Badge>
           ) : (
-            <Badge>Draft</Badge>
+            <Badge>Not published</Badge>
           )
         }
         subtitle={timerId ? undefined : "Save to show Timer ID"}
