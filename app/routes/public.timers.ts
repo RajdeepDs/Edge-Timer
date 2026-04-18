@@ -79,6 +79,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const now = new Date();
 
+  // Auto-unpublish expired timers with onExpiry="unpublish" in the background
+  const toUnpublish = timers
+    .filter((t) => isExpired(t, now) && (t.onExpiry || "unpublish").toLowerCase() === "unpublish")
+    .map((t) => t.id);
+  if (toUnpublish.length > 0) {
+    prisma.timer
+      .updateMany({ where: { id: { in: toUnpublish } }, data: { isPublished: false } })
+      .catch((err) => console.error("Failed to auto-unpublish timers:", err));
+  }
+
   const filtered = timers
     .filter((t) => {
       // Respect schedule: has started?

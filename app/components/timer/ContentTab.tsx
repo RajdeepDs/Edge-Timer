@@ -122,12 +122,18 @@ export default function ContentTab({
 
 
   useEffect(() => {
-    if (timerTypeValue === "fixed") {
-      setOnceItEnds("hide-buyer");
-    } else {
-      setOnceItEnds("unpublish");
-    }
-  }, [timerTypeValue]);
+    const fixedOnlyActions: OnExpiryAction[] = ["hide-buyer", "repeat", "nothing"];
+    const countdownOnlyActions: OnExpiryAction[] = ["unpublish", "keep", "hide"];
+    setOnceItEnds((prev) => {
+      if (timerTypeValue === "fixed" && countdownOnlyActions.includes(prev)) {
+        return "hide-buyer";
+      }
+      if (timerTypeValue === "countdown" && fixedOnlyActions.includes(prev)) {
+        return "unpublish";
+      }
+      return prev;
+    });
+  }, [timerTypeValue, setOnceItEnds]);
 
   const getValue = (e: any) => {
     // Support both native inputs and custom elements emitting detail.value
@@ -155,7 +161,7 @@ export default function ContentTab({
             label="Countdown name"
             value={timerName}
             defaultValue={timerName}
-            onInput={(e) => setTimerName(e.currentTarget.value)}
+            onInput={(e) => setTimerName(getValue(e))}
             placeholder="Timer name"
             autocomplete="off"
             details="Only visible to you. For your own internal reference."
@@ -265,12 +271,15 @@ export default function ContentTab({
             </Box>
 
             {timerTypeValue === "fixed" && (
-              <s-text-field
+              <s-number-field
                 label="Fixed minutes"
                 value={fixedMinutes}
                 defaultValue={fixedMinutes}
                 onInput={(e) => setFixedMinutes(getValue(e))}
                 autocomplete="off"
+                inputMode="numeric"
+                min={1}
+                max={1440}
                 details="Enter the number of minutes for the countdown (1-1440)"
                 error={
                   hasFieldError("fixedMinutes")
