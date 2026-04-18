@@ -9,5 +9,5 @@ export function StatusBadge({ isPublished }: StatusBadgeProps) {
     return <Badge tone="success">Published</Badge>;
   }
 
-  return <Badge>Draft</Badge>;
+  return <Badge>Not published</Badge>;
 }

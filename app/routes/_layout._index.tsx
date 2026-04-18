@@ -225,7 +225,7 @@ export default function Index() {
             <InlineStack align="end">
               <Button
                 variant="primary"
-                size="large"
+                size="medium"
                 onClick={() => navigate("/new")}
               >
                 Create a new timer
