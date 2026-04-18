@@ -137,6 +137,7 @@ export default function TimerPreview({
     legendSize = timerType === "top-bottom-bar" ? 10 : 14,
     legendColor = "#707070",
     fontFamily = "theme",
+    positioning = "top",
   } = designConfig;
 
   const resolvedFont =
@@ -389,7 +390,18 @@ export default function TimerPreview({
       </div>
 
       {/* Page body */}
-      <div style={{ backgroundColor: "#ffffff", flex: 1 }}>
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent:
+            timerType === "top-bottom-bar" && positioning === "bottom"
+              ? "flex-end"
+              : "flex-start",
+        }}
+      >
         {timerType === "top-bottom-bar" ? (
           <>{timerBar}</>
         ) : (
