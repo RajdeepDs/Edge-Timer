@@ -262,6 +262,7 @@ export function TimerForm({
     setShowDeleteModal(false);
   }, []);
 
+  const [showTimerLabels, setShowTimerLabels] = useState(true);
   const [copied, setCopied] = useState(false);
   const copyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -317,6 +318,8 @@ export function TimerForm({
             setButtonText={formState.setButtonText}
             buttonLink={formState.buttonLink}
             setButtonLink={formState.setButtonLink}
+            showTimerLabels={showTimerLabels}
+            setShowTimerLabels={setShowTimerLabels}
             validationErrors={validationErrors}
             onContinue={goToNextTab}
           />
@@ -448,10 +451,10 @@ export function TimerForm({
                     <TimerPreview
                       title={formState.title}
                       subheading={formState.subheading}
-                      daysLabel={formState.daysLabel}
-                      hoursLabel={formState.hoursLabel}
-                      minutesLabel={formState.minutesLabel}
-                      secondsLabel={formState.secondsLabel}
+                      daysLabel={showTimerLabels ? formState.daysLabel : ""}
+                      hoursLabel={showTimerLabels ? formState.hoursLabel : ""}
+                      minutesLabel={showTimerLabels ? formState.minutesLabel : ""}
+                      secondsLabel={showTimerLabels ? formState.secondsLabel : ""}
                       designConfig={formState.designConfig}
                       timerType={
                         timerType === "product-page"

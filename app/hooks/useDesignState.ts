@@ -59,7 +59,7 @@ export function useDesignState({
   // Typography - Title
   const [titleSize, setTitleSize] = useState(
     String(
-      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32),
+      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28),
     ),
   );
   const [titleColor, setTitleColor] = useState(
@@ -80,7 +80,7 @@ export function useDesignState({
   // Typography - Timer
   const [timerSize, setTimerSize] = useState(
     String(
-      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48),
+      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40),
     ),
   );
   const [timerColor, setTimerColor] = useState(
@@ -123,7 +123,7 @@ export function useDesignState({
     setOutsideTop(String(initialConfig.marginTop || 0));
     setOutsideBottom(String(initialConfig.marginBottom || 0));
     setTitleSize(
-      String(initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32)),
+      String(initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28)),
     );
     setTitleColor(initialConfig.titleColor || "#212121");
     setSubheadingSize(
@@ -134,7 +134,7 @@ export function useDesignState({
     );
     setSubheadingColor(initialConfig.subheadingColor || "#212121");
     setTimerSize(
-      String(initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48)),
+      String(initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40)),
     );
     setTimerColor(initialConfig.timerColor || "#212121");
     setLegendSize(
@@ -165,12 +165,12 @@ export function useDesignState({
       marginTop: parseInt(outsideTop) || 0,
       marginBottom: parseInt(outsideBottom) || 0,
       // Typography
-      titleSize: parseInt(titleSize) || 33,
+      titleSize: parseInt(titleSize) || (timerType === "top-bottom-bar" ? 18 : 28),
       titleColor,
       subheadingSize: parseInt(subheadingSize) || 16,
       subheadingColor,
       timerSize:
-        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 22 : 48),
+        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 22 : 40),
       timerColor,
       legendSize: parseInt(legendSize) || 14,
       legendColor,

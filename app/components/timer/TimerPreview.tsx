@@ -150,7 +150,7 @@ export default function TimerPreview({
   const titleStyle: React.CSSProperties = {
     fontSize: `${titleSize}px`,
     color: titleColor,
-    fontWeight: 600,
+    fontWeight: 800,
     lineHeight: 1.2,
   };
 
@@ -158,6 +158,7 @@ export default function TimerPreview({
     fontSize: `${subheadingSize}px`,
     color: subheadingColor,
     lineHeight: 1.4,
+    marginBottom: "12px",
   };
 
   const timerDigitStyle: React.CSSProperties = {
@@ -165,6 +166,22 @@ export default function TimerPreview({
     color: timerColor,
     fontWeight: 700,
     lineHeight: 1,
+    fontVariantNumeric: "tabular-nums",
+    fontFeatureSettings: '"tnum"',
+  };
+
+  const colonStyle: React.CSSProperties = {
+    fontSize: `${timerSize * 0.7}px`,
+    color: timerColor,
+    fontWeight: 700,
+    lineHeight: 1,
+  };
+
+  // Fixed cell width prevents layout shift when digit count changes (e.g. "10" → "9")
+  const digitCellStyle: React.CSSProperties = {
+    textAlign: "center",
+    width: `${timerSize * 1.4}px`,
+    flexShrink: 0,
   };
 
   const legendStyle: React.CSSProperties = {
@@ -269,31 +286,31 @@ export default function TimerPreview({
         <div style={{ ...subheadingStyle, textAlign: "center" }}>
           {subheading || "Sale ends in:"}
         </div>
-        <div className={cn("flex items-center gap-1 justify-center")}>
-          <div style={{ textAlign: "center" }}>
+        <div className={cn("flex items-start gap-1 justify-center")}>
+          <div style={digitCellStyle}>
             <div style={timerDigitStyle}>{formatTime(timeLeft.days)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>{daysLabel}</div>
           </div>
-          <div style={timerDigitStyle} className={cn("-translate-y-3.5")}>
-            :
+          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+            <div style={colonStyle}>:</div>
           </div>
-          <div style={{ textAlign: "center" }}>
+          <div style={digitCellStyle}>
             <div style={timerDigitStyle}>{formatTime(timeLeft.hours)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>{hoursLabel}</div>
           </div>
-          <div style={timerDigitStyle} className={cn("-translate-y-3.5")}>
-            :
+          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+            <div style={colonStyle}>:</div>
           </div>
-          <div style={{ textAlign: "center" }}>
+          <div style={digitCellStyle}>
             <div style={timerDigitStyle}>{formatTime(timeLeft.minutes)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>
               {minutesLabel}
             </div>
           </div>
-          <div style={timerDigitStyle} className={cn("-translate-y-3.5")}>
-            :
+          <div style={{ height: `${timerSize}px`, display: "flex", alignItems: "center" }}>
+            <div style={colonStyle}>:</div>
           </div>
-          <div style={{ textAlign: "center" }}>
+          <div style={digitCellStyle}>
             <div style={timerDigitStyle}>{formatTime(timeLeft.seconds)}</div>
             <div style={{ ...legendStyle, marginTop: "4px" }}>
               {secondsLabel}

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   TextField,
   BlockStack,
@@ -72,6 +71,8 @@ interface ContentTabProps {
   buttonLink?: string;
   setButtonLink?: (value: string) => void;
 
+  showTimerLabels: boolean;
+  setShowTimerLabels: (value: boolean) => void;
   validationErrors: ValidationError[];
   onContinue: () => void;
 }
@@ -114,6 +115,8 @@ export default function ContentTab({
   setButtonText,
   buttonLink,
   setButtonLink,
+  showTimerLabels,
+  setShowTimerLabels,
   validationErrors,
   onContinue,
 }: ContentTabProps) {
@@ -131,7 +134,6 @@ export default function ContentTab({
     onDateChange: setEndDate,
   });
 
-  const [showTimerLabels, setShowTimerLabels] = useState(true);
 
   const getValue = (e: any) => {
     // Support both native inputs and custom elements emitting detail.value
@@ -254,7 +256,7 @@ export default function ContentTab({
               </Text>
               <s-switch
                 checked={showTimerLabels}
-                onInput={() => setShowTimerLabels((v) => !v)}
+                onInput={() => setShowTimerLabels(!showTimerLabels)}
                 accessibilityLabel="Toggle timer labels"
               />
             </div>
