@@ -38,8 +38,8 @@ const contactOptions = [
     title: "Report a Bug",
     description:
       "Something not working as expected? Send us details and we'll investigate right away.",
-    subject: "Bug Report – Urgency Timer",
-    body: "Hi Urgency Timer Team,\n\nI'd like to report a bug:\n\n[Describe the issue]\n\nSteps to reproduce:\n1. \n2. \n\nExpected behavior:\n\nActual behavior:\n\nShop URL: ",
+    subject: "Bug Report – Edge Timer",
+    body: "Hi Edge Timer Team,\n\nI'd like to report a bug:\n\n[Describe the issue]\n\nSteps to reproduce:\n1. \n2. \n\nExpected behavior:\n\nActual behavior:\n\nShop URL: ",
     buttonLabel: "Report Bug",
     badgeLabel: "Bug",
     badgeTone: "critical" as const,
@@ -49,9 +49,9 @@ const contactOptions = [
     icon: LightbulbIcon,
     title: "Feature Request",
     description:
-      "Have an idea to make Urgency Timer better? We'd love to hear your suggestions.",
-    subject: "Feature Request – Urgency Timer",
-    body: "Hi Urgency Timer Team,\n\nI have a feature request:\n\n[Describe the feature you'd like]\n\nWhy it would be useful:\n\nShop URL: ",
+      "Have an idea to make Edge Timer better? We'd love to hear your suggestions.",
+    subject: "Feature Request – Edge Timer",
+    body: "Hi Edge Timer Team,\n\nI have a feature request:\n\n[Describe the feature you'd like]\n\nWhy it would be useful:\n\nShop URL: ",
     buttonLabel: "Request Feature",
     badgeLabel: "Feature",
     badgeTone: "info" as const,
@@ -62,8 +62,8 @@ const contactOptions = [
     title: "General Help",
     description:
       "Have a question about setup, configuration, or anything else? We're happy to help.",
-    subject: "Help Request – Urgency Timer",
-    body: "Hi Urgency Timer Team,\n\nI need help with:\n\n[Describe what you need help with]\n\nShop URL: ",
+    subject: "Help Request – Edge Timer",
+    body: "Hi Edge Timer Team,\n\nI need help with:\n\n[Describe what you need help with]\n\nShop URL: ",
     buttonLabel: "Get Help",
     badgeLabel: "Help",
     badgeTone: "success" as const,
@@ -221,7 +221,7 @@ export default function HelpPage() {
             </Text>
           </div>
           <Text as="p" variant="bodySm" tone="subdued">
-            Quick answers to the most common questions about Urgency Timer.
+            Quick answers to the most common questions about Edge Timer.
           </Text>
 
           <Card padding="0">
@@ -305,8 +305,8 @@ export default function HelpPage() {
               onClick={() =>
                 window.open(
                   buildGmailUrl(
-                    "Support Request – Urgency Timer",
-                    "Hi Urgency Timer Team,\n\nI need support with:\n\n[Describe your issue]\n\nShop URL: ",
+                    "Support Request – Edge Timer",
+                    "Hi Edge Timer Team,\n\nI need support with:\n\n[Describe your issue]\n\nShop URL: ",
                   ),
                   "_blank",
                 )

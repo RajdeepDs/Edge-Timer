@@ -123,17 +123,13 @@ export default function ContentTab({
 
   useEffect(() => {
     const fixedOnlyActions: OnExpiryAction[] = ["hide-buyer", "repeat", "nothing"];
-    const countdownOnlyActions: OnExpiryAction[] = ["unpublish", "keep", "hide"];
-    setOnceItEnds((prev) => {
-      if (timerTypeValue === "fixed" && countdownOnlyActions.includes(prev)) {
-        return "hide-buyer";
-      }
-      if (timerTypeValue === "countdown" && fixedOnlyActions.includes(prev)) {
-        return "unpublish";
-      }
-      return prev;
-    });
-  }, [timerTypeValue, setOnceItEnds]);
+    const countdownOnlyActions: OnExpiryAction[] = ["keep", "hide"];
+    if (timerTypeValue === "fixed" && countdownOnlyActions.includes(onceItEnds)) {
+      setOnceItEnds("hide-buyer");
+    } else if (timerTypeValue === "countdown" && fixedOnlyActions.includes(onceItEnds)) {
+      setOnceItEnds("unpublish");
+    }
+  }, [timerTypeValue]);
 
   const getValue = (e: any) => {
     // Support both native inputs and custom elements emitting detail.value
@@ -403,6 +399,7 @@ export default function ContentTab({
               >
                 {timerTypeValue === "fixed" ? (
                   <>
+                    <s-option value="unpublish">Unpublish timer</s-option>
                     <s-option value="hide-buyer">Hide the timer for the buyer</s-option>
                     <s-option value="repeat">Repeat the countdown</s-option>
                     <s-option value="nothing">Do nothing</s-option>

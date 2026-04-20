@@ -16,6 +16,7 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate, registerWebhooks } from "../shopify.server";
 import prisma from "app/db.server";
+import { syncTimerCountsToStats } from "app/utils/shop.server";
 import { EmptyState } from "../components/ui/EmptyState";
 import { TimerDataTable } from "../components/timer/TimerDataTable";
 import { ensureShopExists } from "app/utils/shop.server";
@@ -38,6 +39,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
       });
 
+      syncTimerCountsToStats(session.shop).catch(() => {});
       return json({ success: true, message: "Timer deleted successfully" });
     }
 
@@ -61,6 +63,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         data: { isPublished: !timer.isPublished },
       });
 
+      syncTimerCountsToStats(session.shop).catch(() => {});
       return json({ success: true, message: "Timer status updated" });
     }
 
@@ -209,6 +212,7 @@ export default function Index() {
   const currentPlanName =
     currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
   const progressValue = limit === -1 ? 0 : (monthlyViews / limit) * 100;
+  const limitExceeded = limit !== -1 && monthlyViews >= limit;
 
   return (
     <Page>
@@ -239,19 +243,26 @@ export default function Index() {
           <InlineStack gap="400" align="space-between" blockAlign="center">
             <div style={{ flex: 1 }}>
               <BlockStack gap="200">
-                <Text as="p">
-                  You're currently on{" "}
-                  <Text as="strong">{currentPlanName} Plan.</Text>{" "}
-                  <Text as="span" tone="subdued">
-                    ({usageText}).
-                  </Text>{" "}
-                  One visitor can have multiple views per session.
-                </Text>
+                {limitExceeded ? (
+                  <Text as="p" tone="critical">
+                    <Text as="strong">View limit reached.</Text>{" "}
+                    Your {currentPlanName} Plan limit of {limit?.toLocaleString()} monthly views has been reached. Timers are no longer showing on your storefront. Upgrade your plan to restore timer visibility.
+                  </Text>
+                ) : (
+                  <Text as="p">
+                    You're currently on{" "}
+                    <Text as="strong">{currentPlanName} Plan.</Text>{" "}
+                    <Text as="span" tone="subdued">
+                      ({usageText}).
+                    </Text>{" "}
+                    One visitor can have multiple views per session.
+                  </Text>
+                )}
                 {limit !== -1 && (
                   <ProgressBar
                     progress={progressValue}
                     size="small"
-                    tone="primary"
+                    tone={limitExceeded ? "critical" : "primary"}
                   />
                 )}
                 {shop?.trialEndsAt && (
@@ -262,7 +273,9 @@ export default function Index() {
                 )}
               </BlockStack>
             </div>
-            <Button url="/plans">Upgrade</Button>
+            <Button url="/plans" variant={limitExceeded ? "primary" : undefined}>
+              Upgrade
+            </Button>
           </InlineStack>
         </Card>
         {showSetupGuide && (

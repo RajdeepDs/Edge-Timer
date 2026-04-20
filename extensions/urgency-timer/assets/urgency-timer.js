@@ -20,6 +20,7 @@
   // App Proxy path: Shopify proxies to your app (works on any merchant store)
   const DEFAULT_ENDPOINT = "/apps/urgency-timer/timers";
   const DEFAULT_VIEW_ENDPOINT = "/apps/urgency-timer/views";
+  const DEFAULT_UNPUBLISH_ENDPOINT = "/apps/urgency-timer/unpublish";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);
@@ -194,6 +195,17 @@
         log("❌ View tracking fetch error:", e.message || e);
         console.error("[UrgencyTimer] Full error:", e);
       });
+  }
+
+  function unpublishTimer(timerId) {
+    const endpoint = window.__utimer_unpublish_endpoint || DEFAULT_UNPUBLISH_ENDPOINT;
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ timerId }),
+    })
+      .then(r => { log(r.ok ? "✅ Timer unpublished:" : "❌ Unpublish failed:", timerId, r.status); })
+      .catch(e => { log("❌ Unpublish fetch error:", e.message || e); });
   }
 
   /* ================= Countdown Logic ================= */
@@ -460,6 +472,7 @@
         } else {
           // "unpublish", "hide", "hide-buyer" — remove from DOM
           clearInterval(id);
+          if (action === "unpublish") unpublishTimer(timer.id);
           if (cleanupBar) cleanupBar();
           const barParent = c.closest(".utimer-bar");
           c.remove();

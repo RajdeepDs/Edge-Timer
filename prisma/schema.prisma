@@ -149,6 +149,51 @@ model Shop {
   @@index([billingStatus])
 }
 
+model ShopUser {
+  id            String @id @default(cuid())
+  shopifyUserId String @unique // Shopify staff/owner ID (BigInt stored as String)
+  shopDomain    String
+
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean @default(false)
+  locale        String?
+  emailVerified Boolean @default(false)
+
+  loginCount  Int      @default(1)
+  lastLoginAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopDomain])
+  @@index([shopifyUserId])
+}
+
+model ShopStats {
+  id         String @id @default(cuid())
+  shopDomain String @unique
+
+  // Timer stats
+  totalTimersCreated  Int @default(0) // Lifetime timers created (never decremented)
+  activeTimerCount    Int @default(0) // Currently active (isActive = true)
+  publishedTimerCount Int @default(0) // Currently published (isPublished = true)
+
+  // View stats
+  totalViewsAllTime Int @default(0) // Lifetime views across all billing periods
+  peakMonthlyViews  Int @default(0) // Highest monthly view count ever recorded
+
+  // Activity
+  lastTimerCreatedAt DateTime?
+  lastViewAt         DateTime?
+  lastActiveAt       DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  @@index([shopDomain])
+}
+
 model TimerView {
   id      String @id @default(cuid())
   timerId String
