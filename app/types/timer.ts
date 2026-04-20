@@ -49,6 +49,9 @@ export interface ColorHSBA {
 
 // Design Configuration
 export interface DesignConfig {
+  // Selected template name
+  selectedTemplate?: string;
+
   // Positioning (for top-bottom-bar)
   positioning?: PositioningType;
 

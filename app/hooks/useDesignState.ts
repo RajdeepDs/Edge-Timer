@@ -16,6 +16,11 @@ export function useDesignState({
   initialConfig = {},
   onConfigChange,
 }: UseDesignStateProps) {
+  // Template selection
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    initialConfig.selectedTemplate ?? "Custom",
+  );
+
   // Global font
   const [fontFamily, setFontFamily] = useState(
     initialConfig.fontFamily || "theme",
@@ -133,6 +138,7 @@ export function useDesignState({
     // external reset. Only sync when it's truly a new external config.
     if (initialConfig === lastEmittedConfig.current) return;
 
+    setSelectedTemplate(initialConfig.selectedTemplate ?? "Custom");
     setFontFamily(initialConfig.fontFamily || "theme");
     setPositioning(initialConfig.positioning || "top");
     setBackgroundType(initialConfig.backgroundType || "single");
@@ -181,6 +187,8 @@ export function useDesignState({
   // Update config whenever any value changes
   useEffect(() => {
     const newConfig: DesignConfig = {
+      // Template
+      selectedTemplate,
       // Global font
       fontFamily,
       // Positioning
@@ -221,6 +229,7 @@ export function useDesignState({
     lastEmittedConfig.current = newConfig;
     onConfigChange?.(newConfig);
   }, [
+    selectedTemplate,
     fontFamily,
     positioning,
     backgroundType,
@@ -252,6 +261,10 @@ export function useDesignState({
   ]);
 
   return {
+    // Template
+    selectedTemplate,
+    setSelectedTemplate,
+
     // Font
     fontFamily,
     setFontFamily,

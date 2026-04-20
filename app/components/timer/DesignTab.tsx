@@ -29,6 +29,8 @@ export default function DesignTab({
   callToAction,
 }: DesignTabProps) {
   const {
+    selectedTemplate,
+    setSelectedTemplate,
     fontFamily,
     setFontFamily,
     positioning,
@@ -90,8 +92,6 @@ export default function DesignTab({
   // Local state for slider — decoupled from hook to avoid re-render feedback jitter
   const [localAngle, setLocalAngle] = useState(gradientAngle);
 
-  // Template presets
-  const [selectedTemplate, setSelectedTemplate] = useState("Custom");
   const isApplyingTemplate = useRef(false);
 
   type TemplateConfig = {
