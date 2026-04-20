@@ -159,7 +159,7 @@ export function TimerForm({
         buttonLink:
           timerType === "top-bottom-bar" ? formState.buttonLink : null,
 
-        designConfig: formState.designConfig,
+        designConfig: { ...formState.designConfig, showLabels: showTimerLabels },
         placementConfig: formState.placementConfig,
 
         productSelection: placement.productSelection,
@@ -277,7 +277,9 @@ export function TimerForm({
     setShowDeleteModal(false);
   }, []);
 
-  const [showTimerLabels, setShowTimerLabels] = useState(true);
+  const [showTimerLabels, setShowTimerLabels] = useState(
+    existingTimer?.designConfig?.showLabels ?? true,
+  );
   const [copied, setCopied] = useState(false);
   const copyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

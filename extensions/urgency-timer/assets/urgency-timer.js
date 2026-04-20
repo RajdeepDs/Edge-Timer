@@ -5,6 +5,9 @@
  */
 
 (() => {
+  if (window.__UTIMER_INIT__) return;
+  window.__UTIMER_INIT__ = true;
+
   const DEBUG = false;
 
   const STATE = {
@@ -264,9 +267,12 @@
       valueEls[u] = n;
     });
 
-    countdown.append(numbersRow, labelsRow);
+    countdown.appendChild(numbersRow);
 
     const dc = timer.designConfig || {};
+    if (dc.showLabels !== false) {
+      countdown.appendChild(labelsRow);
+    }
 
     if (isBar) {
       const barMain = el("div", "utimer-bar-main", "");
@@ -369,6 +375,8 @@
     let id = setInterval(update, 1000);
     update();
 
+    let cleanupBar = null;
+
     if (isBar) {
       const syncBarScale = () => {
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -416,10 +424,16 @@
       scheduleBarScaleSync();
       window.addEventListener("resize", scheduleBarScaleSync);
 
+      let resizeObserver = null;
       if (typeof ResizeObserver !== "undefined") {
-        const resizeObserver = new ResizeObserver(scheduleBarScaleSync);
+        resizeObserver = new ResizeObserver(scheduleBarScaleSync);
         resizeObserver.observe(c);
       }
+
+      cleanupBar = () => {
+        window.removeEventListener("resize", scheduleBarScaleSync);
+        if (resizeObserver) resizeObserver.disconnect();
+      };
     }
 
     function update() {
@@ -446,6 +460,7 @@
         } else {
           // "unpublish", "hide", "hide-buyer" — remove from DOM
           clearInterval(id);
+          if (cleanupBar) cleanupBar();
           const barParent = c.closest(".utimer-bar");
           c.remove();
           if (barParent) barParent.remove();

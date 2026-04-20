@@ -97,6 +97,9 @@ export interface DesignConfig {
   legendFontWeight?: string;
   legendFontFamily?: string;
 
+  // Labels visibility
+  showLabels?: boolean;
+
   // Button (for CTA)
   buttonFontSize?: number;
   buttonCornerRadius?: number;
