@@ -34,6 +34,7 @@ export function useDateTimePicker({
   const handleDateChange = useCallback(
     (dates: { start: Date; end: Date }) => {
       setSelectedDates(dates);
+      setPopoverActive(false);
       onDateChange?.(dates.start);
     },
     [onDateChange]

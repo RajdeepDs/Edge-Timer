@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import prisma from "../db.server";
 import { validateProxyRequest } from "../utils/proxy.server";
+import { hasExceededViewLimit } from "../utils/shop.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const validation = validateProxyRequest(request);
@@ -23,6 +24,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const shop = validation.shop || params.get("shop");
   if (!shop) {
     return json({ error: "Missing shop parameter" }, { status: 400 });
+  }
+
+  try {
+    const limitExceeded = await hasExceededViewLimit(shop);
+    if (limitExceeded) {
+      return json({ error: "View limit exceeded", timers: [] }, { status: 429 });
+    }
+  } catch {
+    // Continue on error to avoid blocking legitimate requests
   }
 
   const now = new Date();
@@ -56,7 +66,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
         if (isExpired(timer, now)) {
           const behavior = (timer.onExpiry || "unpublish").toLowerCase();
-          if (behavior !== "keep") return false;
+          // "keep" and "nothing" freeze at zeros; "repeat" restarts — all must be served
+          if (behavior !== "keep" && behavior !== "nothing" && behavior !== "repeat") return false;
         }
 
         if (

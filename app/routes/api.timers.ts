@@ -6,7 +6,7 @@ import {
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import type { TimerFormData, TimerErrorResponse } from "../types/timer";
-import { canCreateTimer } from "../utils/shop.server";
+import { canCreateTimer, incrementShopTimerCreated, syncTimerCountsToStats } from "../utils/shop.server";
 
 // GET /api/timers - List all timers for the shop
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -131,6 +131,9 @@ export async function action({ request }: ActionFunctionArgs) {
         isActive: true,
       },
     });
+
+    // Update lifetime stats (best-effort)
+    incrementShopTimerCreated(session.shop).catch(() => {});
 
     return json({ timer }, { status: 201 });
   } catch (error) {

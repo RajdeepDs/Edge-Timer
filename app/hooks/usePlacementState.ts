@@ -6,6 +6,10 @@ interface UsePlacementStateProps {
   initialProductSelection?: ProductSelectionType;
   initialPageSelection?: PageSelectionType;
   initialGeolocation?: GeolocationTargeting;
+  initialSelectedProducts?: string[];
+  initialSelectedCollections?: string[];
+  initialExcludedProducts?: string[];
+  initialExcludedPages?: string[];
 }
 
 export function usePlacementState({
@@ -13,6 +17,10 @@ export function usePlacementState({
   initialProductSelection = "all",
   initialPageSelection = "every-page",
   initialGeolocation = "all-world",
+  initialSelectedProducts = [],
+  initialSelectedCollections = [],
+  initialExcludedProducts = [],
+  initialExcludedPages = [],
 }: UsePlacementStateProps) {
   // Product selection state (for product timers)
   const [productSelection, setProductSelection] = useState<ProductSelectionType>(
@@ -30,13 +38,13 @@ export function usePlacementState({
   );
 
   // Selected product IDs (when productSelection is "specific")
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>(initialSelectedProducts);
 
   // Selected collection IDs (when productSelection is "collections")
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(initialSelectedCollections);
 
   // Excluded product IDs (when excluding specific products)
-  const [excludedProducts, setExcludedProducts] = useState<string[]>([]);
+  const [excludedProducts, setExcludedProducts] = useState<string[]>(initialExcludedProducts);
 
   // Product tags (when productSelection is "tags")
   const [productTags, setProductTags] = useState<string[]>([]);
@@ -45,7 +53,7 @@ export function usePlacementState({
   const [specificPages, setSpecificPages] = useState<string[]>([]);
 
   // Excluded pages (when excluding specific pages)
-  const [excludedPages, setExcludedPages] = useState<string[]>([]);
+  const [excludedPages, setExcludedPages] = useState<string[]>(initialExcludedPages);
 
   // Selected countries (when geolocation is "specific-countries")
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);

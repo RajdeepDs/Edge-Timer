@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from "@remix-run/node";
 import prisma from "../db.server";
-import { incrementShopViews } from "../utils/shop.server";
+import { incrementShopViews, unpublishAllTimersIfLimitExceeded } from "../utils/shop.server";
 
 /**
  * Public endpoint to record timer views from the storefront.
@@ -128,8 +128,10 @@ export async function action({ request }: ActionFunctionArgs) {
       data: { viewCount: { increment: 1 } },
     });
 
-    // Increment shop monthly views (best-effort)
-    await incrementShopViews(shop).catch(() => {});
+    // Increment shop monthly views, then unpublish all timers if limit now exceeded
+    await incrementShopViews(shop)
+      .then(() => unpublishAllTimersIfLimitExceeded(shop))
+      .catch(() => {});
 
     return json({ success: true, id: view.id }, { headers });
   } catch (err) {

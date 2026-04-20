@@ -85,17 +85,34 @@ export async function getShop(shopDomain: string) {
 }
 
 /**
- * Update shop's monthly view count
+ * Update shop's monthly view count and lifetime stats
  */
 export async function incrementShopViews(shopDomain: string) {
-  return await prisma.shop.update({
-    where: { shopDomain },
-    data: {
-      monthlyViews: {
-        increment: 1,
+  const [shop] = await Promise.all([
+    prisma.shop.update({
+      where: { shopDomain },
+      data: { monthlyViews: { increment: 1 } },
+    }),
+    prisma.shopStats.upsert({
+      where: { shopDomain },
+      create: { shopDomain, totalViewsAllTime: 1, lastViewAt: new Date() },
+      update: {
+        totalViewsAllTime: { increment: 1 },
+        lastViewAt: new Date(),
+        lastActiveAt: new Date(),
       },
-    },
-  });
+    }),
+  ]);
+
+  // Keep peakMonthlyViews in sync after the Shop update
+  prisma.shopStats
+    .updateMany({
+      where: { shopDomain, peakMonthlyViews: { lt: shop.monthlyViews } },
+      data: { peakMonthlyViews: shop.monthlyViews },
+    })
+    .catch(() => {});
+
+  return shop;
 }
 
 /**
@@ -111,6 +128,22 @@ export async function resetMonthlyViews(shopDomain: string) {
       monthlyViews: 0,
       viewsResetAt: nextResetDate,
     },
+  });
+}
+
+/**
+ * Unpublish all timers for a shop when view limit is exceeded.
+ * Only runs if the limit is actually exceeded to avoid unnecessary DB writes.
+ */
+export async function unpublishAllTimersIfLimitExceeded(
+  shopDomain: string,
+): Promise<void> {
+  const exceeded = await hasExceededViewLimit(shopDomain);
+  if (!exceeded) return;
+
+  await prisma.timer.updateMany({
+    where: { shop: shopDomain, isPublished: true },
+    data: { isPublished: false },
   });
 }
 
@@ -235,6 +268,140 @@ export async function canCreateTimer(
   }
 
   return { allowed: true };
+}
+
+/**
+ * Upsert ShopUser from a Shopify session. Called on every authenticated request.
+ * Falls back to a shop-scoped synthetic ID when Shopify doesn't provide userId
+ * (e.g. offline sessions or the new embedded auth strategy before token exchange).
+ */
+export async function ensureUserExists(session: {
+  userId?: bigint | null;
+  shop: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  accountOwner?: boolean;
+  locale?: string | null;
+  emailVerified?: boolean | null;
+}) {
+  // Use Shopify's userId when available; fall back to a stable shop-scoped key.
+  const shopifyUserId = session.userId
+    ? String(session.userId)
+    : `shop:${session.shop}`;
+
+  return await prisma.shopUser.upsert({
+    where: { shopifyUserId },
+    create: {
+      shopifyUserId,
+      shopDomain: session.shop,
+      firstName: session.firstName ?? null,
+      lastName: session.lastName ?? null,
+      email: session.email ?? null,
+      accountOwner: session.accountOwner ?? false,
+      locale: session.locale ?? null,
+      emailVerified: session.emailVerified ?? false,
+      loginCount: 1,
+      lastLoginAt: new Date(),
+    },
+    update: {
+      // Update user info whenever it arrives (may be null early, filled later)
+      ...(session.firstName != null && { firstName: session.firstName }),
+      ...(session.lastName != null && { lastName: session.lastName }),
+      ...(session.email != null && { email: session.email }),
+      ...(session.accountOwner != null && { accountOwner: session.accountOwner }),
+      ...(session.locale != null && { locale: session.locale }),
+      ...(session.emailVerified != null && { emailVerified: session.emailVerified }),
+      // Upgrade from synthetic ID to real userId when we get it
+      ...(session.userId && shopifyUserId !== `shop:${session.shop}` && { shopifyUserId: String(session.userId) }),
+      loginCount: { increment: 1 },
+      lastLoginAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Fetch user info from Shopify Admin GraphQL and update the ShopUser record.
+ * Called when the session is offline and doesn't carry name/email directly.
+ */
+export async function updateUserFromApi(admin: any, shopifyUserId: string) {
+  const response = await admin.graphql(`#graphql
+    query {
+      shop {
+        email
+        owner {
+          firstName
+          lastName
+          email
+        }
+      }
+    }
+  `);
+
+  const { data } = await response.json();
+  const owner = data?.shop?.owner;
+  const shopEmail = data?.shop?.email;
+
+  if (!owner && !shopEmail) return;
+
+  await prisma.shopUser.update({
+    where: { shopifyUserId },
+    data: {
+      ...(owner?.firstName && { firstName: owner.firstName }),
+      ...(owner?.lastName && { lastName: owner.lastName }),
+      email: owner?.email ?? shopEmail ?? undefined,
+      accountOwner: true,
+    },
+  });
+}
+
+/**
+ * Ensure a ShopStats row exists for the shop (upsert with zero defaults).
+ */
+export async function ensureShopStatsExists(shopDomain: string) {
+  return await prisma.shopStats.upsert({
+    where: { shopDomain },
+    create: { shopDomain },
+    update: { lastActiveAt: new Date() },
+  });
+}
+
+/**
+ * Increment timer creation stats when a new timer is created.
+ */
+export async function incrementShopTimerCreated(shopDomain: string) {
+  return await prisma.shopStats.upsert({
+    where: { shopDomain },
+    create: {
+      shopDomain,
+      totalTimersCreated: 1,
+      activeTimerCount: 1,
+      lastTimerCreatedAt: new Date(),
+      lastActiveAt: new Date(),
+    },
+    update: {
+      totalTimersCreated: { increment: 1 },
+      activeTimerCount: { increment: 1 },
+      lastTimerCreatedAt: new Date(),
+      lastActiveAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Sync active/published timer counts into ShopStats (best-effort, call after publish toggle or delete).
+ */
+export async function syncTimerCountsToStats(shopDomain: string) {
+  const [activeTimerCount, publishedTimerCount] = await Promise.all([
+    prisma.timer.count({ where: { shop: shopDomain, isActive: true } }),
+    prisma.timer.count({ where: { shop: shopDomain, isPublished: true } }),
+  ]);
+
+  return await prisma.shopStats.upsert({
+    where: { shopDomain },
+    create: { shopDomain, activeTimerCount, publishedTimerCount },
+    update: { activeTimerCount, publishedTimerCount },
+  });
 }
 
 /**

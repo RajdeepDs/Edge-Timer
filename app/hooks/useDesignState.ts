@@ -1,11 +1,9 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type {
   DesignConfig,
-  ColorHSBA,
   PositioningType,
   BackgroundType,
 } from "../types/timer";
-import { hexToHsb } from "../utils/timer/color";
 
 interface UseDesignStateProps {
   timerType: "product" | "top-bottom-bar";
@@ -18,6 +16,16 @@ export function useDesignState({
   initialConfig = {},
   onConfigChange,
 }: UseDesignStateProps) {
+  // Template selection
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    initialConfig.selectedTemplate ?? "Custom",
+  );
+
+  // Global font
+  const [fontFamily, setFontFamily] = useState(
+    initialConfig.fontFamily || "theme",
+  );
+
   // Positioning (for top-bottom-bar)
   const [positioning, setPositioning] = useState<PositioningType>(
     initialConfig.positioning || "top",
@@ -29,6 +37,15 @@ export function useDesignState({
   );
   const [backgroundColor, setBackgroundColor] = useState(
     initialConfig.backgroundColor || "#ffffff",
+  );
+  const [gradientStartColor, setGradientStartColor] = useState(
+    initialConfig.gradientStartColor || "#ffffff",
+  );
+  const [gradientEndColor, setGradientEndColor] = useState(
+    initialConfig.gradientEndColor || "#DDDDDD",
+  );
+  const [gradientAngle, setGradientAngle] = useState(
+    initialConfig.gradientAngle ?? 90,
   );
 
   // Border
@@ -59,7 +76,7 @@ export function useDesignState({
   // Typography - Title
   const [titleSize, setTitleSize] = useState(
     String(
-      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32),
+      initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28),
     ),
   );
   const [titleColor, setTitleColor] = useState(
@@ -80,7 +97,7 @@ export function useDesignState({
   // Typography - Timer
   const [timerSize, setTimerSize] = useState(
     String(
-      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48),
+      initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40),
     ),
   );
   const [timerColor, setTimerColor] = useState(
@@ -111,19 +128,35 @@ export function useDesignState({
     initialConfig.buttonBackgroundColor || "#202223",
   );
 
+  // Track the last config we emitted so we can distinguish our own updates
+  // bouncing back (internal cycle) from genuine external resets like Discard.
+  const lastEmittedConfig = useRef<DesignConfig | null>(null);
+
   useEffect(() => {
+    // Skip if this incoming config is the same object we just emitted —
+    // that means it's our own onConfigChange call reflecting back, not an
+    // external reset. Only sync when it's truly a new external config.
+    if (initialConfig === lastEmittedConfig.current) return;
+
+    setSelectedTemplate(initialConfig.selectedTemplate ?? "Custom");
+    setFontFamily(initialConfig.fontFamily || "theme");
     setPositioning(initialConfig.positioning || "top");
     setBackgroundType(initialConfig.backgroundType || "single");
     setBackgroundColor(initialConfig.backgroundColor || "#ffffff");
+    setGradientStartColor(initialConfig.gradientStartColor || "#ffffff");
+    setGradientEndColor(initialConfig.gradientEndColor || "#dddddd");
+    setGradientAngle(initialConfig.gradientAngle ?? 90);
     setBorderRadius(String(initialConfig.borderRadius || 8));
-    setBorderSize(String(initialConfig.borderSize || 0));
+    setBorderSize(String(initialConfig.borderSize ?? 0));
     setBorderColor(initialConfig.borderColor || "#d1d5db");
     setInsideTop(String(initialConfig.paddingTop || 30));
     setInsideBottom(String(initialConfig.paddingBottom || 30));
     setOutsideTop(String(initialConfig.marginTop || 0));
     setOutsideBottom(String(initialConfig.marginBottom || 0));
     setTitleSize(
-      String(initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 32)),
+      String(
+        initialConfig.titleSize || (timerType === "top-bottom-bar" ? 18 : 28),
+      ),
     );
     setTitleColor(initialConfig.titleColor || "#212121");
     setSubheadingSize(
@@ -134,11 +167,15 @@ export function useDesignState({
     );
     setSubheadingColor(initialConfig.subheadingColor || "#212121");
     setTimerSize(
-      String(initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 48)),
+      String(
+        initialConfig.timerSize || (timerType === "top-bottom-bar" ? 22 : 40),
+      ),
     );
     setTimerColor(initialConfig.timerColor || "#212121");
     setLegendSize(
-      String(initialConfig.legendSize || (timerType === "top-bottom-bar" ? 10 : 14)),
+      String(
+        initialConfig.legendSize || (timerType === "top-bottom-bar" ? 10 : 14),
+      ),
     );
     setLegendColor(initialConfig.legendColor || "#707070");
     setButtonFontSize(String(initialConfig.buttonFontSize || 16));
@@ -150,11 +187,18 @@ export function useDesignState({
   // Update config whenever any value changes
   useEffect(() => {
     const newConfig: DesignConfig = {
+      // Template
+      selectedTemplate,
+      // Global font
+      fontFamily,
       // Positioning
       positioning,
       // Background
       backgroundType,
       backgroundColor,
+      gradientStartColor,
+      gradientEndColor,
+      gradientAngle,
       // Border
       borderRadius: parseInt(borderRadius) || 8,
       borderSize: parseInt(borderSize) || 0,
@@ -165,12 +209,13 @@ export function useDesignState({
       marginTop: parseInt(outsideTop) || 0,
       marginBottom: parseInt(outsideBottom) || 0,
       // Typography
-      titleSize: parseInt(titleSize) || 33,
+      titleSize:
+        parseInt(titleSize) || (timerType === "top-bottom-bar" ? 18 : 28),
       titleColor,
       subheadingSize: parseInt(subheadingSize) || 16,
       subheadingColor,
       timerSize:
-        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 22 : 48),
+        parseInt(timerSize) || (timerType === "top-bottom-bar" ? 22 : 40),
       timerColor,
       legendSize: parseInt(legendSize) || 14,
       legendColor,
@@ -181,11 +226,17 @@ export function useDesignState({
       buttonBackgroundColor,
     };
 
+    lastEmittedConfig.current = newConfig;
     onConfigChange?.(newConfig);
   }, [
+    selectedTemplate,
+    fontFamily,
     positioning,
     backgroundType,
     backgroundColor,
+    gradientStartColor,
+    gradientEndColor,
+    gradientAngle,
     borderRadius,
     borderSize,
     borderColor,
@@ -209,31 +260,15 @@ export function useDesignState({
     timerType,
   ]);
 
-  // Helper to handle hex text input
-  const handleHexChange = useCallback(
-    (
-      value: string,
-      setter: (color: ColorHSBA) => void,
-      textSetter: (text: string) => void,
-    ) => {
-      textSetter(value);
-
-      if (!value.startsWith("#") && value.length > 0) {
-        value = "#" + value;
-      }
-
-      const hexPattern = /^#([A-Fa-f0-9]{6})$/;
-      const match = value.match(hexPattern);
-
-      if (match) {
-        const hsb = hexToHsb(value);
-        setter(hsb);
-      }
-    },
-    [],
-  );
-
   return {
+    // Template
+    selectedTemplate,
+    setSelectedTemplate,
+
+    // Font
+    fontFamily,
+    setFontFamily,
+
     // Positioning
     positioning,
     setPositioning,
@@ -243,6 +278,12 @@ export function useDesignState({
     setBackgroundType,
     backgroundColor,
     setBackgroundColor,
+    gradientStartColor,
+    setGradientStartColor,
+    gradientEndColor,
+    setGradientEndColor,
+    gradientAngle,
+    setGradientAngle,
 
     // Border
     borderRadius,
@@ -295,8 +336,5 @@ export function useDesignState({
     setButtonColor,
     buttonBackgroundColor,
     setButtonBackgroundColor,
-
-    // Utility
-    handleHexChange,
   };
 }

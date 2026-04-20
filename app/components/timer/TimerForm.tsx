@@ -1,18 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Page,
   Box,
   Tabs,
-  Card,
   Frame,
   Badge,
   Modal,
   Text,
   BlockStack,
+  InlineStack,
 } from "@shopify/polaris";
 import { useSubmit, useNavigation, useActionData } from "@remix-run/react";
 import { useTimerForm } from "../../hooks/useTimerForm";
 import { useTimerTabs } from "../../hooks/useTimerTabs";
+import { usePlacementState } from "../../hooks/usePlacementState";
+import type { ProductSelectionType, PageSelectionType, GeolocationTargeting } from "../../types/timer";
 import ContentTab from "./ContentTab";
 import DesignTab from "./DesignTab";
 import PlacementTab from "./PlacementTab";
@@ -46,6 +48,18 @@ export function TimerForm({
 
   // Single, top-level call to your form state hook
   const formState = useTimerForm({ existingTimer, timerType });
+
+  // Placement state — lifted here so handleSubmit can read it
+  const placement = usePlacementState({
+    timerType: timerType === "product-page" ? "product" : "top-bottom-bar",
+    initialProductSelection: (existingTimer?.productSelection as ProductSelectionType) || "all",
+    initialPageSelection: (existingTimer?.pageSelection as PageSelectionType) || "every-page",
+    initialGeolocation: (existingTimer?.geolocation as GeolocationTargeting) || "all-world",
+    initialSelectedProducts: (existingTimer?.selectedProducts as string[]) || [],
+    initialSelectedCollections: (existingTimer?.selectedCollections as string[]) || [],
+    initialExcludedProducts: (existingTimer?.excludedProducts as string[]) || [],
+    initialExcludedPages: (existingTimer?.excludedPages as string[]) || [],
+  });
 
   const { selectedTab, handleTabChange, goToNextTab } = useTimerTabs();
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
@@ -145,21 +159,21 @@ export function TimerForm({
         buttonLink:
           timerType === "top-bottom-bar" ? formState.buttonLink : null,
 
-        designConfig: formState.designConfig,
+        designConfig: { ...formState.designConfig, showLabels: showTimerLabels },
         placementConfig: formState.placementConfig,
 
-        productSelection: "all",
-        selectedProducts: null,
-        selectedCollections: null,
-        excludedProducts: null,
-        productTags: null,
+        productSelection: placement.productSelection,
+        selectedProducts: placement.selectedProducts.length > 0 ? placement.selectedProducts : null,
+        selectedCollections: placement.selectedCollections.length > 0 ? placement.selectedCollections : null,
+        excludedProducts: placement.excludedProducts.length > 0 ? placement.excludedProducts : null,
+        productTags: placement.productTags.length > 0 ? placement.productTags : null,
 
-        pageSelection: timerType === "top-bottom-bar" ? "every-page" : null,
-        excludedPages: null,
+        pageSelection: timerType === "top-bottom-bar" ? placement.pageSelection : null,
+        excludedPages: placement.excludedPages.length > 0 ? placement.excludedPages : null,
 
-        geolocation: "all-world",
+        geolocation: placement.geolocation,
 
-        countries: null,
+        countries: placement.selectedCountries.length > 0 ? placement.selectedCountries : null,
 
         // Preserve published state on save; toggle on publish/unpublish
         isPublished:
@@ -202,6 +216,7 @@ export function TimerForm({
     },
     [
       formState,
+      placement,
       timerType,
       timerId,
       submit,
@@ -262,6 +277,22 @@ export function TimerForm({
     setShowDeleteModal(false);
   }, []);
 
+  const [showTimerLabels, setShowTimerLabels] = useState(
+    existingTimer?.designConfig?.showLabels ?? true,
+  );
+  const [copied, setCopied] = useState(false);
+  const copyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopyTimerId = useCallback(() => {
+    if (!timerId || copied) return;
+    if (copyDebounceRef.current) clearTimeout(copyDebounceRef.current);
+    navigator.clipboard.writeText(timerId).then(() => {
+      setCopied(true);
+      shopify.toast.show("Copied to clipboard", { duration: 2000 });
+      copyDebounceRef.current = setTimeout(() => setCopied(false), 2000);
+    });
+  }, [timerId, copied]);
+
   const renderTabContent = () => {
     switch (selectedTab) {
       case 0:
@@ -298,12 +329,8 @@ export function TimerForm({
             setSecondsLabel={formState.setSecondsLabel}
             onceItEnds={formState.onceItEnds}
             setOnceItEnds={formState.setOnceItEnds}
-            callToAction={formState.callToAction}
-            setCallToAction={formState.setCallToAction}
-            buttonText={formState.buttonText}
-            setButtonText={formState.setButtonText}
-            buttonLink={formState.buttonLink}
-            setButtonLink={formState.setButtonLink}
+            showTimerLabels={showTimerLabels}
+            setShowTimerLabels={setShowTimerLabels}
             validationErrors={validationErrors}
             onContinue={goToNextTab}
           />
@@ -328,6 +355,16 @@ export function TimerForm({
             }
             timerId={timerId}
             shop={shop}
+            productSelection={placement.productSelection}
+            onProductSelectionChange={placement.handleProductSelectionChange}
+            pageSelection={placement.pageSelection}
+            onPageSelectionChange={placement.handlePageSelectionChange}
+            geolocation={placement.geolocation}
+            onGeolocationChange={placement.handleGeolocationChange}
+            setSelectedProducts={placement.setSelectedProducts}
+            setSelectedCollections={placement.setSelectedCollections}
+            setExcludedProducts={placement.setExcludedProducts}
+            setExcludedPages={placement.setExcludedPages}
           />
         );
       default:
@@ -361,10 +398,38 @@ export function TimerForm({
           timerId && existingTimer?.isPublished ? (
             <Badge tone="success">Published</Badge>
           ) : (
-            <Badge>Draft</Badge>
+            <Badge>Not published</Badge>
           )
         }
-        subtitle={timerId ? `Timer ID: ${timerId}` : `Save to show Timer ID`}
+        subtitle={timerId ? undefined : "Save to show Timer ID"}
+        additionalMetadata={
+          timerId ? (
+            <InlineStack gap="100" blockAlign="center">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Timer ID: {timerId}
+              </Text>
+              <button
+                onClick={handleCopyTimerId}
+                aria-label="Copy timer ID"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "2px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  color: "#616161",
+                }}
+              >
+                {copied ? (
+                  <s-icon type="clipboard-check" color="base" size="small" />
+                ) : (
+                  <s-icon type="clipboard" color="base" size="small" />
+                )}
+              </button>
+            </InlineStack>
+          ) : undefined
+        }
         secondaryActions={secondaryActions}
         primaryAction={{
           content: existingTimer?.isPublished ? "Unpublish" : "Publish",
@@ -396,17 +461,21 @@ export function TimerForm({
                     gridTemplateColumns: "minmax(324px, 1fr) 2fr",
                   }}
                 >
-                  <Box>
-                    <Card padding="400">{renderTabContent()}</Card>
-                  </Box>
-                  <Box>
+                  <Box>{renderTabContent()}</Box>
+                  <div
+                    style={{
+                      position: "sticky",
+                      top: "1rem",
+                      height: "fit-content",
+                    }}
+                  >
                     <TimerPreview
                       title={formState.title}
                       subheading={formState.subheading}
-                      daysLabel={formState.daysLabel}
-                      hoursLabel={formState.hoursLabel}
-                      minutesLabel={formState.minutesLabel}
-                      secondsLabel={formState.secondsLabel}
+                      daysLabel={showTimerLabels ? formState.daysLabel : ""}
+                      hoursLabel={showTimerLabels ? formState.hoursLabel : ""}
+                      minutesLabel={showTimerLabels ? formState.minutesLabel : ""}
+                      secondsLabel={showTimerLabels ? formState.secondsLabel : ""}
                       designConfig={formState.designConfig}
                       timerType={
                         timerType === "product-page"
@@ -422,7 +491,7 @@ export function TimerForm({
                       fixedMinutes={formState.fixedMinutes}
                       callToAction={formState.callToAction}
                     />
-                  </Box>
+                  </div>
                 </div>
               </Box>
             </Tabs>

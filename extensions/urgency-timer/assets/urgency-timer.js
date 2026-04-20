@@ -5,6 +5,9 @@
  */
 
 (() => {
+  if (window.__UTIMER_INIT__) return;
+  window.__UTIMER_INIT__ = true;
+
   const DEBUG = false;
 
   const STATE = {
@@ -17,6 +20,7 @@
   // App Proxy path: Shopify proxies to your app (works on any merchant store)
   const DEFAULT_ENDPOINT = "/apps/urgency-timer/timers";
   const DEFAULT_VIEW_ENDPOINT = "/apps/urgency-timer/views";
+  const DEFAULT_UNPUBLISH_ENDPOINT = "/apps/urgency-timer/unpublish";
 
   function log(...args) {
     if (DEBUG) console.log("[UrgencyTimer]", ...args);
@@ -193,6 +197,17 @@
       });
   }
 
+  function unpublishTimer(timerId) {
+    const endpoint = window.__utimer_unpublish_endpoint || DEFAULT_UNPUBLISH_ENDPOINT;
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ timerId }),
+    })
+      .then(r => { log(r.ok ? "✅ Timer unpublished:" : "❌ Unpublish failed:", timerId, r.status); })
+      .catch(e => { log("❌ Unpublish fetch error:", e.message || e); });
+  }
+
   /* ================= Countdown Logic ================= */
 
   function msUntil(date) {
@@ -264,9 +279,12 @@
       valueEls[u] = n;
     });
 
-    countdown.append(numbersRow, labelsRow);
+    countdown.appendChild(numbersRow);
 
     const dc = timer.designConfig || {};
+    if (dc.showLabels !== false) {
+      countdown.appendChild(labelsRow);
+    }
 
     if (isBar) {
       const barMain = el("div", "utimer-bar-main", "");
@@ -369,6 +387,8 @@
     let id = setInterval(update, 1000);
     update();
 
+    let cleanupBar = null;
+
     if (isBar) {
       const syncBarScale = () => {
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -416,10 +436,16 @@
       scheduleBarScaleSync();
       window.addEventListener("resize", scheduleBarScaleSync);
 
+      let resizeObserver = null;
       if (typeof ResizeObserver !== "undefined") {
-        const resizeObserver = new ResizeObserver(scheduleBarScaleSync);
+        resizeObserver = new ResizeObserver(scheduleBarScaleSync);
         resizeObserver.observe(c);
       }
+
+      cleanupBar = () => {
+        window.removeEventListener("resize", scheduleBarScaleSync);
+        if (resizeObserver) resizeObserver.disconnect();
+      };
     }
 
     function update() {
@@ -434,32 +460,23 @@
 
       if (remaining <= 0) {
         const action = (timer.onExpiry || "unpublish").toLowerCase();
-        if (action === "keep") {
-          // Restart the timer from its full duration
-          if (timer.timerType === "fixed") {
-            // Reset the localStorage start time to now
-            const key = `utimer_fixed_${timer.id}_start`;
-            localStorage.setItem(key, Math.floor(Date.now() / 1000));
-          } else if (timer.endDate) {
-            // Calculate original duration and shift endDate forward
-            const start = timer.startsAt ? new Date(timer.startsAt).getTime() : null;
-            const end = new Date(timer.endDate).getTime();
-            const duration = start ? (end - start) : 0;
-            if (duration > 0) {
-              timer.endDate = new Date(Date.now() + duration).toISOString();
-            }
-          }
-          // Don't clear interval — let it keep ticking
-        } else {
+
+        if (action === "repeat") {
+          // Fixed timer only: restart from full duration
+          const key = `utimer_fixed_${timer.id}_start`;
+          localStorage.setItem(key, Math.floor(Date.now() / 1000));
+          // Keep ticking
+        } else if (action === "keep" || action === "nothing") {
+          // Freeze at zeros — stop ticking but leave the element visible
           clearInterval(id);
-          // Get bar parent reference before removing (parentElement is null after remove)
+        } else {
+          // "unpublish", "hide", "hide-buyer" — remove from DOM
+          clearInterval(id);
+          if (action === "unpublish") unpublishTimer(timer.id);
+          if (cleanupBar) cleanupBar();
           const barParent = c.closest(".utimer-bar");
-          // Remove the timer container
           c.remove();
-          // Also remove the parent bar wrapper if this is a bar timer
-          if (barParent) {
-            barParent.remove();
-          }
+          if (barParent) barParent.remove();
         }
       }
     }
@@ -489,7 +506,8 @@
   function shouldSkipExpiredTimer(timer) {
     if (!isAlreadyExpired(timer)) return false;
     const action = (timer.onExpiry || "unpublish").toLowerCase();
-    return action !== "keep";
+    // "keep" and "nothing" show frozen at zeros; "repeat" restarts — all should mount
+    return action !== "keep" && action !== "nothing" && action !== "repeat";
   }
 
   function mountProductTimers(ctx, timers) {

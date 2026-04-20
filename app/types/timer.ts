@@ -10,7 +10,7 @@ export type TimerTypeValue = "countdown" | "fixed";
 
 export type TimerStarts = "now" | "later";
 
-export type OnExpiryAction = "unpublish" | "keep" | "hide";
+export type OnExpiryAction = "unpublish" | "keep" | "hide" | "hide-buyer" | "repeat" | "nothing";
 
 export type CallToActionType = "no" | "button" | "clickable";
 
@@ -49,14 +49,21 @@ export interface ColorHSBA {
 
 // Design Configuration
 export interface DesignConfig {
+  // Selected template name
+  selectedTemplate?: string;
+
   // Positioning (for top-bottom-bar)
   positioning?: PositioningType;
+
+  // Global font
+  fontFamily?: string;
 
   // Background
   backgroundType?: BackgroundType;
   backgroundColor?: string; // Hex color
   gradientStartColor?: string;
   gradientEndColor?: string;
+  gradientAngle?: number;
 
   // Border
   borderRadius?: number;
@@ -92,6 +99,9 @@ export interface DesignConfig {
   legendColor?: string;
   legendFontWeight?: string;
   legendFontFamily?: string;
+
+  // Labels visibility
+  showLabels?: boolean;
 
   // Button (for CTA)
   buttonFontSize?: number;
