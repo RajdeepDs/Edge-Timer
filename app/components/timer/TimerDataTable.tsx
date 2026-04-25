@@ -78,15 +78,17 @@ export function TimerDataTable({
               </s-table-cell>
               <s-table-cell>{formatTimerType(timer.type)}</s-table-cell>
               <s-table-cell>
-                {timer.startsAt && timer.endDate
-                  ? `${new Date(timer.startsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} - ${new Date(timer.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-                  : timer.endDate
-                    ? new Date(timer.endDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "N/A"}
+                {timer.timerType === "fixed"
+                  ? `${timer.fixedMinutes ?? "—"} mins`
+                  : timer.startsAt && timer.endDate
+                    ? `${new Date(timer.startsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} - ${new Date(timer.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                    : timer.endDate
+                      ? new Date(timer.endDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "N/A"}
               </s-table-cell>
               <s-table-cell>
                 <StatusBadge isPublished={timer.isPublished} />
